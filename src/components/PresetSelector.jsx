@@ -1,8 +1,14 @@
 import React, { useState } from 'react';
 import { EXAM_PRESETS } from '../data/presets';
-import { Search, Sparkles, Filter, FileText, Image as ImageIcon, SlidersHorizontal, Check } from 'lucide-react';
+import { Search, Sparkles, FileText, Image as ImageIcon, SlidersHorizontal, Wand2, Check, ArrowRight } from 'lucide-react';
 
-export const PresetSelector = ({ onSelectPreset, selectedPresetId }) => {
+export const PresetSelector = ({ 
+  onSelectPreset, 
+  selectedPresetId,
+  onOpenPdfStudio,
+  onOpenBgRemover,
+  onOpenImageResizer
+}) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
 
@@ -21,7 +27,7 @@ export const PresetSelector = ({ onSelectPreset, selectedPresetId }) => {
   return (
     <section className="w-full py-6">
       {/* Hero Section Banner */}
-      <div className="text-center max-w-3xl mx-auto mb-8 px-4">
+      <div className="text-center max-w-4xl mx-auto mb-6 px-4">
         <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold mb-4">
           <Sparkles className="w-3.5 h-3.5" />
           <span>Updated for 2026 Exam Rules (SSC, NEET, UPSC, IBPS)</span>
@@ -29,9 +35,53 @@ export const PresetSelector = ({ onSelectPreset, selectedPresetId }) => {
         <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight leading-tight font-['Outfit']">
           Convert Govt Exam Photos to <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-400">20KB – 50KB Instantly</span>
         </h1>
-        <p className="mt-3 text-slate-400 text-sm sm:text-base leading-relaxed">
-          Pixel-exact, guaranteed KB compressor and signature converter. Operating 100% inside your browser — fast, free, and zero server upload.
+        <p className="mt-3 text-slate-400 text-xs sm:text-sm max-w-2xl mx-auto leading-relaxed">
+          Pixel-exact KB compressor, AI background remover, and PDF resizer. 100% Client-side — fast, free, and zero server upload.
         </p>
+
+        {/* 3 Main Studio Tools Cards (Mobile & Desktop Prominent Placement) */}
+        <div className="grid grid-cols-3 gap-2 sm:gap-4 max-w-3xl mx-auto mt-6">
+          
+          <button
+            onClick={onOpenPdfStudio}
+            className="p-3 sm:p-4 rounded-2xl bg-gradient-to-b from-emerald-950/40 to-slate-900/80 border border-emerald-500/30 hover:border-emerald-500/60 transition-all text-left flex flex-col justify-between group shadow-lg"
+          >
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+              <FileText className="w-4 h-4 sm:w-5 sm:h-5" />
+            </div>
+            <div>
+              <h3 className="font-bold text-white text-xs sm:text-sm leading-tight">PDF Resizer</h3>
+              <p className="text-[10px] sm:text-xs text-slate-400 mt-0.5 line-clamp-1">Compress under 300KB</p>
+            </div>
+          </button>
+
+          <button
+            onClick={onOpenBgRemover}
+            className="p-3 sm:p-4 rounded-2xl bg-gradient-to-b from-purple-950/40 to-slate-900/80 border border-purple-500/30 hover:border-purple-500/60 transition-all text-left flex flex-col justify-between group shadow-lg"
+          >
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+              <Wand2 className="w-4 h-4 sm:w-5 sm:h-5" />
+            </div>
+            <div>
+              <h3 className="font-bold text-white text-xs sm:text-sm leading-tight">AI BG Remover</h3>
+              <p className="text-[10px] sm:text-xs text-slate-400 mt-0.5 line-clamp-1">1-Click Transparent/White</p>
+            </div>
+          </button>
+
+          <button
+            onClick={onOpenImageResizer}
+            className="p-3 sm:p-4 rounded-2xl bg-gradient-to-b from-blue-950/40 to-slate-900/80 border border-blue-500/30 hover:border-blue-500/60 transition-all text-left flex flex-col justify-between group shadow-lg"
+          >
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+              <SlidersHorizontal className="w-4 h-4 sm:w-5 sm:h-5" />
+            </div>
+            <div>
+              <h3 className="font-bold text-white text-xs sm:text-sm leading-tight">Image Resizer</h3>
+              <p className="text-[10px] sm:text-xs text-slate-400 mt-0.5 line-clamp-1">Any KB / Pixels / JPG</p>
+            </div>
+          </button>
+
+        </div>
       </div>
 
       {/* Search & Category Filter Controls */}
@@ -79,7 +129,6 @@ export const PresetSelector = ({ onSelectPreset, selectedPresetId }) => {
                   : 'hover:border-slate-700'
               }`}
             >
-              {/* Badge */}
               {preset.badge && (
                 <div className="absolute top-3 right-3 px-2 py-0.5 rounded-md bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[10px] font-bold tracking-wider uppercase shadow-sm">
                   {preset.badge}
@@ -87,7 +136,6 @@ export const PresetSelector = ({ onSelectPreset, selectedPresetId }) => {
               )}
 
               <div>
-                {/* Header Icon & Title */}
                 <div className="flex items-start space-x-3 mb-3">
                   <div className={`p-2.5 rounded-xl flex-shrink-0 ${
                     preset.type === 'photo'
@@ -117,7 +165,6 @@ export const PresetSelector = ({ onSelectPreset, selectedPresetId }) => {
                 </p>
               </div>
 
-              {/* Specifications Footer */}
               <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs">
                 <div className="flex items-center space-x-2 text-slate-300 font-medium">
                   <span className="bg-slate-900 px-2 py-0.5 rounded border border-slate-800">
