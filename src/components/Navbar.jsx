@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { ShieldCheck, Sparkles, CheckCircle2, Smartphone, FileText, Wand2, SlidersHorizontal } from 'lucide-react';
+import { ShieldCheck, Sparkles, CheckCircle2, Smartphone, FileText, Wand2, SlidersHorizontal, Camera } from 'lucide-react';
 
-export const Navbar = ({ onOpenPdfStudio, onOpenBgRemover, onOpenImageResizer }) => {
+export const Navbar = ({ onOpenPdfStudio, onOpenBgRemover, onOpenImageResizer, onOpenPassportPhoto }) => {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [isInstalled, setIsInstalled] = useState(false);
 
@@ -42,7 +42,7 @@ export const Navbar = ({ onOpenPdfStudio, onOpenBgRemover, onOpenImageResizer })
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-slate-200 bg-white/95 backdrop-blur-md shadow-xs">
+    <header className="sticky top-0 z-40 w-full border-b border-slate-200 bg-white/95 backdrop-blur-md shadow-xs font-['Outfit']">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         
         {/* Logo */}
@@ -52,7 +52,7 @@ export const Navbar = ({ onOpenPdfStudio, onOpenBgRemover, onOpenImageResizer })
           </div>
           <div>
             <div className="flex items-center space-x-2">
-              <span className="font-extrabold text-xl tracking-tight text-slate-900 font-['Outfit']">
+              <span className="font-extrabold text-xl tracking-tight text-slate-900">
                 Sarkari<span className="text-blue-600">Doc</span>
               </span>
               <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200 rounded-full">
@@ -64,8 +64,17 @@ export const Navbar = ({ onOpenPdfStudio, onOpenBgRemover, onOpenImageResizer })
         </div>
 
         {/* Quick Tools */}
-        <div className="flex items-center space-x-1.5 sm:space-x-3">
+        <div className="flex items-center space-x-1.5 sm:space-x-2">
           
+          <button
+            onClick={onOpenPassportPhoto}
+            className="flex items-center space-x-1 px-2.5 sm:px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-200 text-xs font-semibold shadow-xs transition-all active:scale-95"
+          >
+            <Camera className="w-3.5 h-3.5 text-blue-600" />
+            <span className="hidden xs:inline">Passport Photo</span>
+            <span className="xs:hidden">Passport</span>
+          </button>
+
           <button
             onClick={onOpenPdfStudio}
             className="flex items-center space-x-1 px-2.5 sm:px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-semibold shadow-xs transition-all active:scale-95"
@@ -77,11 +86,10 @@ export const Navbar = ({ onOpenPdfStudio, onOpenBgRemover, onOpenImageResizer })
 
           <button
             onClick={onOpenBgRemover}
-            className="flex items-center space-x-1 px-2.5 sm:px-3 py-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-200 text-xs font-semibold shadow-xs transition-all active:scale-95"
+            className="hidden sm:flex items-center space-x-1 px-2.5 sm:px-3 py-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-200 text-xs font-semibold shadow-xs transition-all active:scale-95"
           >
             <Wand2 className="w-3.5 h-3.5 text-purple-600" />
-            <span className="hidden xs:inline">AI BG Remover</span>
-            <span className="xs:hidden">BG</span>
+            <span>AI BG Remover</span>
           </button>
 
           {!isInstalled && (

@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { EXAM_PRESETS } from '../data/presets';
-import { Search, Sparkles, FileText, Image as ImageIcon, SlidersHorizontal, Wand2, Check, ArrowRight, Zap } from 'lucide-react';
+import { Search, Sparkles, FileText, Image as ImageIcon, SlidersHorizontal, Wand2, Check, ArrowRight, Zap, Camera } from 'lucide-react';
 
 export const PresetSelector = ({ 
   onSelectPreset, 
   selectedPresetId,
   onOpenPdfStudio,
   onOpenBgRemover,
-  onOpenImageResizer
+  onOpenImageResizer,
+  onOpenPassportPhoto
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
@@ -25,34 +26,56 @@ export const PresetSelector = ({
   });
 
   return (
-    <section className="w-full py-8 bg-white">
+    <section className="w-full py-8 bg-white font-['Outfit']">
       {/* Hero Section Banner */}
-      <div className="text-center max-w-4xl mx-auto mb-8 px-4">
+      <div className="text-center max-w-5xl mx-auto mb-8 px-4">
         <div className="inline-flex items-center space-x-2 px-3.5 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-semibold mb-4">
           <Sparkles className="w-3.5 h-3.5" />
-          <span>Updated for 2026 Exam Rules (SSC, NEET, UPSC, IBPS)</span>
+          <span>Updated for 2026 Exam & Passport Rules (SSC, NEET, UPSC, Passport)</span>
         </div>
         <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight font-['Outfit']">
-          Convert Govt Exam Photos to <span className="text-blue-600">20KB – 50KB Instantly</span>
+          Convert Govt Exam Photos & Passport IDs <span className="text-blue-600">Instantly</span>
         </h1>
         <p className="mt-3 text-slate-600 text-xs sm:text-sm max-w-2xl mx-auto leading-relaxed font-medium">
-          Pixel-exact KB compressor, AI background remover, and PDF resizer. 100% Client-side — fast, free, and zero server upload.
+          Pixel-exact KB compressor, Passport Maker, AI background remover, and PDF resizer. 100% Client-side — zero server uploads.
         </p>
 
-        {/* 🌟 3 HERO STUDIO TOOLS (Pure White Cards with Vibrant Colored Accents) 🌟 */}
-        <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-4xl mx-auto">
+        {/* 🌟 4 HERO STUDIO TOOLS (Pure White Cards with Vibrant Colored Accents) 🌟 */}
+        <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto">
           
-          {/* Tool 1: PDF Resizer */}
+          {/* Tool 1: Passport Photo Maker */}
           <button
-            onClick={onOpenPdfStudio}
-            className="group relative p-4 sm:p-5 rounded-2xl bg-white border-2 border-emerald-300 hover:border-emerald-600 transition-all duration-200 shadow-xs hover:shadow-md text-left flex items-center space-x-4 hover:-translate-y-1"
+            onClick={onOpenPassportPhoto}
+            className="group relative p-4 rounded-2xl bg-white border-2 border-blue-300 hover:border-blue-600 transition-all duration-200 shadow-xs hover:shadow-md text-left flex items-center space-x-3.5 hover:-translate-y-1"
           >
-            <div className="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform shadow-md shadow-emerald-500/20">
-              <FileText className="w-6 h-6" />
+            <div className="w-11 h-11 rounded-2xl bg-blue-600 text-white flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform shadow-md shadow-blue-500/20">
+              <Camera className="w-5.5 h-5.5" />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center space-x-1.5 mb-0.5">
-                <h3 className="font-bold text-slate-900 text-sm sm:text-base group-hover:text-emerald-700 transition-colors">
+                <h3 className="font-bold text-slate-900 text-sm group-hover:text-blue-700 transition-colors">
+                  Passport Studio
+                </h3>
+                <span className="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-blue-600 text-white uppercase">
+                  New
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 line-clamp-1">3.5x4.5cm, 2x2" & Studio Colors</p>
+            </div>
+            <ArrowRight className="w-4 h-4 text-blue-600 group-hover:translate-x-1 transition-transform" />
+          </button>
+
+          {/* Tool 2: PDF Resizer */}
+          <button
+            onClick={onOpenPdfStudio}
+            className="group relative p-4 rounded-2xl bg-white border-2 border-emerald-300 hover:border-emerald-600 transition-all duration-200 shadow-xs hover:shadow-md text-left flex items-center space-x-3.5 hover:-translate-y-1"
+          >
+            <div className="w-11 h-11 rounded-2xl bg-emerald-600 text-white flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform shadow-md shadow-emerald-500/20">
+              <FileText className="w-5.5 h-5.5" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center space-x-1.5 mb-0.5">
+                <h3 className="font-bold text-slate-900 text-sm group-hover:text-emerald-700 transition-colors">
                   PDF Resizer
                 </h3>
                 <span className="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-emerald-600 text-white uppercase">
@@ -61,51 +84,51 @@ export const PresetSelector = ({
               </div>
               <p className="text-xs text-slate-500 line-clamp-1">Compress PDF under 300KB</p>
             </div>
-            <ArrowRight className="w-5 h-5 text-emerald-600 group-hover:translate-x-1 transition-transform" />
+            <ArrowRight className="w-4 h-4 text-emerald-600 group-hover:translate-x-1 transition-transform" />
           </button>
 
-          {/* Tool 2: AI Background Remover */}
+          {/* Tool 3: AI Background Remover */}
           <button
             onClick={onOpenBgRemover}
-            className="group relative p-4 sm:p-5 rounded-2xl bg-white border-2 border-purple-300 hover:border-purple-600 transition-all duration-200 shadow-xs hover:shadow-md text-left flex items-center space-x-4 hover:-translate-y-1"
+            className="group relative p-4 rounded-2xl bg-white border-2 border-purple-300 hover:border-purple-600 transition-all duration-200 shadow-xs hover:shadow-md text-left flex items-center space-x-3.5 hover:-translate-y-1"
           >
-            <div className="w-12 h-12 rounded-2xl bg-purple-600 text-white flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform shadow-md shadow-purple-500/20">
-              <Wand2 className="w-6 h-6" />
+            <div className="w-11 h-11 rounded-2xl bg-purple-600 text-white flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform shadow-md shadow-purple-500/20">
+              <Wand2 className="w-5.5 h-5.5" />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center space-x-1.5 mb-0.5">
-                <h3 className="font-bold text-slate-900 text-sm sm:text-base group-hover:text-purple-700 transition-colors">
+                <h3 className="font-bold text-slate-900 text-sm group-hover:text-purple-700 transition-colors">
                   AI BG Remover
                 </h3>
                 <span className="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-purple-600 text-white uppercase">
                   AI
                 </span>
               </div>
-              <p className="text-xs text-slate-500 line-clamp-1">1-Click Transparent / White</p>
+              <p className="text-xs text-slate-500 line-clamp-1">1-Click Transparent / Color</p>
             </div>
-            <ArrowRight className="w-5 h-5 text-purple-600 group-hover:translate-x-1 transition-transform" />
+            <ArrowRight className="w-4 h-4 text-purple-600 group-hover:translate-x-1 transition-transform" />
           </button>
 
-          {/* Tool 3: General Image Resizer */}
+          {/* Tool 4: General Image Resizer */}
           <button
             onClick={onOpenImageResizer}
-            className="group relative p-4 sm:p-5 rounded-2xl bg-white border-2 border-blue-300 hover:border-blue-600 transition-all duration-200 shadow-xs hover:shadow-md text-left flex items-center space-x-4 hover:-translate-y-1"
+            className="group relative p-4 rounded-2xl bg-white border-2 border-slate-300 hover:border-slate-600 transition-all duration-200 shadow-xs hover:shadow-md text-left flex items-center space-x-3.5 hover:-translate-y-1"
           >
-            <div className="w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform shadow-md shadow-blue-500/20">
-              <SlidersHorizontal className="w-6 h-6" />
+            <div className="w-11 h-11 rounded-2xl bg-slate-900 text-white flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform shadow-md shadow-slate-900/20">
+              <SlidersHorizontal className="w-5.5 h-5.5" />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center space-x-1.5 mb-0.5">
-                <h3 className="font-bold text-slate-900 text-sm sm:text-base group-hover:text-blue-700 transition-colors">
+                <h3 className="font-bold text-slate-900 text-sm group-hover:text-slate-700 transition-colors">
                   Image Resizer
                 </h3>
-                <span className="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-blue-600 text-white uppercase">
+                <span className="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-slate-800 text-white uppercase">
                   Tool
                 </span>
               </div>
               <p className="text-xs text-slate-500 line-clamp-1">Custom KB / Pixels / JPG</p>
             </div>
-            <ArrowRight className="w-5 h-5 text-blue-600 group-hover:translate-x-1 transition-transform" />
+            <ArrowRight className="w-4 h-4 text-slate-600 group-hover:translate-x-1 transition-transform" />
           </button>
 
         </div>

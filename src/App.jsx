@@ -9,6 +9,7 @@ import { SeoContentSection } from './components/SeoContentSection';
 import { Footer } from './components/Footer';
 import { EXAM_PRESETS } from './data/presets';
 
+import { PassportPhotoModal } from './components/PassportPhotoModal';
 import { InstallPwaBanner } from './components/InstallPwaBanner';
 
 export function App() {
@@ -16,6 +17,7 @@ export function App() {
   const [isPdfStudioOpen, setIsPdfStudioOpen] = useState(false);
   const [isBgRemoverOpen, setIsBgRemoverOpen] = useState(false);
   const [isImageResizerOpen, setIsImageResizerOpen] = useState(false);
+  const [isPassportPhotoOpen, setIsPassportPhotoOpen] = useState(false);
 
   // Handle Direct URL Deep-linking for Google Sitelinks & Direct Search Results
   useEffect(() => {
@@ -26,6 +28,8 @@ export function App() {
     if (presetParam) {
       const found = EXAM_PRESETS.find(p => p.id === presetParam);
       if (found) setSelectedPreset(found);
+    } else if (toolParam === 'passport-photo') {
+      setIsPassportPhotoOpen(true);
     } else if (toolParam === 'pdf-studio') {
       setIsPdfStudioOpen(true);
     } else if (toolParam === 'bg-remover') {
@@ -39,6 +43,7 @@ export function App() {
     <div className="min-h-screen flex flex-col bg-white text-slate-900 font-['Outfit'] antialiased">
       {/* Top Navbar */}
       <Navbar
+        onOpenPassportPhoto={() => setIsPassportPhotoOpen(true)}
         onOpenPdfStudio={() => setIsPdfStudioOpen(true)}
         onOpenBgRemover={() => setIsBgRemoverOpen(true)}
         onOpenImageResizer={() => setIsImageResizerOpen(true)}
@@ -49,6 +54,7 @@ export function App() {
         <PresetSelector
           selectedPresetId={selectedPreset?.id}
           onSelectPreset={(preset) => setSelectedPreset(preset)}
+          onOpenPassportPhoto={() => setIsPassportPhotoOpen(true)}
           onOpenPdfStudio={() => setIsPdfStudioOpen(true)}
           onOpenBgRemover={() => setIsBgRemoverOpen(true)}
           onOpenImageResizer={() => setIsImageResizerOpen(true)}
@@ -62,6 +68,12 @@ export function App() {
         <EditorModal
           preset={selectedPreset}
           onClose={() => setSelectedPreset(null)}
+        />
+      )}
+
+      {isPassportPhotoOpen && (
+        <PassportPhotoModal
+          onClose={() => setIsPassportPhotoOpen(false)}
         />
       )}
 
