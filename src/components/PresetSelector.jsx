@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { EXAM_PRESETS } from '../data/presets';
-import { Search, Sparkles, FileText, Image as ImageIcon, SlidersHorizontal, Wand2, Check, ArrowRight } from 'lucide-react';
+import { Search, Sparkles, FileText, Image as ImageIcon, SlidersHorizontal, Wand2, Check, ArrowRight, Zap } from 'lucide-react';
 
 export const PresetSelector = ({ 
   onSelectPreset, 
@@ -25,9 +25,9 @@ export const PresetSelector = ({
   });
 
   return (
-    <section className="w-full py-6">
+    <section className="w-full py-4 sm:py-8">
       {/* Hero Section Banner */}
-      <div className="text-center max-w-4xl mx-auto mb-6 px-4">
+      <div className="text-center max-w-4xl mx-auto mb-8 px-4">
         <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold mb-4">
           <Sparkles className="w-3.5 h-3.5" />
           <span>Updated for 2026 Exam Rules (SSC, NEET, UPSC, IBPS)</span>
@@ -39,48 +39,83 @@ export const PresetSelector = ({
           Pixel-exact KB compressor, AI background remover, and PDF resizer. 100% Client-side — fast, free, and zero server upload.
         </p>
 
-        {/* 3 Main Studio Tools Cards (Mobile & Desktop Prominent Placement) */}
-        <div className="grid grid-cols-3 gap-2 sm:gap-4 max-w-3xl mx-auto mt-6">
+        {/* 🌟 ULTRA-PROMINENT HERO STUDIO TOOLS (Desktop & Mobile Primary Focus) 🌟 */}
+        <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-3.5 sm:gap-4 max-w-4xl mx-auto">
           
+          {/* Tool 1: PDF Resizer */}
           <button
             onClick={onOpenPdfStudio}
-            className="p-3 sm:p-4 rounded-2xl bg-gradient-to-b from-emerald-950/40 to-slate-900/80 border border-emerald-500/30 hover:border-emerald-500/60 transition-all text-left flex flex-col justify-between group shadow-lg"
+            className="group relative p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-emerald-950/80 via-slate-900 to-slate-950 border-2 border-emerald-500/40 hover:border-emerald-400 transition-all duration-300 shadow-xl shadow-emerald-950/30 text-left flex items-center space-x-4 hover:-translate-y-1"
           >
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-              <FileText className="w-4 h-4 sm:w-5 sm:h-5" />
+            <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+              <FileText className="w-6 h-6" />
             </div>
-            <div>
-              <h3 className="font-bold text-white text-xs sm:text-sm leading-tight">PDF Resizer</h3>
-              <p className="text-[10px] sm:text-xs text-slate-400 mt-0.5 line-clamp-1">Compress under 300KB</p>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center space-x-1.5 mb-0.5">
+                <h3 className="font-bold text-white text-sm sm:text-base group-hover:text-emerald-300 transition-colors">
+                  PDF Resizer
+                </h3>
+                <span className="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-emerald-500/20 text-emerald-300 uppercase">
+                  Tool
+                </span>
+              </div>
+              <p className="text-xs text-slate-400 line-clamp-1">Compress PDF under 300KB</p>
             </div>
+            <ArrowRight className="w-5 h-5 text-emerald-400 group-hover:translate-x-1 transition-transform" />
           </button>
 
+          {/* Tool 2: AI Background Remover */}
           <button
             onClick={onOpenBgRemover}
-            className="p-3 sm:p-4 rounded-2xl bg-gradient-to-b from-purple-950/40 to-slate-900/80 border border-purple-500/30 hover:border-purple-500/60 transition-all text-left flex flex-col justify-between group shadow-lg"
+            className="group relative p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-purple-950/80 via-slate-900 to-slate-950 border-2 border-purple-500/40 hover:border-purple-400 transition-all duration-300 shadow-xl shadow-purple-950/30 text-left flex items-center space-x-4 hover:-translate-y-1"
           >
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-              <Wand2 className="w-4 h-4 sm:w-5 sm:h-5" />
+            <div className="w-12 h-12 rounded-2xl bg-purple-500/10 border border-purple-500/30 text-purple-400 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+              <Wand2 className="w-6 h-6" />
             </div>
-            <div>
-              <h3 className="font-bold text-white text-xs sm:text-sm leading-tight">AI BG Remover</h3>
-              <p className="text-[10px] sm:text-xs text-slate-400 mt-0.5 line-clamp-1">1-Click Transparent/White</p>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center space-x-1.5 mb-0.5">
+                <h3 className="font-bold text-white text-sm sm:text-base group-hover:text-purple-300 transition-colors">
+                  AI BG Remover
+                </h3>
+                <span className="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-purple-500/20 text-purple-300 uppercase">
+                  AI
+                </span>
+              </div>
+              <p className="text-xs text-slate-400 line-clamp-1">1-Click Transparent / White</p>
             </div>
+            <ArrowRight className="w-5 h-5 text-purple-400 group-hover:translate-x-1 transition-transform" />
           </button>
 
+          {/* Tool 3: General Image Resizer */}
           <button
             onClick={onOpenImageResizer}
-            className="p-3 sm:p-4 rounded-2xl bg-gradient-to-b from-blue-950/40 to-slate-900/80 border border-blue-500/30 hover:border-blue-500/60 transition-all text-left flex flex-col justify-between group shadow-lg"
+            className="group relative p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-blue-950/80 via-slate-900 to-slate-950 border-2 border-blue-500/40 hover:border-blue-400 transition-all duration-300 shadow-xl shadow-blue-950/30 text-left flex items-center space-x-4 hover:-translate-y-1"
           >
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-              <SlidersHorizontal className="w-4 h-4 sm:w-5 sm:h-5" />
+            <div className="w-12 h-12 rounded-2xl bg-blue-500/10 border border-blue-500/30 text-blue-400 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+              <SlidersHorizontal className="w-6 h-6" />
             </div>
-            <div>
-              <h3 className="font-bold text-white text-xs sm:text-sm leading-tight">Image Resizer</h3>
-              <p className="text-[10px] sm:text-xs text-slate-400 mt-0.5 line-clamp-1">Any KB / Pixels / JPG</p>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center space-x-1.5 mb-0.5">
+                <h3 className="font-bold text-white text-sm sm:text-base group-hover:text-blue-300 transition-colors">
+                  Image Resizer
+                </h3>
+                <span className="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-blue-500/20 text-blue-300 uppercase">
+                  Tool
+                </span>
+              </div>
+              <p className="text-xs text-slate-400 line-clamp-1">Custom KB / Pixels / JPG</p>
             </div>
+            <ArrowRight className="w-5 h-5 text-blue-400 group-hover:translate-x-1 transition-transform" />
           </button>
 
+        </div>
+      </div>
+
+      {/* Exam Presets Section Divider */}
+      <div className="max-w-5xl mx-auto px-4 mb-4 flex items-center justify-between">
+        <div className="flex items-center space-x-2">
+          <Zap className="w-4 h-4 text-blue-400" />
+          <h2 className="text-sm font-bold text-slate-300 uppercase tracking-wider">Or Select Government Exam Preset:</h2>
         </div>
       </div>
 
