@@ -14,7 +14,7 @@ export function App() {
   const [isPdfStudioOpen, setIsPdfStudioOpen] = useState(false);
   const [isBgRemoverOpen, setIsBgRemoverOpen] = useState(false);
   const [isImageResizerOpen, setIsImageResizerOpen] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(true);
+  const [isDarkMode, setIsDarkMode] = useState(false); // Default to Pure White Light Mode
 
   // Sync theme with HTML root class
   useEffect(() => {
@@ -44,7 +44,7 @@ export function App() {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-['Outfit'] antialiased transition-colors duration-250">
+    <div className="min-h-screen flex flex-col bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-['Outfit'] antialiased transition-colors duration-200">
       {/* Top Navbar */}
       <Navbar
         onOpenPdfStudio={() => setIsPdfStudioOpen(true)}
@@ -55,7 +55,7 @@ export function App() {
       />
 
       {/* Main Content Area */}
-      <main className="flex-1">
+      <main className="flex-1 bg-white dark:bg-slate-950">
         <PresetSelector
           selectedPresetId={selectedPreset?.id}
           onSelectPreset={(preset) => setSelectedPreset(preset)}

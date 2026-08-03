@@ -3,12 +3,12 @@ import { HelpCircle, ShieldCheck, Zap, Award } from 'lucide-react';
 
 export const SeoContentSection = () => {
   return (
-    <section className="w-full py-12 border-t border-slate-200 dark:border-slate-800/80 bg-slate-100/50 dark:bg-slate-950/60">
+    <section className="w-full py-12 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
       <div className="max-w-5xl mx-auto px-4 space-y-12">
         
         {/* Why Choose Section */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="p-5 rounded-2xl glass-card">
+          <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
             <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center mb-3">
               <Zap className="w-5 h-5" />
             </div>
@@ -18,7 +18,7 @@ export const SeoContentSection = () => {
             </p>
           </div>
 
-          <div className="p-5 rounded-2xl glass-card">
+          <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
             <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-3">
               <ShieldCheck className="w-5 h-5" />
             </div>
@@ -28,7 +28,7 @@ export const SeoContentSection = () => {
             </p>
           </div>
 
-          <div className="p-5 rounded-2xl glass-card">
+          <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
             <div className="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center mb-3">
               <Award className="w-5 h-5" />
             </div>
@@ -50,7 +50,7 @@ export const SeoContentSection = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             
-            <div className="p-5 rounded-2xl bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800/80 space-y-2 shadow-sm">
+            <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 space-y-2">
               <h4 className="font-bold text-sm text-slate-900 dark:text-slate-200">
                 How to resize photo to 20 KB - 50 KB for SSC CGL & CHSL?
               </h4>
@@ -59,7 +59,7 @@ export const SeoContentSection = () => {
               </p>
             </div>
 
-            <div className="p-5 rounded-2xl bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800/80 space-y-2 shadow-sm">
+            <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 space-y-2">
               <h4 className="font-bold text-sm text-slate-900 dark:text-slate-200">
                 Is Candidate Name and Date mandatory on SSC & UPSC Photos?
               </h4>
@@ -68,7 +68,7 @@ export const SeoContentSection = () => {
               </p>
             </div>
 
-            <div className="p-5 rounded-2xl bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800/80 space-y-2 shadow-sm">
+            <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 space-y-2">
               <h4 className="font-bold text-sm text-slate-900 dark:text-slate-200">
                 How to remove dark background from signature photos?
               </h4>
@@ -77,7 +77,7 @@ export const SeoContentSection = () => {
               </p>
             </div>
 
-            <div className="p-5 rounded-2xl bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800/80 space-y-2 shadow-sm">
+            <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 space-y-2">
               <h4 className="font-bold text-sm text-slate-900 dark:text-slate-200">
                 What are NTA NEET 2026 Postcard photo dimensions?
               </h4>

@@ -25,41 +25,41 @@ export const PresetSelector = ({
   });
 
   return (
-    <section className="w-full py-4 sm:py-8">
+    <section className="w-full py-6 bg-white dark:bg-slate-950">
       {/* Hero Section Banner */}
       <div className="text-center max-w-4xl mx-auto mb-8 px-4">
-        <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400 text-xs font-semibold mb-4">
+        <div className="inline-flex items-center space-x-2 px-3.5 py-1 rounded-full bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 text-blue-700 dark:text-blue-400 text-xs font-semibold mb-4">
           <Sparkles className="w-3.5 h-3.5" />
           <span>Updated for 2026 Exam Rules (SSC, NEET, UPSC, IBPS)</span>
         </div>
         <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-tight font-['Outfit']">
-          Convert Govt Exam Photos to <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 dark:from-blue-400 dark:via-indigo-300 dark:to-purple-400">20KB – 50KB Instantly</span>
+          Convert Govt Exam Photos to <span className="text-blue-600 dark:text-blue-400">20KB – 50KB Instantly</span>
         </h1>
         <p className="mt-3 text-slate-600 dark:text-slate-400 text-xs sm:text-sm max-w-2xl mx-auto leading-relaxed font-medium">
           Pixel-exact KB compressor, AI background remover, and PDF resizer. 100% Client-side — fast, free, and zero server upload.
         </p>
 
-        {/* 🌟 PROMINENT HERO STUDIO TOOLS (Adaptive Light & Dark Mode) 🌟 */}
-        <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-3.5 sm:gap-4 max-w-4xl mx-auto">
+        {/* 🌟 3 HERO STUDIO TOOLS (Vibrant Cards on Pure White Background) 🌟 */}
+        <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-4xl mx-auto">
           
           {/* Tool 1: PDF Resizer */}
           <button
             onClick={onOpenPdfStudio}
-            className="group relative p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border-2 border-emerald-500/30 dark:border-emerald-500/40 hover:border-emerald-500 transition-all duration-300 shadow-md hover:shadow-xl text-left flex items-center space-x-4 hover:-translate-y-1"
+            className="group relative p-4 sm:p-5 rounded-2xl bg-emerald-50/70 dark:bg-slate-900 border-2 border-emerald-300 dark:border-emerald-500/40 hover:border-emerald-600 transition-all duration-200 shadow-sm hover:shadow-md text-left flex items-center space-x-4 hover:-translate-y-1"
           >
-            <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+            <div className="w-12 h-12 rounded-2xl bg-emerald-500 text-white flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform shadow-md shadow-emerald-500/20">
               <FileText className="w-6 h-6" />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center space-x-1.5 mb-0.5">
-                <h3 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base group-hover:text-emerald-600 dark:group-hover:text-emerald-300 transition-colors">
+                <h3 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base group-hover:text-emerald-700 dark:group-hover:text-emerald-300 transition-colors">
                   PDF Resizer
                 </h3>
-                <span className="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 uppercase border border-emerald-500/20">
+                <span className="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-emerald-600 text-white uppercase">
                   Tool
                 </span>
               </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1">Compress PDF under 300KB</p>
+              <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-1">Compress PDF under 300KB</p>
             </div>
             <ArrowRight className="w-5 h-5 text-emerald-600 dark:text-emerald-400 group-hover:translate-x-1 transition-transform" />
           </button>
@@ -67,21 +67,21 @@ export const PresetSelector = ({
           {/* Tool 2: AI Background Remover */}
           <button
             onClick={onOpenBgRemover}
-            className="group relative p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border-2 border-purple-500/30 dark:border-purple-500/40 hover:border-purple-500 transition-all duration-300 shadow-md hover:shadow-xl text-left flex items-center space-x-4 hover:-translate-y-1"
+            className="group relative p-4 sm:p-5 rounded-2xl bg-purple-50/70 dark:bg-slate-900 border-2 border-purple-300 dark:border-purple-500/40 hover:border-purple-600 transition-all duration-200 shadow-sm hover:shadow-md text-left flex items-center space-x-4 hover:-translate-y-1"
           >
-            <div className="w-12 h-12 rounded-2xl bg-purple-500/10 border border-purple-500/30 text-purple-600 dark:text-purple-400 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+            <div className="w-12 h-12 rounded-2xl bg-purple-600 text-white flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform shadow-md shadow-purple-500/20">
               <Wand2 className="w-6 h-6" />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center space-x-1.5 mb-0.5">
-                <h3 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base group-hover:text-purple-600 dark:group-hover:text-purple-300 transition-colors">
+                <h3 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base group-hover:text-purple-700 dark:group-hover:text-purple-300 transition-colors">
                   AI BG Remover
                 </h3>
-                <span className="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-purple-500/10 text-purple-700 dark:text-purple-300 uppercase border border-purple-500/20">
+                <span className="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-purple-600 text-white uppercase">
                   AI
                 </span>
               </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1">1-Click Transparent / White</p>
+              <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-1">1-Click Transparent / White</p>
             </div>
             <ArrowRight className="w-5 h-5 text-purple-600 dark:text-purple-400 group-hover:translate-x-1 transition-transform" />
           </button>
@@ -89,21 +89,21 @@ export const PresetSelector = ({
           {/* Tool 3: General Image Resizer */}
           <button
             onClick={onOpenImageResizer}
-            className="group relative p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border-2 border-blue-500/30 dark:border-blue-500/40 hover:border-blue-500 transition-all duration-300 shadow-md hover:shadow-xl text-left flex items-center space-x-4 hover:-translate-y-1"
+            className="group relative p-4 sm:p-5 rounded-2xl bg-blue-50/70 dark:bg-slate-900 border-2 border-blue-300 dark:border-blue-500/40 hover:border-blue-600 transition-all duration-200 shadow-sm hover:shadow-md text-left flex items-center space-x-4 hover:-translate-y-1"
           >
-            <div className="w-12 h-12 rounded-2xl bg-blue-500/10 border border-blue-500/30 text-blue-600 dark:text-blue-400 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+            <div className="w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform shadow-md shadow-blue-500/20">
               <SlidersHorizontal className="w-6 h-6" />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center space-x-1.5 mb-0.5">
-                <h3 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base group-hover:text-blue-600 dark:group-hover:text-blue-300 transition-colors">
+                <h3 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base group-hover:text-blue-700 dark:group-hover:text-blue-300 transition-colors">
                   Image Resizer
                 </h3>
-                <span className="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-blue-500/10 text-blue-700 dark:text-blue-300 uppercase border border-blue-500/20">
+                <span className="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-blue-600 text-white uppercase">
                   Tool
                 </span>
               </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1">Custom KB / Pixels / JPG</p>
+              <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-1">Custom KB / Pixels / JPG</p>
             </div>
             <ArrowRight className="w-5 h-5 text-blue-600 dark:text-blue-400 group-hover:translate-x-1 transition-transform" />
           </button>
@@ -115,7 +115,7 @@ export const PresetSelector = ({
       <div className="max-w-5xl mx-auto px-4 mb-4 flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <Zap className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-          <h2 className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+          <h2 className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-300 uppercase tracking-wider">
             Or Select Government Exam Preset:
           </h2>
         </div>
@@ -130,7 +130,7 @@ export const PresetSelector = ({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search exam (e.g., SSC CGL, NEET Postcard, UPSC, IBPS Signature)..."
-            className="w-full pl-11 pr-4 py-3.5 rounded-xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 text-slate-900 dark:text-white placeholder-slate-400 text-sm shadow-sm outline-none transition-all"
+            className="w-full pl-11 pr-4 py-3.5 rounded-xl bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 text-slate-900 dark:text-white placeholder-slate-400 text-sm shadow-sm outline-none transition-all"
           />
         </div>
 
@@ -143,7 +143,7 @@ export const PresetSelector = ({
               className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
                 activeCategory === cat
                   ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
-                  : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-800'
+                  : 'bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800'
               }`}
             >
               {cat}
@@ -160,10 +160,10 @@ export const PresetSelector = ({
             <div
               key={preset.id}
               onClick={() => onSelectPreset(preset)}
-              className={`group cursor-pointer rounded-2xl p-5 transition-all duration-200 glass-card relative overflow-hidden flex flex-col justify-between ${
+              className={`group cursor-pointer rounded-2xl p-5 transition-all duration-200 bg-white dark:bg-slate-900 relative overflow-hidden flex flex-col justify-between border ${
                 isSelected
-                  ? 'border-blue-600 dark:border-blue-500 bg-blue-50 dark:bg-blue-950/30 ring-2 ring-blue-500/50 shadow-xl'
-                  : 'hover:border-slate-300 dark:hover:border-slate-700'
+                  ? 'border-blue-600 dark:border-blue-500 bg-blue-50/60 dark:bg-blue-950/30 ring-2 ring-blue-500/50 shadow-lg'
+                  : 'border-slate-200 dark:border-slate-800 hover:border-blue-500 shadow-sm hover:shadow-md'
               }`}
             >
               {preset.badge && (
@@ -202,9 +202,9 @@ export const PresetSelector = ({
                 </p>
               </div>
 
-              <div className="pt-3 border-t border-slate-200 dark:border-slate-800/80 flex items-center justify-between text-xs">
+              <div className="pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-xs">
                 <div className="flex items-center space-x-2 text-slate-700 dark:text-slate-300 font-medium">
-                  <span className="bg-slate-100 dark:bg-slate-900 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-800">
+                  <span className="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700">
                     {preset.minKb}–{preset.maxKb} KB
                   </span>
                   <span className="text-slate-400">•</span>
