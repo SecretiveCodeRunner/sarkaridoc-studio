@@ -9,6 +9,8 @@ import { SeoContentSection } from './components/SeoContentSection';
 import { Footer } from './components/Footer';
 import { EXAM_PRESETS } from './data/presets';
 
+import { InstallPwaBanner } from './components/InstallPwaBanner';
+
 export function App() {
   const [selectedPreset, setSelectedPreset] = useState(null);
   const [isPdfStudioOpen, setIsPdfStudioOpen] = useState(false);
@@ -80,6 +82,9 @@ export function App() {
           onClose={() => setIsImageResizerOpen(false)}
         />
       )}
+
+      {/* PWA Floating Install Banner */}
+      <InstallPwaBanner />
 
       {/* Footer */}
       <Footer />

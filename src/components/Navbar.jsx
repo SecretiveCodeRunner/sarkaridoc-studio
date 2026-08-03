@@ -13,7 +13,7 @@ export const Navbar = ({ onOpenPdfStudio, onOpenBgRemover, onOpenImageResizer })
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
-    if (window.matchMedia('(display-mode: standalone)').matches) {
+    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
       setIsInstalled(true);
     }
 
@@ -23,13 +23,22 @@ export const Navbar = ({ onOpenPdfStudio, onOpenBgRemover, onOpenImageResizer })
   }, []);
 
   const handleInstallPwa = async () => {
-    if (!deferredPrompt) return;
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === 'accepted') {
-      setIsInstalled(true);
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        setIsInstalled(true);
+      }
+      setDeferredPrompt(null);
+    } else {
+      // Trigger iOS or custom prompt if banner isn't active
+      const userAgent = window.navigator.userAgent.toLowerCase();
+      if (/iphone|ipad|ipod/.test(userAgent)) {
+        alert('To install SarkariDoc on iPhone/iPad:\n1. Tap the Share button in Safari\n2. Select "Add to Home Screen"');
+      } else {
+        alert('To install, open browser menu (3 dots) and tap "Add to Home Screen" or "Install App".');
+      }
     }
-    setDeferredPrompt(null);
   };
 
   return (
@@ -55,43 +64,38 @@ export const Navbar = ({ onOpenPdfStudio, onOpenBgRemover, onOpenImageResizer })
         </div>
 
         {/* Quick Tools */}
-        <div className="flex items-center space-x-2 sm:space-x-3">
+        <div className="flex items-center space-x-1.5 sm:space-x-3">
           
           <button
             onClick={onOpenPdfStudio}
-            className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-semibold shadow-xs transition-all active:scale-95"
+            className="flex items-center space-x-1 px-2.5 sm:px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-semibold shadow-xs transition-all active:scale-95"
           >
             <FileText className="w-3.5 h-3.5 text-emerald-600" />
-            <span>PDF Resizer</span>
+            <span className="hidden xs:inline">PDF Resizer</span>
+            <span className="xs:hidden">PDF</span>
           </button>
 
           <button
             onClick={onOpenBgRemover}
-            className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-200 text-xs font-semibold shadow-xs transition-all active:scale-95"
+            className="flex items-center space-x-1 px-2.5 sm:px-3 py-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-200 text-xs font-semibold shadow-xs transition-all active:scale-95"
           >
             <Wand2 className="w-3.5 h-3.5 text-purple-600" />
-            <span>AI BG Remover</span>
+            <span className="hidden xs:inline">AI BG Remover</span>
+            <span className="xs:hidden">BG</span>
           </button>
 
-          <button
-            onClick={onOpenImageResizer}
-            className="hidden sm:flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-200 text-xs font-semibold shadow-xs transition-all active:scale-95"
-          >
-            <SlidersHorizontal className="w-3.5 h-3.5 text-blue-600" />
-            <span>Image Resizer</span>
-          </button>
-
-          {deferredPrompt && !isInstalled && (
+          {!isInstalled && (
             <button
               onClick={handleInstallPwa}
-              className="hidden md:flex items-center space-x-2 px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-md transition-all active:scale-95"
+              className="flex items-center space-x-1 px-2.5 sm:px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-md transition-all active:scale-95"
             >
-              <Smartphone className="w-4 h-4" />
-              <span>Install App</span>
+              <Smartphone className="w-3.5 h-3.5" />
+              <span>Install</span>
             </button>
           )}
         </div>
       </div>
     </header>
   );
+
 };
