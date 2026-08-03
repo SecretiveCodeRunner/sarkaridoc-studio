@@ -49,40 +49,40 @@ export const PdfStudioModal = ({ onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto">
-      <div className="relative w-full max-w-3xl glass-panel rounded-3xl border border-slate-800 shadow-2xl overflow-hidden my-auto flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/40 backdrop-blur-md overflow-y-auto">
+      <div className="relative w-full max-w-3xl bg-white rounded-3xl border border-slate-200 shadow-2xl overflow-hidden my-auto flex flex-col text-slate-900">
         
         {/* Modal Header */}
-        <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-900/60">
+        <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
           <div className="flex items-center space-x-3">
-            <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-200">
               <FileText className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="font-bold text-white text-lg font-['Outfit']">PDF Resizer & Converter Studio</h2>
-              <p className="text-xs text-slate-400">Compress PDF documents or convert images into a single target PDF</p>
+              <h2 className="font-bold text-slate-900 text-lg font-['Outfit']">PDF Resizer & Converter Studio</h2>
+              <p className="text-xs text-slate-500 font-medium">Compress PDF documents or convert images into a single target PDF</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-all"
+            className="p-2 rounded-xl text-slate-400 hover:text-slate-900 hover:bg-slate-200 transition-all"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Modal Body */}
-        <div className="p-6 space-y-6">
+        <div className="p-6 space-y-6 bg-white">
           
           {/* Target KB Input & Presets */}
-          <div className="p-4 rounded-2xl bg-slate-900/70 border border-slate-800 space-y-3">
+          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
             <div className="flex items-center justify-between">
               <div>
-                <label className="block text-xs font-bold text-slate-300">Target Maximum PDF Size</label>
-                <p className="text-[11px] text-slate-400">Set exact target KB limit for government forms (e.g. 100KB, 200KB, 300KB, 500KB)</p>
+                <label className="block text-xs font-bold text-slate-900">Target Maximum PDF Size</label>
+                <p className="text-[11px] text-slate-500 font-medium">Set exact target KB limit for government forms (e.g. 100KB, 200KB, 300KB, 500KB)</p>
               </div>
 
-              <div className="flex items-center space-x-1 bg-slate-950 px-2.5 py-1 rounded-xl border border-slate-800">
+              <div className="flex items-center space-x-1 bg-white px-2.5 py-1 rounded-xl border border-slate-200 shadow-xs">
                 <input
                   type="number"
                   value={targetMaxKb}
@@ -91,9 +91,9 @@ export const PdfStudioModal = ({ onClose }) => {
                     setTargetMaxKb(kb);
                     if (files.length > 0) handleFilesSelected(files, kb);
                   }}
-                  className="w-16 text-center text-xs font-bold text-emerald-400 bg-transparent focus:outline-none"
+                  className="w-16 text-center text-xs font-bold text-emerald-600 bg-transparent focus:outline-none"
                 />
-                <span className="text-xs text-slate-400 font-semibold">KB</span>
+                <span className="text-xs text-slate-500 font-semibold">KB</span>
               </div>
             </div>
 
@@ -108,7 +108,7 @@ export const PdfStudioModal = ({ onClose }) => {
                   className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                     targetMaxKb === kb
                       ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/20'
-                      : 'bg-slate-800 text-slate-400 hover:text-white'
+                      : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
                   }`}
                 >
                   {kb} KB
@@ -118,7 +118,7 @@ export const PdfStudioModal = ({ onClose }) => {
           </div>
 
           {files.length === 0 ? (
-            <label className="border-2 border-dashed border-slate-700 hover:border-emerald-500/80 rounded-3xl p-8 text-center bg-slate-900/40 hover:bg-emerald-950/20 cursor-pointer transition-all duration-300 flex flex-col items-center justify-center min-h-[220px]">
+            <label className="border-2 border-dashed border-slate-300 hover:border-emerald-600 rounded-3xl p-8 text-center bg-slate-50 hover:bg-emerald-50/50 cursor-pointer transition-all duration-300 flex flex-col items-center justify-center min-h-[220px]">
               <input
                 type="file"
                 multiple
@@ -126,39 +126,39 @@ export const PdfStudioModal = ({ onClose }) => {
                 className="hidden"
                 onChange={(e) => handleFilesSelected(e.target.files)}
               />
-              <div className="w-14 h-14 rounded-2xl bg-emerald-600/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 mb-3 shadow-lg shadow-emerald-500/10">
+              <div className="w-14 h-14 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 mb-3 shadow-xs">
                 <FilePlus className="w-7 h-7" />
               </div>
-              <h3 className="text-base font-bold text-white mb-1">Upload PDF or Images to Compress</h3>
-              <p className="text-xs text-slate-400 max-w-sm">Select single/multiple JPGs, PNGs, or existing PDF files. 100% Client-side privacy.</p>
+              <h3 className="text-base font-bold text-slate-900 mb-1">Upload PDF or Images to Compress</h3>
+              <p className="text-xs text-slate-500 max-w-sm font-medium">Select single/multiple JPGs, PNGs, or existing PDF files. 100% Client-side privacy.</p>
             </label>
           ) : (
             <div className="space-y-4">
-              <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 flex items-center justify-between">
+              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <Layers className="w-5 h-5 text-emerald-400" />
+                  <Layers className="w-5 h-5 text-emerald-600" />
                   <div>
-                    <h4 className="text-sm font-bold text-white">{files.length} File(s) Processed</h4>
-                    <p className="text-xs text-slate-400">{files.map(f => f.name).join(', ')}</p>
+                    <h4 className="text-sm font-bold text-slate-900">{files.length} File(s) Processed</h4>
+                    <p className="text-xs text-slate-500 font-medium">{files.map(f => f.name).join(', ')}</p>
                   </div>
                 </div>
 
                 <button
                   onClick={() => { setFiles([]); setPdfResult(null); }}
-                  className="text-xs text-slate-400 hover:text-white underline"
+                  className="text-xs text-slate-500 hover:text-slate-900 underline font-medium"
                 >
                   Clear Files
                 </button>
               </div>
 
               {isProcessing ? (
-                <div className="p-8 text-center flex flex-col items-center justify-center space-y-2 text-emerald-400">
+                <div className="p-8 text-center flex flex-col items-center justify-center space-y-2 text-emerald-600">
                   <RefreshCw className="w-6 h-6 animate-spin" />
                   <span className="text-xs font-semibold">Compressing PDF to target {targetMaxKb} KB...</span>
                 </div>
               ) : pdfResult ? (
-                <div className="p-6 rounded-2xl bg-emerald-950/20 border border-emerald-800/40 flex flex-col items-center justify-center space-y-4">
-                  <div className="flex items-center space-x-2 text-emerald-400 font-bold text-sm">
+                <div className="p-6 rounded-2xl bg-emerald-50 border border-emerald-200 flex flex-col items-center justify-center space-y-4">
+                  <div className="flex items-center space-x-2 text-emerald-700 font-bold text-sm">
                     <CheckCircle className="w-5 h-5" />
                     <span>Compressed Result: {pdfResult.finalKb} KB (Target Limit: {targetMaxKb} KB)</span>
                   </div>

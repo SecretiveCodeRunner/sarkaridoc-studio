@@ -88,43 +88,43 @@ export const ImageResizerModal = ({ onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto">
-      <div className="relative w-full max-w-4xl glass-panel rounded-3xl border border-slate-800 shadow-2xl overflow-hidden my-auto flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/40 backdrop-blur-md overflow-y-auto">
+      <div className="relative w-full max-w-4xl bg-white rounded-3xl border border-slate-200 shadow-2xl overflow-hidden my-auto flex flex-col text-slate-900">
         
         {/* Header */}
-        <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-900/60">
+        <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
           <div className="flex items-center space-x-3">
-            <div className="p-2.5 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20">
+            <div className="p-2.5 rounded-xl bg-blue-50 text-blue-600 border border-blue-200">
               <SlidersHorizontal className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="font-bold text-white text-lg font-['Outfit']">General Image Resizer & Format Converter</h2>
-              <p className="text-xs text-slate-400">Resize any JPG, PNG, WEBP image to exact KB file size or pixel dimensions</p>
+              <h2 className="font-bold text-slate-900 text-lg font-['Outfit']">General Image Resizer & Format Converter</h2>
+              <p className="text-xs text-slate-500 font-medium">Resize any JPG, PNG, WEBP image to exact KB file size or pixel dimensions</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-all"
+            className="p-2 rounded-xl text-slate-400 hover:text-slate-900 hover:bg-slate-200 transition-all"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Body */}
-        <div className="p-6 space-y-6">
+        <div className="p-6 space-y-6 bg-white">
           {!selectedFile ? (
-            <label className="border-2 border-dashed border-slate-700 hover:border-blue-500/80 rounded-3xl p-8 text-center bg-slate-900/40 hover:bg-blue-950/20 cursor-pointer transition-all duration-300 flex flex-col items-center justify-center min-h-[260px]">
+            <label className="border-2 border-dashed border-slate-300 hover:border-blue-600 rounded-3xl p-8 text-center bg-slate-50 hover:bg-blue-50/50 cursor-pointer transition-all duration-300 flex flex-col items-center justify-center min-h-[260px]">
               <input
                 type="file"
                 accept="image/jpeg,image/png,image/webp"
                 className="hidden"
                 onChange={(e) => e.target.files?.[0] && handleFileSelect(e.target.files[0])}
               />
-              <div className="w-16 h-16 rounded-2xl bg-blue-600/10 border border-blue-500/20 flex items-center justify-center text-blue-400 mb-3 shadow-lg shadow-blue-500/10">
+              <div className="w-16 h-16 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 mb-3 shadow-xs">
                 <Upload className="w-8 h-8" />
               </div>
-              <h3 className="text-lg font-bold text-white mb-1">Upload Image to Resize</h3>
-              <p className="text-xs text-slate-400 max-w-sm">Supports JPG, PNG, WEBP. Instant client-side compression.</p>
+              <h3 className="text-lg font-bold text-slate-900 mb-1">Upload Image to Resize</h3>
+              <p className="text-xs text-slate-500 max-w-sm font-medium">Supports JPG, PNG, WEBP. Instant client-side compression.</p>
             </label>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
@@ -132,27 +132,27 @@ export const ImageResizerModal = ({ onClose }) => {
               {/* Resizer Form Controls */}
               <div className="md:col-span-5 space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-400 uppercase">Target Dimensions & KB</span>
+                  <span className="text-xs font-bold text-slate-500 uppercase">Target Dimensions & KB</span>
                   <button
                     onClick={() => setSelectedFile(null)}
-                    className="text-xs text-blue-400 hover:underline"
+                    className="text-xs text-blue-600 hover:underline font-semibold"
                   >
                     Change Image
                   </button>
                 </div>
 
                 {/* KB Slider & Input */}
-                <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-2">
-                  <div className="flex justify-between items-center text-xs font-bold text-slate-300">
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+                  <div className="flex justify-between items-center text-xs font-bold text-slate-900">
                     <span>Target File Size</span>
                     <div className="flex items-center space-x-1">
                       <input
                         type="number"
                         value={targetKb}
                         onChange={(e) => setTargetKb(Number(e.target.value))}
-                        className="w-16 px-2 py-1 rounded bg-slate-950 border border-slate-800 text-xs font-bold text-blue-400 text-center"
+                        className="w-16 px-2 py-1 rounded bg-white border border-slate-200 text-xs font-bold text-blue-600 text-center shadow-xs"
                       />
-                      <span className="text-slate-400">KB</span>
+                      <span className="text-slate-500">KB</span>
                     </div>
                   </div>
 
@@ -163,38 +163,38 @@ export const ImageResizerModal = ({ onClose }) => {
                     step="10"
                     value={targetKb}
                     onChange={(e) => setTargetKb(Number(e.target.value))}
-                    className="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-blue-500"
+                    className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
                   />
                 </div>
 
                 {/* Pixel Dimensions */}
-                <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-3">
-                  <span className="text-xs font-bold text-slate-300">Pixel Dimensions</span>
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
+                  <span className="text-xs font-bold text-slate-900">Pixel Dimensions</span>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="block text-[10px] text-slate-400 mb-1">Width (px)</label>
+                      <label className="block text-[10px] font-medium text-slate-500 mb-1">Width (px)</label>
                       <input
                         type="number"
                         value={targetWidth}
                         onChange={(e) => setTargetWidth(Number(e.target.value))}
-                        className="w-full px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white"
+                        className="w-full px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs text-slate-900 font-semibold"
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] text-slate-400 mb-1">Height (px)</label>
+                      <label className="block text-[10px] font-medium text-slate-500 mb-1">Height (px)</label>
                       <input
                         type="number"
                         value={targetHeight}
                         onChange={(e) => setTargetHeight(Number(e.target.value))}
-                        className="w-full px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white"
+                        className="w-full px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs text-slate-900 font-semibold"
                       />
                     </div>
                   </div>
                 </div>
 
                 {/* Format Output Selector */}
-                <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-2">
-                  <span className="text-xs font-bold text-slate-300">Export Format</span>
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+                  <span className="text-xs font-bold text-slate-900">Export Format</span>
                   <div className="flex space-x-2">
                     {[
                       { label: 'JPG', val: 'image/jpeg' },
@@ -207,7 +207,7 @@ export const ImageResizerModal = ({ onClose }) => {
                         className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${
                           format === fmt.val
                             ? 'bg-blue-600 text-white shadow-md'
-                            : 'bg-slate-950 text-slate-400 border border-slate-800'
+                            : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
                         }`}
                       >
                         {fmt.label}
@@ -218,20 +218,20 @@ export const ImageResizerModal = ({ onClose }) => {
               </div>
 
               {/* Preview & Download */}
-              <div className="md:col-span-7 flex flex-col items-center justify-between bg-slate-900/40 border border-slate-800 rounded-2xl p-6">
+              <div className="md:col-span-7 flex flex-col items-center justify-between bg-slate-50 border border-slate-200 rounded-2xl p-6">
                 <div className="w-full flex items-center justify-between mb-4">
-                  <span className="text-xs font-bold text-slate-300">Live Preview</span>
+                  <span className="text-xs font-bold text-slate-900">Live Preview</span>
                   {result && (
-                    <span className="text-xs font-bold text-emerald-400 flex items-center space-x-1">
+                    <span className="text-xs font-bold text-emerald-600 flex items-center space-x-1">
                       <CheckCircle className="w-4 h-4" />
                       <span>{result.finalKb} KB</span>
                     </span>
                   )}
                 </div>
 
-                <div className="relative flex-1 flex items-center justify-center min-h-[220px] max-h-[300px] w-full p-4 bg-slate-950/80 rounded-xl border border-slate-800 shadow-inner">
+                <div className="relative flex-1 flex items-center justify-center min-h-[220px] max-h-[300px] w-full p-4 bg-white rounded-xl border border-slate-200 shadow-inner">
                   {isProcessing ? (
-                    <div className="flex flex-col items-center space-y-2 text-blue-400">
+                    <div className="flex flex-col items-center space-y-2 text-blue-600">
                       <RefreshCw className="w-6 h-6 animate-spin" />
                       <span className="text-xs font-semibold">Resizing image...</span>
                     </div>
@@ -239,7 +239,7 @@ export const ImageResizerModal = ({ onClose }) => {
                     <img
                       src={result.downloadUrl}
                       alt="Resized Result"
-                      className="max-h-[260px] max-w-full object-contain rounded shadow-lg"
+                      className="max-h-[260px] max-w-full object-contain rounded shadow-md border border-slate-200"
                     />
                   ) : null}
                 </div>

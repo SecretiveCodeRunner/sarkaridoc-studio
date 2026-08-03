@@ -83,43 +83,43 @@ export const BgRemoverModal = ({ onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto">
-      <div className="relative w-full max-w-4xl glass-panel rounded-3xl border border-slate-800 shadow-2xl overflow-hidden my-auto flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/40 backdrop-blur-md overflow-y-auto">
+      <div className="relative w-full max-w-4xl bg-white rounded-3xl border border-slate-200 shadow-2xl overflow-hidden my-auto flex flex-col text-slate-900">
         
         {/* Header */}
-        <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-900/60">
+        <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
           <div className="flex items-center space-x-3">
-            <div className="p-2.5 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20">
+            <div className="p-2.5 rounded-xl bg-purple-50 text-purple-600 border border-purple-200">
               <Wand2 className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="font-bold text-white text-lg font-['Outfit']">Standalone AI Background Remover</h2>
-              <p className="text-xs text-slate-400">100% In-Browser AI Neural Network — Removes photo backgrounds in 1 click</p>
+              <h2 className="font-bold text-slate-900 text-lg font-['Outfit']">Standalone AI Background Remover</h2>
+              <p className="text-xs text-slate-500 font-medium">100% In-Browser AI Neural Network — Removes photo backgrounds in 1 click</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-all"
+            className="p-2 rounded-xl text-slate-400 hover:text-slate-900 hover:bg-slate-200 transition-all"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Body */}
-        <div className="p-6 space-y-6">
+        <div className="p-6 space-y-6 bg-white">
           {!selectedFile ? (
-            <label className="border-2 border-dashed border-slate-700 hover:border-purple-500/80 rounded-3xl p-8 text-center bg-slate-900/40 hover:bg-purple-950/20 cursor-pointer transition-all duration-300 flex flex-col items-center justify-center min-h-[260px]">
+            <label className="border-2 border-dashed border-slate-300 hover:border-purple-600 rounded-3xl p-8 text-center bg-slate-50 hover:bg-purple-50/50 cursor-pointer transition-all duration-300 flex flex-col items-center justify-center min-h-[260px]">
               <input
                 type="file"
                 accept="image/jpeg,image/png,image/webp"
                 className="hidden"
                 onChange={(e) => e.target.files?.[0] && handleFileChange(e.target.files[0])}
               />
-              <div className="w-16 h-16 rounded-2xl bg-purple-600/10 border border-purple-500/20 flex items-center justify-center text-purple-400 mb-3 shadow-lg shadow-purple-500/10">
+              <div className="w-16 h-16 rounded-2xl bg-purple-50 border border-purple-200 flex items-center justify-center text-purple-600 mb-3 shadow-xs">
                 <Wand2 className="w-8 h-8" />
               </div>
-              <h3 className="text-lg font-bold text-white mb-1">Drop Image to Remove Background</h3>
-              <p className="text-xs text-slate-400 max-w-sm">Isolates people, signatures, and objects using WebAssembly AI. Zero server uploads.</p>
+              <h3 className="text-lg font-bold text-slate-900 mb-1">Drop Image to Remove Background</h3>
+              <p className="text-xs text-slate-500 max-w-sm font-medium">Isolates people, signatures, and objects using WebAssembly AI. Zero server uploads.</p>
             </label>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
@@ -127,10 +127,10 @@ export const BgRemoverModal = ({ onClose }) => {
               {/* Controls */}
               <div className="md:col-span-5 space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-400 uppercase">Background Options</span>
+                  <span className="text-xs font-bold text-slate-500 uppercase">Background Options</span>
                   <button
                     onClick={() => { setSelectedFile(null); setPreviewUrl(null); }}
-                    className="text-xs text-blue-400 hover:underline"
+                    className="text-xs text-blue-600 hover:underline font-semibold"
                   >
                     Change Image
                   </button>
@@ -143,8 +143,8 @@ export const BgRemoverModal = ({ onClose }) => {
                       onClick={() => handleColorSelect(opt.value)}
                       className={`p-3 rounded-xl text-xs font-bold border transition-all flex items-center justify-center space-x-2 ${
                         bgColor === opt.value
-                          ? 'bg-purple-600 text-white border-purple-400 shadow-md'
-                          : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-white'
+                          ? 'bg-purple-600 text-white border-purple-500 shadow-md'
+                          : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
                       }`}
                     >
                       <span>{opt.label}</span>
@@ -154,39 +154,39 @@ export const BgRemoverModal = ({ onClose }) => {
               </div>
 
               {/* Preview & Download */}
-              <div className="md:col-span-7 flex flex-col items-center justify-between bg-slate-900/40 border border-slate-800 rounded-2xl p-6">
+              <div className="md:col-span-7 flex flex-col items-center justify-between bg-slate-50 border border-slate-200 rounded-2xl p-6">
                 <div className="w-full flex items-center justify-between mb-4">
-                  <span className="text-xs font-bold text-slate-300">AI Isolated Result</span>
+                  <span className="text-xs font-bold text-slate-900">AI Isolated Result</span>
                   {isProcessing ? (
-                    <span className="text-xs font-bold text-purple-400 flex items-center space-x-1 animate-pulse">
+                    <span className="text-xs font-bold text-purple-600 flex items-center space-x-1 animate-pulse">
                       <RefreshCw className="w-3.5 h-3.5 animate-spin" />
                       <span>AI Neural Network Processing...</span>
                     </span>
                   ) : previewUrl ? (
-                    <span className="text-xs font-bold text-emerald-400 flex items-center space-x-1">
+                    <span className="text-xs font-bold text-emerald-600 flex items-center space-x-1">
                       <CheckCircle className="w-4 h-4" />
                       <span>Background Removed</span>
                     </span>
                   ) : null}
                 </div>
 
-                <div className="relative flex-1 flex items-center justify-center min-h-[220px] max-h-[300px] w-full p-4 bg-slate-950/80 rounded-xl border border-slate-800 shadow-inner">
+                <div className="relative flex-1 flex items-center justify-center min-h-[220px] max-h-[300px] w-full p-4 bg-white rounded-xl border border-slate-200 shadow-inner">
                   {isProcessing ? (
-                    <div className="flex flex-col items-center justify-center space-y-3 text-purple-400 p-6">
+                    <div className="flex flex-col items-center justify-center space-y-3 text-purple-600 p-6">
                       <div className="relative">
-                        <div className="w-12 h-12 rounded-full border-2 border-purple-500/20 border-t-purple-500 animate-spin" />
-                        <Sparkles className="w-5 h-5 absolute inset-0 m-auto text-purple-400 animate-pulse" />
+                        <div className="w-12 h-12 rounded-full border-2 border-purple-200 border-t-purple-600 animate-spin" />
+                        <Sparkles className="w-5 h-5 absolute inset-0 m-auto text-purple-600 animate-pulse" />
                       </div>
                       <div className="text-center">
-                        <span className="text-xs font-bold text-white block mb-0.5">Running AI Segmentation</span>
-                        <span className="text-[11px] text-slate-400">Processing image in local browser memory...</span>
+                        <span className="text-xs font-bold text-slate-900 block mb-0.5">Running AI Segmentation</span>
+                        <span className="text-[11px] text-slate-500 font-medium">Processing image in local browser memory...</span>
                       </div>
                     </div>
                   ) : previewUrl ? (
                     <img
                       src={previewUrl}
                       alt="AI Background Removed"
-                      className="max-h-[260px] max-w-full object-contain rounded shadow-lg"
+                      className="max-h-[260px] max-w-full object-contain rounded shadow-md border border-slate-200"
                     />
                   ) : null}
                 </div>
