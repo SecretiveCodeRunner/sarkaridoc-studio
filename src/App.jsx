@@ -34,7 +34,7 @@ export function App() {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100 font-['Outfit'] antialiased">
+    <div className="min-h-screen flex flex-col bg-white text-slate-900 font-['Outfit'] antialiased">
       {/* Top Navbar */}
       <Navbar
         onOpenPdfStudio={() => setIsPdfStudioOpen(true)}
@@ -43,7 +43,7 @@ export function App() {
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 bg-slate-950">
+      <main className="flex-1 bg-white">
         <PresetSelector
           selectedPresetId={selectedPreset?.id}
           onSelectPreset={(preset) => setSelectedPreset(preset)}
