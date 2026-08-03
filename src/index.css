@@ -3,9 +3,20 @@
 @layer base {
   body {
     font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    overflow-x: hidden;
+    transition: background-color 0.25s ease, color 0.25s ease;
+  }
+
+  /* Default Light Mode */
+  html:not(.dark) body {
+    background-color: #f8fafc;
+    color: #0f172a;
+  }
+
+  /* Dark Mode */
+  html.dark body {
     background-color: #0b0f19;
     color: #f3f4f6;
-    overflow-x: hidden;
   }
 }
 
@@ -15,32 +26,55 @@
   height: 8px;
 }
 ::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+html.dark ::-webkit-scrollbar-track {
   background: #111827;
 }
 ::-webkit-scrollbar-thumb {
-  background: #374151;
+  background: #cbd5e1;
   border-radius: 4px;
 }
-::-webkit-scrollbar-thumb:hover {
-  background: #4b5563;
+html.dark ::-webkit-scrollbar-thumb {
+  background: #374151;
 }
 
-/* Glassmorphism & Micro-animations */
+/* Glassmorphism & Cards */
 .glass-panel {
+  transition: all 0.2s ease;
+}
+html:not(.dark) .glass-panel {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-color: rgba(226, 232, 240, 0.8);
+}
+html.dark .glass-panel {
   background: rgba(17, 24, 39, 0.75);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.08);
 }
 
 .glass-card {
-  background: rgba(30, 41, 59, 0.6);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
+html:not(.dark) .glass-card {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+html:not(.dark) .glass-card:hover {
+  border-color: #3b82f6;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.12);
+}
 
-.glass-card:hover {
+html.dark .glass-card {
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+html.dark .glass-card:hover {
   border-color: rgba(59, 130, 246, 0.4);
   transform: translateY(-2px);
   box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.15);
@@ -51,13 +85,8 @@
   box-shadow: 0 4px 14px 0 rgba(37, 99, 235, 0.39);
   transition: all 0.2s ease;
 }
-
 .btn-gradient:hover {
   background: linear-gradient(135deg, #3b82f6 0%, #2563eb 50%, #1d4ed8 100%);
   box-shadow: 0 6px 20px 0 rgba(37, 99, 235, 0.55);
   transform: translateY(-1px);
-}
-
-.btn-gradient:active {
-  transform: translateY(0);
 }
