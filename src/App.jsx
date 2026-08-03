@@ -14,16 +14,6 @@ export function App() {
   const [isPdfStudioOpen, setIsPdfStudioOpen] = useState(false);
   const [isBgRemoverOpen, setIsBgRemoverOpen] = useState(false);
   const [isImageResizerOpen, setIsImageResizerOpen] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(false); // Default to Pure White Light Mode
-
-  // Sync theme with HTML root class
-  useEffect(() => {
-    if (isDarkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [isDarkMode]);
 
   // Handle Direct URL Deep-linking for Google Sitelinks & Direct Search Results
   useEffect(() => {
@@ -44,18 +34,16 @@ export function App() {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-['Outfit'] antialiased transition-colors duration-200">
+    <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100 font-['Outfit'] antialiased">
       {/* Top Navbar */}
       <Navbar
         onOpenPdfStudio={() => setIsPdfStudioOpen(true)}
         onOpenBgRemover={() => setIsBgRemoverOpen(true)}
         onOpenImageResizer={() => setIsImageResizerOpen(true)}
-        isDarkMode={isDarkMode}
-        onToggleTheme={() => setIsDarkMode(!isDarkMode)}
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 bg-white dark:bg-slate-950">
+      <main className="flex-1 bg-slate-950">
         <PresetSelector
           selectedPresetId={selectedPreset?.id}
           onSelectPreset={(preset) => setSelectedPreset(preset)}
