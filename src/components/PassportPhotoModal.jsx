@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { binaryCompressToTargetSize } from '../utils/imageEngine';
+import { binaryCompressToTargetSize, normalizeImageForProcessing } from '../utils/imageEngine';
 import confetti from 'canvas-confetti';
 import { Upload, Download, X, RefreshCw, Sparkles, CheckCircle, Camera, Crop, Palette, Printer, Sliders, Sun, Image as ImageIcon } from 'lucide-react';
 
@@ -115,16 +115,19 @@ export const PassportPhotoModal = ({ onClose }) => {
     }
   };
 
-  const handleFileChange = (file) => {
+  const handleFileChange = async (file) => {
     if (!file) return;
     const nextVersion = ++runVersionRef.current;
-    setSelectedFile(file);
+
+    // Normalize heavy raw camera photo to max 1200px first for fast AI & instant canvas render
+    const normalized = await normalizeImageForProcessing(file, 1200);
+    setSelectedFile(normalized);
     setRemovedBlob(null);
     setFinalPreviewUrl(null);
 
     // If user has a studio background selected, run AI removal
     if (selectedBg.value !== 'original') {
-      processAiBackgroundRemoval(file, nextVersion);
+      processAiBackgroundRemoval(normalized, nextVersion);
     } else {
       setIsProcessing(false);
     }

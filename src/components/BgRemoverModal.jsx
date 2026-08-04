@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { normalizeImageForProcessing } from '../utils/imageEngine';
 import confetti from 'canvas-confetti';
 import { Upload, Download, X, RefreshCw, Sparkles, CheckCircle, Wand2 } from 'lucide-react';
 
@@ -18,15 +19,17 @@ export const BgRemoverModal = ({ onClose }) => {
 
   const handleFileChange = async (file) => {
     if (!file) return;
-    setSelectedFile(file);
     setIsProcessing(true);
     setRemovedBlob(null);
     setPreviewUrl(null);
 
+    const normalized = await normalizeImageForProcessing(file, 1200);
+    setSelectedFile(normalized);
+
     try {
       // Run AI Background Removal lazily
       const { removeBackground } = await import('@imgly/background-removal');
-      const blob = await removeBackground(file);
+      const blob = await removeBackground(normalized);
       setRemovedBlob(blob);
       renderCompositePreview(blob, bgColor);
     } catch (err) {

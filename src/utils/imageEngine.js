@@ -19,6 +19,38 @@ export const loadImage = (src) => {
 };
 
 /**
+ * Normalizes large raw camera photos (e.g. 12MP/48MP 4000x3000px from phone cameras)
+ * down to maxDimension (default 1200px) so canvas memory limits are respected
+ * and mobile AI processing executes 10x faster without memory crashes.
+ */
+export const normalizeImageForProcessing = async (fileOrBlob, maxDimension = 1200) => {
+  if (!fileOrBlob) return null;
+  try {
+    const img = await loadImage(fileOrBlob);
+    if (img.width <= maxDimension && img.height <= maxDimension) {
+      return fileOrBlob; // Already optimal size
+    }
+
+    const scale = Math.min(maxDimension / img.width, maxDimension / img.height);
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.round(img.width * scale);
+    canvas.height = Math.round(img.height * scale);
+
+    const ctx = canvas.getContext('2d');
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+    return new Promise((resolve) => {
+      canvas.toBlob((blob) => resolve(blob || fileOrBlob), 'image/jpeg', 0.92);
+    });
+  } catch (err) {
+    console.warn('normalizeImageForProcessing fallback:', err);
+    return fileOrBlob;
+  }
+};
+
+/**
  * Sharpen and darken signature ink strokes over pure white canvas
  */
 export const sharpenSignatureInk = (ctx, width, height) => {
@@ -254,6 +286,8 @@ export const processSarkariImage = async ({
   panX = 0,
   panY = 0
 }) => {
+  // Normalize raw camera photo to max 1200px first to avoid mobile canvas memory crashes & speed up AI extraction
+  const normalizedFile = await normalizeImageForProcessing(imageFile, 1200);
   let sourceImg;
 
   // Run AI Background Removal (@imgly/background-removal) for ALL presets (including Signatures!) when changeBg is active
@@ -262,15 +296,15 @@ export const processSarkariImage = async ({
   if (shouldRunAiBg) {
     try {
       const { removeBackground } = await import('@imgly/background-removal');
-      const bgRemovedBlob = await removeBackground(imageFile);
+      const bgRemovedBlob = await removeBackground(normalizedFile);
       const bgRemovedUrl = URL.createObjectURL(bgRemovedBlob);
       sourceImg = await loadImage(bgRemovedUrl);
     } catch (err) {
       console.warn('AI Background Removal fallback:', err);
-      sourceImg = await loadImage(imageFile);
+      sourceImg = await loadImage(normalizedFile);
     }
   } else {
-    sourceImg = await loadImage(imageFile);
+    sourceImg = await loadImage(normalizedFile);
   }
 
   const targetWidth = customSettings?.widthPx || preset.widthPx;
