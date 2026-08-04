@@ -7,6 +7,7 @@ export const PdfStudioModal = ({ onClose }) => {
   const [files, setFiles] = useState([]);
   const [targetMaxKb, setTargetMaxKb] = useState(300);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [progressInfo, setProgressInfo] = useState(null);
   const [pdfResult, setPdfResult] = useState(null);
 
   const handleFilesSelected = async (selectedFiles, customKb = targetMaxKb) => {
@@ -16,12 +17,21 @@ export const PdfStudioModal = ({ onClose }) => {
     setPdfResult(null);
 
     setIsProcessing(true);
+    setProgressInfo({ current: 0, total: fileList.length, percent: 5, text: 'Initializing compression engine...' });
+
+    // Yield to browser UI thread so touch scroll and spinner update immediately
+    await new Promise((r) => setTimeout(r, 40));
+
+    const onProgress = (info) => {
+      setProgressInfo(info);
+    };
+
     try {
       if (fileList.length === 1 && fileList[0].type === 'application/pdf') {
-        const res = await compressExistingPdf(fileList[0], customKb);
+        const res = await compressExistingPdf(fileList[0], customKb, onProgress);
         setPdfResult(res);
       } else {
-        const res = await convertImagesToPdf(fileList, customKb);
+        const res = await convertImagesToPdf(fileList, customKb, onProgress);
         setPdfResult(res);
       }
     } catch (err) {
@@ -138,13 +148,13 @@ export const PdfStudioModal = ({ onClose }) => {
                 <div className="flex items-center space-x-3">
                   <Layers className="w-5 h-5 text-emerald-600" />
                   <div>
-                    <h4 className="text-sm font-bold text-slate-900">{files.length} File(s) Processed</h4>
+                    <h4 className="text-sm font-bold text-slate-900">{files.length} File(s) Selected</h4>
                     <p className="text-xs text-slate-500 font-medium">{files.map(f => f.name).join(', ')}</p>
                   </div>
                 </div>
 
                 <button
-                  onClick={() => { setFiles([]); setPdfResult(null); }}
+                  onClick={() => { setFiles([]); setPdfResult(null); setProgressInfo(null); }}
                   className="text-xs text-slate-500 hover:text-slate-900 underline font-medium"
                 >
                   Clear Files
@@ -152,9 +162,26 @@ export const PdfStudioModal = ({ onClose }) => {
               </div>
 
               {isProcessing ? (
-                <div className="p-8 text-center flex flex-col items-center justify-center space-y-2 text-emerald-600">
-                  <RefreshCw className="w-6 h-6 animate-spin" />
-                  <span className="text-xs font-semibold">Compressing PDF to target {targetMaxKb} KB...</span>
+                <div className="p-6 rounded-2xl bg-emerald-50/70 border border-emerald-200 flex flex-col items-center justify-center space-y-4">
+                  <div className="flex items-center space-x-3 text-emerald-700">
+                    <RefreshCw className="w-6 h-6 animate-spin text-emerald-600" />
+                    <span className="text-sm font-bold font-['Outfit']">{progressInfo?.text || `Compressing PDF to target ${targetMaxKb} KB...`}</span>
+                  </div>
+
+                  {progressInfo && (
+                    <div className="w-full max-w-md space-y-1.5">
+                      <div className="flex justify-between items-center text-xs font-bold text-slate-700">
+                        <span>Page / File {progressInfo.current} of {progressInfo.total}</span>
+                        <span className="text-emerald-700">{progressInfo.percent}%</span>
+                      </div>
+                      <div className="w-full h-2.5 bg-slate-200 rounded-full overflow-hidden shadow-inner">
+                        <div
+                          className="h-full bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full transition-all duration-300 ease-out"
+                          style={{ width: `${progressInfo.percent}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
               ) : pdfResult ? (
                 <div className="p-6 rounded-2xl bg-emerald-50 border border-emerald-200 flex flex-col items-center justify-center space-y-4">

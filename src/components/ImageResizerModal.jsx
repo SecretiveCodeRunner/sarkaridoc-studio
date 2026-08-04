@@ -30,6 +30,9 @@ export const ImageResizerModal = ({ onClose }) => {
     let isMounted = true;
     const processResizing = async () => {
       setIsProcessing(true);
+      // Yield to browser UI thread so touch scrolling and spinner render smoothly
+      await new Promise((r) => setTimeout(r, 40));
+
       try {
         const img = await loadImage(selectedFile);
         const canvas = document.createElement('canvas');
@@ -44,8 +47,8 @@ export const ImageResizerModal = ({ onClose }) => {
         const res = await binaryCompressToTargetSize(
           canvas,
           format,
-          Math.max(5, targetKb - 20),
-          targetKb + 20,
+          0,
+          targetKb,
           targetKb
         );
 
@@ -63,7 +66,7 @@ export const ImageResizerModal = ({ onClose }) => {
       }
     };
 
-    const timeout = setTimeout(processResizing, 150);
+    const timeout = setTimeout(processResizing, 200);
     return () => {
       isMounted = false;
       clearTimeout(timeout);
@@ -142,7 +145,7 @@ export const ImageResizerModal = ({ onClose }) => {
                 </div>
 
                 {/* KB Slider & Input */}
-                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
                   <div className="flex justify-between items-center text-xs font-bold text-slate-900">
                     <span>Target File Size</span>
                     <div className="flex items-center space-x-1">
@@ -150,7 +153,7 @@ export const ImageResizerModal = ({ onClose }) => {
                         type="number"
                         value={targetKb}
                         onChange={(e) => setTargetKb(Number(e.target.value))}
-                        className="w-16 px-2 py-1 rounded bg-white border border-slate-200 text-xs font-bold text-blue-600 text-center shadow-xs"
+                        className="w-20 px-2 py-1 rounded bg-white border border-slate-200 text-xs font-bold text-blue-600 text-center shadow-xs focus:border-blue-600 outline-none"
                       />
                       <span className="text-slate-500">KB</span>
                     </div>
@@ -159,12 +162,28 @@ export const ImageResizerModal = ({ onClose }) => {
                   <input
                     type="range"
                     min="10"
-                    max="1000"
+                    max="5000"
                     step="10"
                     value={targetKb}
                     onChange={(e) => setTargetKb(Number(e.target.value))}
                     className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
                   />
+
+                  <div className="flex items-center space-x-1.5 pt-1">
+                    {[100, 200, 300, 500, 1000].map((kbVal) => (
+                      <button
+                        key={kbVal}
+                        onClick={() => setTargetKb(kbVal)}
+                        className={`flex-1 py-1 rounded-lg text-[11px] font-bold border transition-all ${
+                          targetKb === kbVal
+                            ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
+                            : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
+                        }`}
+                      >
+                        {kbVal}KB
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 {/* Pixel Dimensions */}

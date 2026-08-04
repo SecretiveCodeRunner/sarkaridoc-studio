@@ -91,47 +91,145 @@ export const renderNameAndDateOverlay = (ctx, width, height, candidateName, phot
 /**
  * Binary Search Quality Optimization for exact target KB size
  */
-export const binaryCompressToTargetSize = async (canvas, format = 'image/jpeg', minKb = 20, maxKb = 50, targetKb = 35) => {
+/**
+ * Precision Binary Search Quality & Resolution Optimization for target KB size limit.
+ * Keeps output file size as close as possible BELOW upperLimitKb (target KB).
+ * Never over-compresses or degrades quality if raw image is already under target limit.
+ * Yields to the event loop on mobile/slow devices to prevent UI freezing.
+ */
+export const binaryCompressToTargetSize = async (canvas, format = 'image/jpeg', minKb = 0, maxKb = 100, targetKb = 100) => {
+  const upperLimitKb = Number(maxKb) || Number(targetKb) || 100;
+  const lowerLimitKb = Number(minKb) || 0;
+
+  // Handle PNG: PNG format ignores JPEG quality param in browser toBlob.
+  // Must scale canvas resolution down if raw PNG exceeds upperLimitKb.
   if (format === 'image/png') {
-    const blob = await new Promise((res) => canvas.toBlob(res, 'image/png'));
-    const finalKb = Math.round((blob.size / 1024) * 100) / 100;
-    return { blob, finalKb, quality: 1.0 };
+    let currentCanvas = canvas;
+    let blob = await new Promise((res) => currentCanvas.toBlob(res, 'image/png'));
+    let currentKb = blob.size / 1024;
+    let scale = 0.9;
+
+    while (currentKb > upperLimitKb && scale > 0.05) {
+      await new Promise((r) => setTimeout(r, 0)); // yield to UI thread
+      const scaledCanvas = document.createElement('canvas');
+      scaledCanvas.width = Math.max(10, Math.round(canvas.width * scale));
+      scaledCanvas.height = Math.max(10, Math.round(canvas.height * scale));
+      const sCtx = scaledCanvas.getContext('2d');
+      sCtx.drawImage(canvas, 0, 0, scaledCanvas.width, scaledCanvas.height);
+
+      currentCanvas = scaledCanvas;
+      blob = await new Promise((res) => currentCanvas.toBlob(res, 'image/png'));
+      currentKb = blob.size / 1024;
+      scale -= 0.1;
+    }
+
+    return {
+      blob,
+      finalKb: Math.round(currentKb * 100) / 100,
+      quality: 1.0
+    };
   }
 
-  let low = 0.05;
-  let high = 1.0;
+  // 1. Test maximum JPEG/WebP quality (1.0)
+  const maxBlob = await new Promise((res) => canvas.toBlob(res, format, 1.0));
+  const maxKbVal = maxBlob.size / 1024;
+
+  // If uncompressed/max quality is already below or equal to upper target limit, return maxBlob directly!
+  if (maxKbVal <= upperLimitKb) {
+    return {
+      blob: maxBlob,
+      finalKb: Math.round(maxKbVal * 100) / 100,
+      quality: 1.0
+    };
+  }
+
+  // Track the smallest blob generated so far as an ultimate safety net
+  let smallestBlob = maxBlob;
+  let smallestKb = maxKbVal;
+
+  // 2. Binary search quality in [0.01, 0.99] to get as close as possible to upperLimitKb
+  let low = 0.01;
+  let high = 0.99;
   let bestBlob = null;
   let bestKb = 0;
   let bestQuality = 0.85;
 
-  for (let i = 0; i < 8; i++) {
+  for (let i = 0; i < 12; i++) {
+    await new Promise((r) => setTimeout(r, 0)); // yield to UI thread to keep touch scroll responsive
     const midQuality = (low + high) / 2;
     const blob = await new Promise((res) => canvas.toBlob(res, format, midQuality));
     const currentKb = blob.size / 1024;
 
-    if (currentKb >= minKb && currentKb <= maxKb) {
-      bestBlob = blob;
-      bestKb = currentKb;
-      bestQuality = midQuality;
-      if (Math.abs(currentKb - targetKb) < 2) break;
+    if (currentKb < smallestKb) {
+      smallestBlob = blob;
+      smallestKb = currentKb;
     }
 
-    if (currentKb > maxKb) {
-      high = midQuality;
-    } else {
-      low = midQuality;
+    if (currentKb <= upperLimitKb && currentKb >= lowerLimitKb) {
       if (!bestBlob || currentKb > bestKb) {
         bestBlob = blob;
         bestKb = currentKb;
         bestQuality = midQuality;
       }
+      // Try higher quality to get closer to upper limit
+      low = midQuality;
+    } else if (currentKb > upperLimitKb) {
+      // Too large, try lower quality
+      high = midQuality;
+    } else {
+      // Below lowerLimitKb
+      if (!bestBlob || currentKb > bestKb) {
+        bestBlob = blob;
+        bestKb = currentKb;
+        bestQuality = midQuality;
+      }
+      low = midQuality;
     }
   }
 
+  // 3. Fallback: If even quality 0.01 exceeds upperLimitKb (due to huge pixel dimensions e.g. 12MP camera photo),
+  // scale down canvas dimensions dynamically along with quality adjustments.
+  if (!bestBlob || bestKb > upperLimitKb) {
+    let scale = 0.9;
+    while (scale >= 0.05) {
+      await new Promise((r) => setTimeout(r, 0)); // yield to UI thread
+      const scaledCanvas = document.createElement('canvas');
+      scaledCanvas.width = Math.max(10, Math.round(canvas.width * scale));
+      scaledCanvas.height = Math.max(10, Math.round(canvas.height * scale));
+      const sCtx = scaledCanvas.getContext('2d');
+      sCtx.drawImage(canvas, 0, 0, scaledCanvas.width, scaledCanvas.height);
+
+      // Try qualities 0.80, 0.50, 0.20, 0.05 on scaled canvas
+      const testQualities = [0.80, 0.50, 0.20, 0.05];
+      for (const testQ of testQualities) {
+        const blob = await new Promise((res) => scaledCanvas.toBlob(res, format, testQ));
+        const currentKb = blob.size / 1024;
+
+        if (currentKb < smallestKb) {
+          smallestBlob = blob;
+          smallestKb = currentKb;
+        }
+
+        if (currentKb <= upperLimitKb) {
+          bestBlob = blob;
+          bestKb = currentKb;
+          bestQuality = testQ;
+          break;
+        }
+      }
+
+      if (bestBlob && bestKb <= upperLimitKb) {
+        break;
+      }
+      scale -= 0.1;
+    }
+  }
+
+  // 4. Final Fail-Safe: NEVER return maxBlob (1.9MB) if bestBlob couldn't be found. Return smallestBlob!
   if (!bestBlob) {
-    bestBlob = await new Promise((res) => canvas.toBlob(res, format, low));
-    bestKb = bestBlob.size / 1024;
-    bestQuality = low;
+    bestBlob = smallestBlob;
+    bestKb = smallestKb;
+    bestQuality = 0.05;
   }
 
   return {
