@@ -357,20 +357,43 @@ export const PassportPhotoModal = ({ onClose }) => {
       <main className="flex-1 max-w-6xl mx-auto w-full p-4 sm:p-6 space-y-6">
 
           {!selectedFile ? (
-            <label className="border-2 border-dashed border-slate-300 hover:border-blue-600 rounded-3xl p-8 text-center bg-slate-50 hover:bg-blue-50/50 cursor-pointer transition-all duration-300 flex flex-col items-center justify-center min-h-[300px]">
-              <input
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                className="hidden"
-                onChange={(e) => e.target.files?.[0] && handleFileChange(e.target.files[0])}
-              />
-              <div className="w-16 h-16 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 mb-3 shadow-xs">
+            <div className="border-2 border-dashed border-slate-300 rounded-3xl p-6 sm:p-8 text-center bg-white space-y-4">
+              <div className="w-16 h-16 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 mx-auto shadow-xs">
                 <Camera className="w-8 h-8" />
               </div>
-              <h3 className="text-lg font-bold text-slate-900 mb-1">Upload Photo for Passport Generator</h3>
-              <p className="text-xs text-slate-500 max-w-sm font-medium">Automatically crops aspect ratio & replaces background with official studio colors.</p>
-            </label>
+              <div>
+                <h3 className="text-lg font-bold text-slate-900 mb-1">Select Photo for Passport Studio</h3>
+                <p className="text-xs text-slate-500 max-w-sm mx-auto font-medium">Automatically crops aspect ratio & replaces background with official studio colors.</p>
+              </div>
+
+              {/* Dual Upload Actions: Gallery vs Camera */}
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+                <label className="w-full sm:w-auto px-5 py-3 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold flex items-center justify-center space-x-2 cursor-pointer shadow-md shadow-blue-600/20 transition-all active:scale-95">
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    className="hidden"
+                    onChange={(e) => e.target.files?.[0] && handleFileChange(e.target.files[0])}
+                  />
+                  <Upload className="w-4 h-4" />
+                  <span>Browse Gallery / Files</span>
+                </label>
+
+                <label className="w-full sm:w-auto px-5 py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold flex items-center justify-center space-x-2 cursor-pointer border border-slate-200 transition-all active:scale-95">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    capture="user"
+                    className="hidden"
+                    onChange={(e) => e.target.files?.[0] && handleFileChange(e.target.files[0])}
+                  />
+                  <Camera className="w-4 h-4 text-blue-600" />
+                  <span>Take Photo with Camera</span>
+                </label>
+              </div>
+            </div>
           ) : (
+
             <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
               
               {/* Controls Column */}

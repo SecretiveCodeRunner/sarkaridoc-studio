@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { convertImagesToPdf, compressExistingPdf } from '../utils/pdfEngine';
 import confetti from 'canvas-confetti';
-import { Upload, Download, X, FileText, CheckCircle, RefreshCw, FilePlus, Layers, ArrowLeft } from 'lucide-react';
+import { Upload, Download, X, FileText, CheckCircle, RefreshCw, FilePlus, Layers, ArrowLeft, Camera, Sliders } from 'lucide-react';
 
 export const PdfStudioModal = ({ onClose }) => {
   const [files, setFiles] = useState([]);
@@ -87,16 +87,18 @@ export const PdfStudioModal = ({ onClose }) => {
       {/* Main Workspace Body */}
       <main className="flex-1 max-w-4xl mx-auto w-full p-4 sm:p-6 space-y-6">
 
-          
-          {/* Target KB Input & Presets */}
-          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
+          {/* Target KB Input & Scrollbar Slider */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 space-y-4 shadow-xs">
             <div className="flex items-center justify-between">
               <div>
-                <label className="block text-xs font-bold text-slate-900">Target Maximum PDF Size</label>
-                <p className="text-[11px] text-slate-500 font-medium">Set exact target KB limit for government forms (e.g. 100KB, 200KB, 300KB, 500KB)</p>
+                <label className="text-xs font-bold text-slate-900 flex items-center space-x-1.5">
+                  <Sliders className="w-4 h-4 text-emerald-600" />
+                  <span>Target Maximum PDF Size</span>
+                </label>
+                <p className="text-[11px] text-slate-500 font-medium">Drag the slider or pick a preset for government form limits</p>
               </div>
 
-              <div className="flex items-center space-x-1 bg-white px-2.5 py-1 rounded-xl border border-slate-200 shadow-xs">
+              <div className="flex items-center space-x-1 bg-emerald-50 px-3 py-1 rounded-xl border border-emerald-200">
                 <input
                   type="number"
                   value={targetMaxKb}
@@ -105,13 +107,36 @@ export const PdfStudioModal = ({ onClose }) => {
                     setTargetMaxKb(kb);
                     if (files.length > 0) handleFilesSelected(files, kb);
                   }}
-                  className="w-16 text-center text-xs font-bold text-emerald-600 bg-transparent focus:outline-none"
+                  className="w-16 text-center text-xs font-bold text-emerald-700 bg-transparent focus:outline-none"
                 />
-                <span className="text-xs text-slate-500 font-semibold">KB</span>
+                <span className="text-xs text-emerald-800 font-bold">KB</span>
               </div>
             </div>
 
-            <div className="flex items-center space-x-2">
+            {/* Interactive Target KB Scrollbar Slider */}
+            <div className="space-y-1">
+              <input
+                type="range"
+                min="50"
+                max="1000"
+                step="10"
+                value={targetMaxKb}
+                onChange={(e) => {
+                  const kb = Number(e.target.value);
+                  setTargetMaxKb(kb);
+                  if (files.length > 0) handleFilesSelected(files, kb);
+                }}
+                className="w-full accent-emerald-600 cursor-pointer h-2 bg-slate-100 rounded-lg"
+              />
+              <div className="flex justify-between text-[10px] text-slate-400 font-semibold px-0.5">
+                <span>50 KB</span>
+                <span>200 KB</span>
+                <span>500 KB</span>
+                <span>1000 KB (1 MB)</span>
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-2 pt-1">
               {[100, 150, 200, 300, 500].map((kb) => (
                 <button
                   key={kb}
@@ -119,10 +144,10 @@ export const PdfStudioModal = ({ onClose }) => {
                     setTargetMaxKb(kb);
                     if (files.length > 0) handleFilesSelected(files, kb);
                   }}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                     targetMaxKb === kb
                       ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/20'
-                      : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
+                      : 'bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200'
                   }`}
                 >
                   {kb} KB
@@ -132,21 +157,44 @@ export const PdfStudioModal = ({ onClose }) => {
           </div>
 
           {files.length === 0 ? (
-            <label className="border-2 border-dashed border-slate-300 hover:border-emerald-600 rounded-3xl p-8 text-center bg-slate-50 hover:bg-emerald-50/50 cursor-pointer transition-all duration-300 flex flex-col items-center justify-center min-h-[220px]">
-              <input
-                type="file"
-                multiple
-                accept="application/pdf,image/jpeg,image/png,image/webp"
-                className="hidden"
-                onChange={(e) => handleFilesSelected(e.target.files)}
-              />
-              <div className="w-14 h-14 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 mb-3 shadow-xs">
+            <div className="border-2 border-dashed border-slate-300 rounded-3xl p-6 sm:p-8 text-center bg-white space-y-4">
+              <div className="w-14 h-14 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 mx-auto shadow-xs">
                 <FilePlus className="w-7 h-7" />
               </div>
-              <h3 className="text-base font-bold text-slate-900 mb-1">Upload PDF or Images to Compress</h3>
-              <p className="text-xs text-slate-500 max-w-sm font-medium">Select single/multiple JPGs, PNGs, or existing PDF files. 100% Client-side privacy.</p>
-            </label>
+              <div>
+                <h3 className="text-base font-bold text-slate-900 mb-1">Select PDF or Photos to Compress</h3>
+                <p className="text-xs text-slate-500 max-w-sm mx-auto font-medium">Select single/multiple JPGs, PNGs, or existing PDF files. 100% Client-side privacy.</p>
+              </div>
+
+              {/* Dual Action Upload Buttons: Browse Files vs Camera Scan */}
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+                <label className="w-full sm:w-auto px-5 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center justify-center space-x-2 cursor-pointer shadow-md shadow-emerald-600/20 transition-all active:scale-95">
+                  <input
+                    type="file"
+                    multiple
+                    accept="application/pdf,image/jpeg,image/png,image/webp"
+                    className="hidden"
+                    onChange={(e) => handleFilesSelected(e.target.files)}
+                  />
+                  <Upload className="w-4 h-4" />
+                  <span>Browse Gallery / Files</span>
+                </label>
+
+                <label className="w-full sm:w-auto px-5 py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold flex items-center justify-center space-x-2 cursor-pointer border border-slate-200 transition-all active:scale-95">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    className="hidden"
+                    onChange={(e) => handleFilesSelected(e.target.files)}
+                  />
+                  <Camera className="w-4 h-4 text-slate-600" />
+                  <span>Scan Document with Camera</span>
+                </label>
+              </div>
+            </div>
           ) : (
+
             <div className="space-y-4">
               <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between">
                 <div className="flex items-center space-x-3">
