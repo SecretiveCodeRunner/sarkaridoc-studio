@@ -37,6 +37,8 @@ export const EditorModal = ({ preset, onClose }) => {
 
   const fileInputRef = useRef(null);
 
+  const [cachedSubjectBlob, setCachedSubjectBlob] = useState(null);
+
   const colorOptions = [
     { label: 'White', value: '#FFFFFF' },
     { label: 'Royal Blue', value: '#2563EB' },
@@ -47,6 +49,7 @@ export const EditorModal = ({ preset, onClose }) => {
   const handleFileChange = (file) => {
     if (!file) return;
     setSelectedFile(file);
+    setCachedSubjectBlob(null);
     setResult(null);
   };
 
@@ -77,10 +80,16 @@ export const EditorModal = ({ preset, onClose }) => {
           changeBg,
           zoomScale,
           panX,
-          panY
+          panY,
+          preExtractedSubjectBlob: cachedSubjectBlob
         });
 
-        if (isMounted) setResult(processed);
+        if (isMounted) {
+          setResult(processed);
+          if (processed.extractedSubjectBlob) {
+            setCachedSubjectBlob(processed.extractedSubjectBlob);
+          }
+        }
       } catch (err) {
         console.error('Processing failed:', err);
       } finally {
@@ -95,7 +104,7 @@ export const EditorModal = ({ preset, onClose }) => {
     };
   }, [
     selectedFile, preset, showNameDate, candidateName, photoDate, enhanceSignature, 
-    bgColor, changeBg, zoomScale, panX, panY,
+    bgColor, changeBg, zoomScale, panX, panY, cachedSubjectBlob,
     customWidth, customHeight, customMinKb, customMaxKb, customTargetKb
   ]);
 

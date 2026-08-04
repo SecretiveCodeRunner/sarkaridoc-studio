@@ -284,24 +284,32 @@ export const processSarkariImage = async ({
   changeBg = true, // Default AI BG removal ON for signatures and photos!
   zoomScale = 1.0,
   panX = 0,
-  panY = 0
+  panY = 0,
+  preExtractedSubjectBlob = null
 }) => {
   // Normalize raw camera photo to max 1200px first to avoid mobile canvas memory crashes & speed up AI extraction
   const normalizedFile = await normalizeImageForProcessing(imageFile, 1200);
   let sourceImg;
+  let extractedBlob = preExtractedSubjectBlob;
 
   // Run AI Background Removal (@imgly/background-removal) for ALL presets (including Signatures!) when changeBg is active
   const shouldRunAiBg = changeBg || (preset.type === 'signature' && enhanceSignature);
 
   if (shouldRunAiBg) {
-    try {
-      const { removeBackground } = await import('@imgly/background-removal');
-      const bgRemovedBlob = await removeBackground(normalizedFile);
-      const bgRemovedUrl = URL.createObjectURL(bgRemovedBlob);
+    if (extractedBlob) {
+      // Fast path: Use cached AI subject cutout instantly (0ms) without re-running AI neural network!
+      const bgRemovedUrl = URL.createObjectURL(extractedBlob);
       sourceImg = await loadImage(bgRemovedUrl);
-    } catch (err) {
-      console.warn('AI Background Removal fallback:', err);
-      sourceImg = await loadImage(normalizedFile);
+    } else {
+      try {
+        const { removeBackground } = await import('@imgly/background-removal');
+        extractedBlob = await removeBackground(normalizedFile);
+        const bgRemovedUrl = URL.createObjectURL(extractedBlob);
+        sourceImg = await loadImage(bgRemovedUrl);
+      } catch (err) {
+        console.warn('AI Background Removal fallback:', err);
+        sourceImg = await loadImage(normalizedFile);
+      }
     }
   } else {
     sourceImg = await loadImage(normalizedFile);
@@ -369,6 +377,7 @@ export const processSarkariImage = async ({
   return {
     ...compressionResult,
     downloadUrl,
+    extractedSubjectBlob: extractedBlob,
     width: targetWidth,
     height: targetHeight,
     format: isTransparent ? 'png' : (preset.extension || 'jpg')
