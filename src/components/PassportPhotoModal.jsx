@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { removeBackground } from '@imgly/background-removal';
 import { binaryCompressToTargetSize } from '../utils/imageEngine';
 import confetti from 'canvas-confetti';
 import { Upload, Download, X, RefreshCw, Sparkles, CheckCircle, Camera, Crop, Palette, Printer, Sliders, Sun, Image as ImageIcon } from 'lucide-react';
@@ -79,6 +78,7 @@ export const PassportPhotoModal = ({ onClose }) => {
     startProgressAnimation();
 
     try {
+      const { removeBackground } = await import('@imgly/background-removal');
       const blob = await removeBackground(file, {
         progress: (key, current, total) => {
           if (runVersionRef.current !== currentVersion) return;

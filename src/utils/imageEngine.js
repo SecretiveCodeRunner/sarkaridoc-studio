@@ -1,7 +1,6 @@
 /**
  * SarkariDoc Studio — AI Background Processing & Image Engine
  */
-import { removeBackground } from '@imgly/background-removal';
 
 export const loadImage = (src) => {
   return new Promise((resolve, reject) => {
@@ -262,6 +261,7 @@ export const processSarkariImage = async ({
 
   if (shouldRunAiBg) {
     try {
+      const { removeBackground } = await import('@imgly/background-removal');
       const bgRemovedBlob = await removeBackground(imageFile);
       const bgRemovedUrl = URL.createObjectURL(bgRemovedBlob);
       sourceImg = await loadImage(bgRemovedUrl);

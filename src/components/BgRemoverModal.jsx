@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { removeBackground } from '@imgly/background-removal';
 import confetti from 'canvas-confetti';
 import { Upload, Download, X, RefreshCw, Sparkles, CheckCircle, Wand2 } from 'lucide-react';
 
@@ -25,7 +24,8 @@ export const BgRemoverModal = ({ onClose }) => {
     setPreviewUrl(null);
 
     try {
-      // Run AI Background Removal
+      // Run AI Background Removal lazily
+      const { removeBackground } = await import('@imgly/background-removal');
       const blob = await removeBackground(file);
       setRemovedBlob(blob);
       renderCompositePreview(blob, bgColor);
