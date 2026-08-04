@@ -52,3 +52,14 @@
   box-shadow: 0 6px 20px 0 rgba(37, 99, 235, 0.45);
   transform: translateY(-1px);
 }
+
+/* GPU-Accelerated Hardware Spinner (Never freezes on mobile CPU load) */
+@keyframes gpuSpin {
+  0% { transform: rotate(0deg) translateZ(0); }
+  100% { transform: rotate(360deg) translateZ(0); }
+}
+.animate-gpu-spin {
+  animation: gpuSpin 0.75s linear infinite !important;
+  will-change: transform;
+  transform: translateZ(0);
+}

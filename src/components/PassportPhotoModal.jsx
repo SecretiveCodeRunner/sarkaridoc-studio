@@ -77,14 +77,21 @@ export const PassportPhotoModal = ({ onClose }) => {
     setIsProcessing(true);
     startProgressAnimation();
 
+    // Yield 120ms to allow mobile browser DOM to paint initial progress card & GPU spinner
+    await new Promise((r) => setTimeout(r, 120));
+
     try {
       const { removeBackground } = await import('@imgly/background-removal');
       const blob = await removeBackground(file, {
+        model: 'isnet_fp16',
         progress: (key, current, total) => {
           if (runVersionRef.current !== currentVersion) return;
           if (total > 0) {
             const pct = Math.min(95, Math.round((current / total) * 100));
             setAiProgressPercent(pct);
+          }
+          if (key.includes('compute')) {
+            setAiProgressText('AI Segmenting Portrait Subject...');
           }
         }
       });
@@ -481,7 +488,7 @@ export const PassportPhotoModal = ({ onClose }) => {
                     <span className="text-xs font-bold text-slate-900">Studio Passport Preview</span>
                     {isProcessing ? (
                       <span className="text-xs font-bold text-blue-600 flex items-center space-x-1 animate-pulse">
-                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                        <RefreshCw className="w-3.5 h-3.5 animate-gpu-spin" />
                         <span>AI Studio Processing...</span>
                       </span>
                     ) : (
@@ -497,7 +504,7 @@ export const PassportPhotoModal = ({ onClose }) => {
                     <div className="p-4 mb-4 rounded-2xl bg-blue-50 border border-blue-200 space-y-2">
                       <div className="flex items-center justify-between text-xs font-bold text-blue-900">
                         <span className="flex items-center space-x-1.5">
-                          <Sparkles className="w-4 h-4 text-blue-600 animate-spin" />
+                          <Sparkles className="w-4 h-4 text-blue-600 animate-gpu-spin" />
                           <span>{aiProgressText || 'Processing AI Portrait...'}</span>
                         </span>
                         <span>{aiProgressPercent}%</span>
@@ -526,7 +533,7 @@ export const PassportPhotoModal = ({ onClose }) => {
                       </div>
                     ) : (
                       <div className="flex flex-col items-center justify-center space-y-3 text-blue-600 p-6">
-                        <RefreshCw className="w-8 h-8 animate-spin" />
+                        <RefreshCw className="w-8 h-8 animate-gpu-spin" />
                         <span className="text-xs font-bold text-slate-900">Loading Studio Preview...</span>
                       </div>
                     )}
