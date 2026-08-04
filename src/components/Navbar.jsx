@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ShieldCheck, Sparkles, CheckCircle2, Smartphone, FileText, Wand2, SlidersHorizontal, Camera } from 'lucide-react';
+import { ShieldCheck, Sparkles, CheckCircle2, Smartphone, FileText, Wand2, SlidersHorizontal, Camera, Share2 } from 'lucide-react';
 
 export const Navbar = ({ onOpenPdfStudio, onOpenBgRemover, onOpenImageResizer, onOpenPassportPhoto }) => {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
@@ -22,6 +22,31 @@ export const Navbar = ({ onOpenPdfStudio, onOpenBgRemover, onOpenImageResizer, o
     };
   }, []);
 
+  const handleShareApp = async () => {
+    const shareData = {
+      title: 'SarkariDoc Studio — Free Govt Exam Photo & PDF Suite',
+      text: 'Resize photos & compress PDFs to exact KB limits for SSC, NEET, JEE, UPSC, IBPS exams! 100% Free & Private.',
+      url: window.location.href,
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          console.error('Share failed:', err);
+        }
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        alert('SarkariDoc Studio link copied to clipboard! Share it with your friends on WhatsApp or Telegram.');
+      } catch (err) {
+        alert(`Share link: ${window.location.href}`);
+      }
+    }
+  };
+
   const handleInstallPwa = async () => {
     if (deferredPrompt) {
       deferredPrompt.prompt();
@@ -31,7 +56,6 @@ export const Navbar = ({ onOpenPdfStudio, onOpenBgRemover, onOpenImageResizer, o
       }
       setDeferredPrompt(null);
     } else {
-      // Trigger iOS or custom prompt if banner isn't active
       const userAgent = window.navigator.userAgent.toLowerCase();
       if (/iphone|ipad|ipod/.test(userAgent)) {
         alert('To install SarkariDoc on iPhone/iPad:\n1. Tap the Share button in Safari\n2. Select "Add to Home Screen"');
@@ -85,11 +109,12 @@ export const Navbar = ({ onOpenPdfStudio, onOpenBgRemover, onOpenImageResizer, o
           </button>
 
           <button
-            onClick={onOpenBgRemover}
-            className="hidden sm:flex items-center space-x-1 px-2.5 sm:px-3 py-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-200 text-xs font-semibold shadow-xs transition-all active:scale-95"
+            onClick={handleShareApp}
+            className="flex items-center space-x-1 px-2.5 sm:px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 text-xs font-semibold shadow-xs transition-all active:scale-95"
+            title="Share App with Friends"
           >
-            <Wand2 className="w-3.5 h-3.5 text-purple-600" />
-            <span>AI BG Remover</span>
+            <Share2 className="w-3.5 h-3.5 text-amber-600" />
+            <span className="hidden sm:inline">Share App</span>
           </button>
 
           {!isInstalled && (
@@ -105,5 +130,4 @@ export const Navbar = ({ onOpenPdfStudio, onOpenBgRemover, onOpenImageResizer, o
       </div>
     </header>
   );
-
 };

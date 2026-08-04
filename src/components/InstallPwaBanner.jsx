@@ -64,37 +64,72 @@ export const InstallPwaBanner = () => {
   const shouldShowBanner = deferredPrompt || isIOS;
   if (!shouldShowBanner) return null;
 
+  const handleShareApp = async () => {
+    const shareData = {
+      title: 'SarkariDoc Studio — Free Govt Exam Photo & PDF Suite',
+      text: 'Resize photos & compress PDFs to exact KB limits for SSC, NEET, JEE, UPSC, IBPS exams! 100% Free & Private.',
+      url: window.location.href,
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          console.error('Share failed:', err);
+        }
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        alert('SarkariDoc Studio link copied to clipboard! Share it with your friends on WhatsApp or Telegram.');
+      } catch (err) {
+        alert(`Share link: ${window.location.href}`);
+      }
+    }
+  };
+
   return (
     <>
-      {/* Floating Bottom Sticky Install Banner */}
+      {/* Floating Bottom Sticky Install & Share Banner */}
       <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-6 md:max-w-md z-50 animate-in slide-in-from-bottom duration-300">
-        <div className="bg-slate-900 border border-slate-700/80 text-white p-4 rounded-2xl shadow-2xl backdrop-blur-xl flex items-center justify-between gap-3">
+        <div className="bg-slate-900 border border-slate-700/80 text-white p-3.5 rounded-2xl shadow-2xl backdrop-blur-xl flex items-center justify-between gap-3 font-['Outfit']">
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center shrink-0 shadow-md ring-1 ring-white/20">
-              <Sparkles className="w-6 h-6 text-white" />
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center shrink-0 shadow-md ring-1 ring-white/20">
+              <Sparkles className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h4 className="font-bold text-sm text-slate-100 flex items-center gap-1.5">
-                Install SarkariDoc App
+              <h4 className="font-bold text-xs text-slate-100 flex items-center gap-1.5">
+                SarkariDoc Studio
               </h4>
-              <p className="text-xs text-slate-300">
-                1-Tap access & 100% offline resizer on your phone
+              <p className="text-[11px] text-slate-300">
+                Install app or share link with friends
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={handleShareApp}
+              className="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 border border-slate-700 text-xs font-bold shadow-xs flex items-center gap-1 transition-all active:scale-95 shrink-0"
+              title="Share App"
+            >
+              <Share className="w-3.5 h-3.5" />
+              <span className="hidden xs:inline">Share</span>
+            </button>
+
             <button
               onClick={handleInstallClick}
-              className="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-lg shadow-blue-500/25 flex items-center gap-1.5 transition-all active:scale-95 shrink-0"
+              className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-lg shadow-blue-500/25 flex items-center gap-1 transition-all active:scale-95 shrink-0"
             >
               <Download className="w-3.5 h-3.5" />
               <span>Install</span>
             </button>
+
             <button
               onClick={handleDismiss}
               aria-label="Dismiss banner"
-              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+              className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
