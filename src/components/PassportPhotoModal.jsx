@@ -4,9 +4,36 @@ import { getCloudGpuQuota, incrementCloudGpuQuota } from '../utils/cloudQuota';
 import confetti from 'canvas-confetti';
 import { Upload, Download, X, RefreshCw, Sparkles, CheckCircle, Camera, Crop, Palette, Printer, Sliders, Sun, Image as ImageIcon, ArrowLeft, Zap, Lock, Wand2 } from 'lucide-react';
 
-// ... (rest of imports & constants)
+const PASSPORT_SIZES = [
+  { label: 'India Passport (3.5 x 4.5 cm)', width: 413, height: 531, ratio: '3.5:4.5' },
+  { label: 'US / Intl Visa (2 x 2 in)', width: 600, height: 600, ratio: '1:1' },
+  { label: 'UK / Schengen (3.5 x 4.5 cm)', width: 413, height: 531, ratio: '3.5:4.5' },
+  { label: 'Stamp Size (2.5 x 3.0 cm)', width: 295, height: 354, ratio: '2.5:3.0' },
+  { label: 'Square ID (1 : 1)', width: 500, height: 500, ratio: '1:1' }
+];
+
+const BG_COLOR_PALETTE = [
+  { label: 'Original BG', value: 'original', border: 'border-slate-400 bg-slate-100' },
+  { label: 'Light Blue', value: '#93C5FD', border: 'border-blue-300' },
+  { label: 'White', value: '#FFFFFF', border: 'border-slate-300' },
+  { label: 'Royal Blue', value: '#2563EB', border: 'border-blue-600' },
+  { label: 'Navy Blue', value: '#1E3A8A', border: 'border-blue-900' },
+  { label: 'Off-White', value: '#F3F4F6', border: 'border-slate-300' },
+  { label: 'Light Gray', value: '#E2E8F0', border: 'border-slate-400' },
+  { label: 'Soft Cream', value: '#FEF3C7', border: 'border-amber-200' },
+  { label: 'Crimson Red', value: '#DC2626', border: 'border-red-600' },
+  { label: 'Transparent', value: 'transparent', border: 'border-dashed border-slate-400' }
+];
+
+const MAX_SIZE_OPTIONS = [
+  { label: 'Under 50 KB', maxKB: 50 },
+  { label: 'Under 100 KB', maxKB: 100 },
+  { label: 'Under 200 KB', maxKB: 200 },
+  { label: 'High Quality', maxKB: 500 }
+];
 
 export const PassportPhotoModal = ({ onClose }) => {
+
   const [selectedFile, setSelectedFile] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [removedBlob, setRemovedBlob] = useState(null);
