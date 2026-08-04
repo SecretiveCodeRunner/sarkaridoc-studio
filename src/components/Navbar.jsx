@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ShieldCheck, Sparkles, CheckCircle2, Smartphone, FileText, Wand2, SlidersHorizontal, Camera, Share2 } from 'lucide-react';
 
-export const Navbar = ({ onOpenPdfStudio, onOpenBgRemover, onOpenImageResizer, onOpenPassportPhoto }) => {
+export const Navbar = ({ onOpenPdfStudio, onOpenBgRemover, onOpenImageResizer, onOpenPassportPhoto, onOpenAbout }) => {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [isInstalled, setIsInstalled] = useState(false);
 
@@ -70,7 +70,7 @@ export const Navbar = ({ onOpenPdfStudio, onOpenBgRemover, onOpenImageResizer, o
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         
         {/* Logo */}
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-3 cursor-pointer" onClick={onOpenAbout}>
           <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center shadow-md shadow-blue-500/20 ring-1 ring-white">
             <Sparkles className="w-5 h-5 text-white" />
           </div>
@@ -109,12 +109,20 @@ export const Navbar = ({ onOpenPdfStudio, onOpenBgRemover, onOpenImageResizer, o
           </button>
 
           <button
+            onClick={onOpenAbout}
+            className="flex items-center space-x-1 px-2.5 sm:px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200 text-xs font-semibold shadow-xs transition-all active:scale-95"
+          >
+            <ShieldCheck className="w-3.5 h-3.5 text-slate-600" />
+            <span className="hidden sm:inline">About Us</span>
+          </button>
+
+          <button
             onClick={handleShareApp}
             className="flex items-center space-x-1 px-2.5 sm:px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 text-xs font-semibold shadow-xs transition-all active:scale-95"
             title="Share App with Friends"
           >
             <Share2 className="w-3.5 h-3.5 text-amber-600" />
-            <span className="hidden sm:inline">Share App</span>
+            <span className="hidden sm:inline">Share</span>
           </button>
 
           {!isInstalled && (
@@ -131,3 +139,4 @@ export const Navbar = ({ onOpenPdfStudio, onOpenBgRemover, onOpenImageResizer, o
     </header>
   );
 };
+

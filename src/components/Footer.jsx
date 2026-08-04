@@ -1,7 +1,7 @@
 import React from 'react';
 import { Shield, Share2 } from 'lucide-react';
 
-export const Footer = () => {
+export const Footer = ({ onOpenAbout }) => {
   const handleShareApp = async () => {
     const shareData = {
       title: 'SarkariDoc Studio — Free Govt Exam Photo & PDF Suite',
@@ -35,7 +35,7 @@ export const Footer = () => {
           <span className="font-bold text-slate-900">SarkariDoc Studio</span>
           <span>© {new Date().getFullYear()}</span>
           <span>•</span>
-          <span>Designed for Indian Govt Exam Aspirants</span>
+          <button onClick={onOpenAbout} className="hover:text-blue-600 underline font-medium">About & Privacy</button>
         </div>
 
         <div className="flex items-center space-x-3 text-slate-600">
@@ -49,13 +49,14 @@ export const Footer = () => {
 
           <span>•</span>
 
-          <span className="flex items-center space-x-1">
+          <button onClick={onOpenAbout} className="flex items-center space-x-1 hover:text-emerald-600">
             <Shield className="w-3.5 h-3.5 text-emerald-600" />
             <span>100% Client-Side Privacy</span>
-          </span>
+          </button>
         </div>
 
       </div>
     </footer>
   );
 };
+
