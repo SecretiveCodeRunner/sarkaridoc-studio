@@ -31,10 +31,11 @@ export default {
           });
         }
 
-        // Run Cloudflare Workers AI Segmentation Model at Edge GPU
-        const aiResult = await env.AI.run('@cf/baai/bge-large-en', {
+        // Run Cloudflare Workers AI Model at Edge GPU
+        const aiResult = await env.AI.run('@cf/meta/detr-resnet-50', {
           image: imageBytes
         });
+
 
         return new Response(aiResult, {
           status: 200,
