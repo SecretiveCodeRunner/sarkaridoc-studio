@@ -262,9 +262,7 @@ export const processSarkariImage = async ({
   if (shouldRunAiBg) {
     try {
       const { removeBackground } = await import('@imgly/background-removal');
-      const bgRemovedBlob = await removeBackground(imageFile, {
-        publicPath: 'https://staticimgly.com/@imgly/background-removal-data/1.5.7/dist/'
-      });
+      const bgRemovedBlob = await removeBackground(imageFile);
       const bgRemovedUrl = URL.createObjectURL(bgRemovedBlob);
       sourceImg = await loadImage(bgRemovedUrl);
     } catch (err) {

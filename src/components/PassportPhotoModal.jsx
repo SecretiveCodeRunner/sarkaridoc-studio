@@ -83,7 +83,6 @@ export const PassportPhotoModal = ({ onClose }) => {
     try {
       const { removeBackground } = await import('@imgly/background-removal');
       const blob = await removeBackground(file, {
-        publicPath: 'https://staticimgly.com/@imgly/background-removal-data/1.5.7/dist/',
         progress: (key, current, total) => {
           if (runVersionRef.current !== currentVersion) return;
           if (total > 0) {

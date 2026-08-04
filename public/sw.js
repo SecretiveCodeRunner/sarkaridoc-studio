@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sarkaridoc-v2';
+const CACHE_NAME = 'sarkaridoc-v3';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
