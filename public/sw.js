@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sarkaridoc-v6';
+const CACHE_NAME = 'sarkaridoc-v7';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -9,10 +9,12 @@ const ASSETS_TO_CACHE = [
 ];
 
 self.addEventListener('install', (event) => {
+  // Activate new SW immediately without waiting for existing tabs to close
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       return cache.addAll(ASSETS_TO_CACHE);
-    }).then(() => self.skipWaiting())
+    })
   );
 });
 
@@ -22,6 +24,7 @@ self.addEventListener('activate', (event) => {
       return Promise.all(
         cacheNames.map((cache) => {
           if (cache !== CACHE_NAME) {
+            console.log('[SW] Purging old cache:', cache);
             return caches.delete(cache);
           }
         })
@@ -52,18 +55,18 @@ self.addEventListener('fetch', (event) => {
         .catch(() => caches.match(event.request))
     );
   } else {
-    // Stale-While-Revalidate for static assets
+    // Network-First for JS/CSS assets to ensure users always get the latest code without hard reset
     event.respondWith(
-      caches.match(event.request).then((cachedResponse) => {
-        const fetchPromise = fetch(event.request).then((networkResponse) => {
+      fetch(event.request)
+        .then((networkResponse) => {
           if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
             const copy = networkResponse.clone();
             caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
           }
           return networkResponse;
-        });
-        return cachedResponse || fetchPromise;
-      })
+        })
+        .catch(() => caches.match(event.request))
     );
   }
 });
+

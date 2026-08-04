@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { processSarkariImage } from '../utils/imageEngine';
+import { processSarkariImage, normalizeImageForProcessing } from '../utils/imageEngine';
 import confetti from 'canvas-confetti';
 import { 
   Upload, Download, X, RefreshCw, Sliders, Calendar, User, 
@@ -19,8 +19,8 @@ export const EditorModal = ({ preset, onClose }) => {
   // Default Signature Cleanup = ON by default for pure white paper
   const [enhanceSignature, setEnhanceSignature] = useState(true);
 
-  // Default Background Removal = ON for passport photos and custom presets
-  const [changeBg, setChangeBg] = useState(preset.defaultChangeBg !== undefined ? preset.defaultChangeBg : (preset.type === 'photo' || preset.id === 'custom-resizer'));
+  // Default AI Background Removal = OFF by default for fast 0.05s exam photo resizing! (User can toggle ON)
+  const [changeBg, setChangeBg] = useState(preset.defaultChangeBg || false);
   const [bgColor, setBgColor] = useState(preset.defaultBgColor || '#FFFFFF');
 
   // Interactive Framing & Zoom Controls
@@ -36,8 +36,8 @@ export const EditorModal = ({ preset, onClose }) => {
   const [customTargetKb, setCustomTargetKb] = useState(preset.targetKb);
 
   const fileInputRef = useRef(null);
-
-  const [cachedSubjectBlob, setCachedSubjectBlob] = useState(null);
+  const cachedSubjectBlobRef = useRef(null);
+  const runVersionRef = useRef(0);
 
   const colorOptions = [
     { label: 'White', value: '#FFFFFF' },
@@ -46,17 +46,23 @@ export const EditorModal = ({ preset, onClose }) => {
     { label: 'Transparent', value: 'transparent' },
   ];
 
-  const handleFileChange = (file) => {
+  const handleFileChange = async (file) => {
     if (!file) return;
-    setSelectedFile(file);
-    setCachedSubjectBlob(null);
+    runVersionRef.current++;
+    cachedSubjectBlobRef.current = null;
     setResult(null);
+
+    // Normalize raw camera photo to max 1200px first for super-fast canvas & instant processing
+    const normalized = await normalizeImageForProcessing(file, 1200);
+    setSelectedFile(normalized);
   };
 
   useEffect(() => {
     if (!selectedFile) return;
 
+    const currentVersion = ++runVersionRef.current;
     let isMounted = true;
+
     const runProcessing = async () => {
       setIsProcessing(true);
       try {
@@ -81,30 +87,32 @@ export const EditorModal = ({ preset, onClose }) => {
           zoomScale,
           panX,
           panY,
-          preExtractedSubjectBlob: cachedSubjectBlob
+          preExtractedSubjectBlob: cachedSubjectBlobRef.current
         });
 
-        if (isMounted) {
+        if (isMounted && runVersionRef.current === currentVersion) {
           setResult(processed);
           if (processed.extractedSubjectBlob) {
-            setCachedSubjectBlob(processed.extractedSubjectBlob);
+            cachedSubjectBlobRef.current = processed.extractedSubjectBlob;
           }
         }
       } catch (err) {
         console.error('Processing failed:', err);
       } finally {
-        if (isMounted) setIsProcessing(false);
+        if (isMounted && runVersionRef.current === currentVersion) {
+          setIsProcessing(false);
+        }
       }
     };
 
-    const timeout = setTimeout(runProcessing, 150);
+    const timeout = setTimeout(runProcessing, 100);
     return () => {
       isMounted = false;
       clearTimeout(timeout);
     };
   }, [
     selectedFile, preset, showNameDate, candidateName, photoDate, enhanceSignature, 
-    bgColor, changeBg, zoomScale, panX, panY, cachedSubjectBlob,
+    bgColor, changeBg, zoomScale, panX, panY,
     customWidth, customHeight, customMinKb, customMaxKb, customTargetKb
   ]);
 

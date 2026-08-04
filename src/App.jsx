@@ -1,16 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { Navbar } from './components/Navbar';
 import { PresetSelector } from './components/PresetSelector';
-import { EditorModal } from './components/EditorModal';
-import { PdfStudioModal } from './components/PdfStudioModal';
-import { BgRemoverModal } from './components/BgRemoverModal';
-import { ImageResizerModal } from './components/ImageResizerModal';
 import { SeoContentSection } from './components/SeoContentSection';
 import { Footer } from './components/Footer';
 import { EXAM_PRESETS } from './data/presets';
-
-import { PassportPhotoModal } from './components/PassportPhotoModal';
 import { InstallPwaBanner } from './components/InstallPwaBanner';
+import { RefreshCw } from 'lucide-react';
+
+// Code-split heavy tool modules into isolated lazy chunks
+const EditorModal = lazy(() => import('./components/EditorModal').then(m => ({ default: m.EditorModal })));
+const PassportPhotoModal = lazy(() => import('./components/PassportPhotoModal').then(m => ({ default: m.PassportPhotoModal })));
+const PdfStudioModal = lazy(() => import('./components/PdfStudioModal').then(m => ({ default: m.PdfStudioModal })));
+const BgRemoverModal = lazy(() => import('./components/BgRemoverModal').then(m => ({ default: m.BgRemoverModal })));
+const ImageResizerModal = lazy(() => import('./components/ImageResizerModal').then(m => ({ default: m.ImageResizerModal })));
 
 export function App() {
   const [selectedPreset, setSelectedPreset] = useState(null);
@@ -18,6 +20,10 @@ export function App() {
   const [isBgRemoverOpen, setIsBgRemoverOpen] = useState(false);
   const [isImageResizerOpen, setIsImageResizerOpen] = useState(false);
   const [isPassportPhotoOpen, setIsPassportPhotoOpen] = useState(false);
+
+  const isAnyModalOpen = Boolean(
+    selectedPreset || isPdfStudioOpen || isBgRemoverOpen || isImageResizerOpen || isPassportPhotoOpen
+  );
 
   // Handle Direct URL Deep-linking for Google Sitelinks & Direct Search Results
   useEffect(() => {
@@ -60,43 +66,53 @@ export function App() {
           onOpenImageResizer={() => setIsImageResizerOpen(true)}
         />
         
-        <SeoContentSection />
+        {/* Unmount/hide heavy SEO DOM when tool environment is active to preserve mobile RAM & GPU */}
+        {!isAnyModalOpen && <SeoContentSection />}
       </main>
 
-      {/* Modals */}
-      {selectedPreset && (
-        <EditorModal
-          preset={selectedPreset}
-          onClose={() => setSelectedPreset(null)}
-        />
-      )}
+      {/* Code-Split Isolated Tool Environments */}
+      <Suspense fallback={
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/30 backdrop-blur-sm">
+          <div className="bg-white p-6 rounded-2xl shadow-xl flex items-center space-x-3 text-blue-600 font-semibold text-sm">
+            <RefreshCw className="w-5 h-5 animate-gpu-spin" />
+            <span>Loading Tool Workspace...</span>
+          </div>
+        </div>
+      }>
+        {selectedPreset && (
+          <EditorModal
+            preset={selectedPreset}
+            onClose={() => setSelectedPreset(null)}
+          />
+        )}
 
-      {isPassportPhotoOpen && (
-        <PassportPhotoModal
-          onClose={() => setIsPassportPhotoOpen(false)}
-        />
-      )}
+        {isPassportPhotoOpen && (
+          <PassportPhotoModal
+            onClose={() => setIsPassportPhotoOpen(false)}
+          />
+        )}
 
-      {isPdfStudioOpen && (
-        <PdfStudioModal
-          onClose={() => setIsPdfStudioOpen(false)}
-        />
-      )}
+        {isPdfStudioOpen && (
+          <PdfStudioModal
+            onClose={() => setIsPdfStudioOpen(false)}
+          />
+        )}
 
-      {isBgRemoverOpen && (
-        <BgRemoverModal
-          onClose={() => setIsBgRemoverOpen(false)}
-        />
-      )}
+        {isBgRemoverOpen && (
+          <BgRemoverModal
+            onClose={() => setIsBgRemoverOpen(false)}
+          />
+        )}
 
-      {isImageResizerOpen && (
-        <ImageResizerModal
-          onClose={() => setIsImageResizerOpen(false)}
-        />
-      )}
+        {isImageResizerOpen && (
+          <ImageResizerModal
+            onClose={() => setIsImageResizerOpen(false)}
+          />
+        )}
+      </Suspense>
 
       {/* PWA Floating Install Banner */}
-      <InstallPwaBanner />
+      {!isAnyModalOpen && <InstallPwaBanner />}
 
       {/* Footer */}
       <Footer />
@@ -105,3 +121,4 @@ export function App() {
 }
 
 export default App;
+
