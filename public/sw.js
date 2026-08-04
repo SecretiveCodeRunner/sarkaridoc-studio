@@ -33,7 +33,10 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   // Stale-While-Revalidate strategy for 0ms mobile PWA launch speed
   if (event.request.method !== 'GET') return;
-  
+
+  // Let external cross-origin fetches (e.g. staticimgly.com ONNX models/WASM) pass directly to network
+  if (!event.request.url.startsWith(self.location.origin)) return;
+
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
       const fetchPromise = fetch(event.request)
@@ -45,10 +48,8 @@ self.addEventListener('fetch', (event) => {
             });
           }
           return networkResponse;
-        })
-        .catch(() => cachedResponse);
+        });
 
-      // Return cached version immediately (0ms mobile load time), update cache in background
       return cachedResponse || fetchPromise;
     })
   );

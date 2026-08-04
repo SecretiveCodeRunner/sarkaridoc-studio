@@ -26,7 +26,9 @@ export const BgRemoverModal = ({ onClose }) => {
     try {
       // Run AI Background Removal lazily
       const { removeBackground } = await import('@imgly/background-removal');
-      const blob = await removeBackground(file);
+      const blob = await removeBackground(file, {
+        publicPath: 'https://staticimgly.com/@imgly/background-removal-data/1.5.7/dist/'
+      });
       setRemovedBlob(blob);
       renderCompositePreview(blob, bgColor);
     } catch (err) {

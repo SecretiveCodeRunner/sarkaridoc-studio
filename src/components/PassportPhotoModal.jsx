@@ -83,7 +83,7 @@ export const PassportPhotoModal = ({ onClose }) => {
     try {
       const { removeBackground } = await import('@imgly/background-removal');
       const blob = await removeBackground(file, {
-        model: 'isnet_fp16',
+        publicPath: 'https://staticimgly.com/@imgly/background-removal-data/1.5.7/dist/',
         progress: (key, current, total) => {
           if (runVersionRef.current !== currentVersion) return;
           if (total > 0) {
@@ -106,7 +106,7 @@ export const PassportPhotoModal = ({ onClose }) => {
       console.warn('Passport Photo AI Removal fallback:', err);
       if (runVersionRef.current === currentVersion) {
         stopProgressAnimation();
-        setRemovedBlob(file);
+        setRemovedBlob(null);
       }
     } finally {
       if (runVersionRef.current === currentVersion) {
