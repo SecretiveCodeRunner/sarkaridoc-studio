@@ -1,7 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { binaryCompressToTargetSize, normalizeImageForProcessing } from '../utils/imageEngine';
 import confetti from 'canvas-confetti';
-import { Upload, Download, X, RefreshCw, Sparkles, CheckCircle, Camera, Crop, Palette, Printer, Sliders, Sun, Image as ImageIcon } from 'lucide-react';
+import { Upload, Download, X, RefreshCw, Sparkles, CheckCircle, Camera, Crop, Palette, Printer, Sliders, Sun, Image as ImageIcon, ArrowLeft } from 'lucide-react';
+
+// ... (rest of state stays same)
+
 
 const PASSPORT_SIZES = [
   { label: 'India Passport (3.5 x 4.5 cm)', width: 413, height: 531, ratio: '3.5:4.5' },
@@ -310,30 +313,34 @@ export const PassportPhotoModal = ({ onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/40 backdrop-blur-md overflow-y-auto font-['Outfit']">
-      <div className="relative w-full max-w-5xl bg-white rounded-3xl border border-slate-200 shadow-2xl overflow-hidden my-auto flex flex-col text-slate-900">
-        
-        {/* Header */}
-        <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
-          <div className="flex items-center space-x-3">
-            <div className="p-2.5 rounded-xl bg-blue-50 text-blue-600 border border-blue-200">
-              <Camera className="w-5 h-5" />
-            </div>
-            <div>
-              <h2 className="font-bold text-slate-900 text-lg">Passport Photo Studio</h2>
-              <p className="text-xs text-slate-500 font-medium">Create clean passport & ID photos with custom studio backgrounds in seconds</p>
-            </div>
-          </div>
+    <div className="min-h-screen bg-slate-50 flex flex-col font-['Outfit'] text-slate-900 antialiased">
+      {/* Sticky Workspace Top Header */}
+      <header className="bg-white border-b border-slate-200 sticky top-0 z-30 px-4 sm:px-8 py-3.5 flex items-center justify-between shadow-xs">
+        <div className="flex items-center space-x-3">
           <button
             onClick={onClose}
-            className="p-2 rounded-xl text-slate-400 hover:text-slate-900 hover:bg-slate-200 transition-all"
+            className="p-2 rounded-xl text-slate-700 hover:bg-slate-100 flex items-center space-x-1.5 font-bold text-xs transition-all border border-slate-200"
           >
-            <X className="w-5 h-5" />
+            <ArrowLeft className="w-4 h-4 text-blue-600" />
+            <span className="hidden sm:inline">Back to All Tools</span>
+            <span className="sm:hidden">Back</span>
           </button>
+          <div className="h-4 w-px bg-slate-200" />
+          <div className="flex items-center space-x-2">
+            <div className="p-1.5 rounded-lg bg-blue-50 text-blue-600 border border-blue-200">
+              <Camera className="w-4 h-4" />
+            </div>
+            <div>
+              <h1 className="font-bold text-slate-900 text-sm sm:text-lg">Passport Photo Studio</h1>
+              <p className="text-[11px] text-slate-500 font-medium hidden sm:block">Create official passport & ID photos with studio background colors</p>
+            </div>
+          </div>
         </div>
+      </header>
 
-        {/* Content */}
-        <div className="p-6 bg-white">
+      {/* Main Workspace Area */}
+      <main className="flex-1 max-w-6xl mx-auto w-full p-4 sm:p-6 space-y-6">
+
           {!selectedFile ? (
             <label className="border-2 border-dashed border-slate-300 hover:border-blue-600 rounded-3xl p-8 text-center bg-slate-50 hover:bg-blue-50/50 cursor-pointer transition-all duration-300 flex flex-col items-center justify-center min-h-[300px]">
               <input
@@ -567,9 +574,8 @@ export const PassportPhotoModal = ({ onClose }) => {
 
             </div>
           )}
-        </div>
-
-      </div>
+        </main>
     </div>
   );
 };
+

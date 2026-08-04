@@ -3,7 +3,7 @@ import { processSarkariImage, normalizeImageForProcessing } from '../utils/image
 import confetti from 'canvas-confetti';
 import { 
   Upload, Download, X, RefreshCw, Sliders, Calendar, User, 
-  CheckCircle, Sparkles, Wand2, ArrowRight, ZoomIn, Palette
+  CheckCircle, Sparkles, Wand2, ArrowRight, ZoomIn, Palette, ArrowLeft
 } from 'lucide-react';
 
 export const EditorModal = ({ preset, onClose }) => {
@@ -134,30 +134,34 @@ export const EditorModal = ({ preset, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/40 backdrop-blur-md overflow-y-auto">
-      <div className="relative w-full max-w-5xl bg-white rounded-3xl border border-slate-200 shadow-2xl overflow-hidden my-auto max-h-[94vh] flex flex-col text-slate-900">
-        
-        {/* Header */}
-        <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/80">
+    <div className="min-h-screen bg-slate-50 flex flex-col font-['Outfit'] text-slate-900 antialiased">
+      {/* Sticky Workspace Top Header */}
+      <header className="bg-white border-b border-slate-200 sticky top-0 z-30 px-4 sm:px-8 py-3.5 flex items-center justify-between shadow-xs">
+        <div className="flex items-center space-x-3">
+          <button
+            onClick={onClose}
+            className="p-2 rounded-xl text-slate-700 hover:bg-slate-100 flex items-center space-x-1.5 font-bold text-xs transition-all border border-slate-200"
+          >
+            <ArrowLeft className="w-4 h-4 text-blue-600" />
+            <span className="hidden sm:inline">Back to All Tools</span>
+            <span className="sm:hidden">Back</span>
+          </button>
+          <div className="h-4 w-px bg-slate-200" />
           <div>
             <div className="flex items-center space-x-2">
-              <h2 className="font-bold text-slate-900 text-lg font-['Outfit']">{preset.name}</h2>
-              <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+              <h1 className="font-bold text-slate-900 text-sm sm:text-lg">{preset.name}</h1>
+              <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
                 {preset.exam}
               </span>
             </div>
-            <p className="text-xs text-slate-500 font-medium">Target Range: {customMinKb || preset.minKb}KB – {customMaxKb || preset.maxKb}KB • {customWidth || preset.widthPx} × {customHeight || preset.heightPx} px</p>
+            <p className="text-[11px] text-slate-500 font-medium hidden sm:block">Target Range: {customMinKb || preset.minKb}KB – {customMaxKb || preset.maxKb}KB • {customWidth || preset.widthPx} × {customHeight || preset.heightPx} px</p>
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 rounded-xl text-slate-400 hover:text-slate-900 hover:bg-slate-200 transition-all"
-          >
-            <X className="w-5 h-5" />
-          </button>
         </div>
+      </header>
 
-        {/* Body */}
-        <div className="p-6 overflow-y-auto space-y-6 flex-1 bg-white">
+      {/* Main Workspace Area */}
+      <main className="flex-1 max-w-6xl mx-auto w-full p-4 sm:p-6 space-y-6">
+
           {!selectedFile ? (
             <div
               onClick={() => fileInputRef.current?.click()}
@@ -465,8 +469,8 @@ export const EditorModal = ({ preset, onClose }) => {
               </div>
             </div>
           )}
-        </div>
-      </div>
+        </main>
     </div>
   );
 };
+
