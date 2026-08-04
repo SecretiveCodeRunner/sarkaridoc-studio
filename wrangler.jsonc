@@ -2,6 +2,9 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "sarkaridoc-studio",
   "compatibility_date": "2026-08-03",
+  "ai": {
+    "binding": "AI"
+  },
   "observability": {
     "enabled": true
   },
@@ -12,3 +15,4 @@
     "nodejs_compat"
   ]
 }
+

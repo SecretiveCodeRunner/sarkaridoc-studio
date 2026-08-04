@@ -1,10 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { binaryCompressToTargetSize, normalizeImageForProcessing } from '../utils/imageEngine';
+import { getCloudGpuQuota, incrementCloudGpuQuota } from '../utils/cloudQuota';
 import confetti from 'canvas-confetti';
-import { Upload, Download, X, RefreshCw, Sparkles, CheckCircle, Camera, Crop, Palette, Printer, Sliders, Sun, Image as ImageIcon, ArrowLeft } from 'lucide-react';
-
-// ... (rest of state stays same)
-
+import { Upload, Download, X, RefreshCw, Sparkles, CheckCircle, Camera, Crop, Palette, Printer, Sliders, Sun, Image as ImageIcon, ArrowLeft, Zap, Lock } from 'lucide-react';
 
 const PASSPORT_SIZES = [
   { label: 'India Passport (3.5 x 4.5 cm)', width: 413, height: 531, ratio: '3.5:4.5' },
@@ -41,6 +39,9 @@ export const PassportPhotoModal = ({ onClose }) => {
   const [aiProgressText, setAiProgressText] = useState('');
   const [aiProgressPercent, setAiProgressPercent] = useState(0);
 
+  const [quotaInfo, setQuotaInfo] = useState(() => getCloudGpuQuota());
+  const [elapsedSeconds, setElapsedSeconds] = useState('0.0');
+
   const [selectedSize, setSelectedSize] = useState(PASSPORT_SIZES[0]);
   const [selectedBg, setSelectedBg] = useState(BG_COLOR_PALETTE[1]); // Default Light Blue for Passport
   const [maxKb, setMaxKb] = useState(MAX_SIZE_OPTIONS[1]); // Default 100KB
@@ -52,20 +53,36 @@ export const PassportPhotoModal = ({ onClose }) => {
   // Version counter ref to prevent race conditions during rapid option clicks
   const runVersionRef = useRef(0);
   const progressTimerRef = useRef(null);
+  const liveTimerRef = useRef(null);
 
-  const startProgressAnimation = () => {
+  const startLiveTimer = () => {
+    if (liveTimerRef.current) clearInterval(liveTimerRef.current);
+    const startTime = Date.now();
+    setElapsedSeconds('0.0');
+    liveTimerRef.current = setInterval(() => {
+      setElapsedSeconds(((Date.now() - startTime) / 1000).toFixed(1));
+    }, 100);
+  };
+
+  const stopLiveTimer = () => {
+    if (liveTimerRef.current) {
+      clearInterval(liveTimerRef.current);
+      liveTimerRef.current = null;
+    }
+  };
+
+  const startProgressAnimation = (isCloud = false) => {
     if (progressTimerRef.current) clearInterval(progressTimerRef.current);
     setAiProgressPercent(15);
-    setAiProgressText('Downloading AI Portrait Model...');
+    setAiProgressText(isCloud ? 'Connecting to Cloud Edge GPU...' : 'Downloading Local AI Portrait Model...');
 
     progressTimerRef.current = setInterval(() => {
       setAiProgressPercent((prev) => {
         if (prev >= 92) return 92;
         const next = prev + (prev < 40 ? 8 : prev < 70 ? 5 : 2);
-        if (next > 50) setAiProgressText('AI Segmenting Portrait Subject...');
         return next;
       });
-    }, 350);
+    }, 250);
   };
 
   const stopProgressAnimation = () => {
@@ -73,15 +90,59 @@ export const PassportPhotoModal = ({ onClose }) => {
       clearInterval(progressTimerRef.current);
       progressTimerRef.current = null;
     }
+    stopLiveTimer();
   };
 
   const processAiBackgroundRemoval = async (file, currentVersion) => {
     if (!file) return;
     setIsProcessing(true);
-    startProgressAnimation();
+    startLiveTimer();
 
-    // Yield 120ms to allow mobile browser DOM to paint initial progress card & GPU spinner
-    await new Promise((r) => setTimeout(r, 120));
+    const quota = getCloudGpuQuota();
+    setQuotaInfo(quota);
+
+    // Yield 100ms to allow DOM repaint
+    await new Promise((r) => setTimeout(r, 100));
+
+    // 1. Try Cloud Edge GPU if daily quota is available (usesLeft > 0)
+    if (quota.isEligible) {
+      startProgressAnimation(true);
+      setAiProgressText(`⚡ Cloud Edge GPU Processing... Free Daily Use (${quota.usedToday + 1}/2)`);
+
+      try {
+        const formData = new FormData();
+        formData.append('image', file);
+
+        const response = await fetch('./api/remove-bg', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (response.ok) {
+          const blob = await response.blob();
+          if (runVersionRef.current === currentVersion && blob && blob.size > 0) {
+            const updatedQuota = incrementCloudGpuQuota();
+            setQuotaInfo(updatedQuota);
+            stopProgressAnimation();
+            setAiProgressPercent(100);
+            setAiProgressText(`⚡ Cloud GPU Cutout Complete!`);
+            setRemovedBlob(blob);
+            setIsProcessing(false);
+            return;
+          }
+        }
+      } catch (cloudErr) {
+        console.warn('Cloud Edge GPU fallback to local engine:', cloudErr);
+      }
+    }
+
+    // 2. Fallback to Local In-Browser WASM Engine (if quota reached or local dev)
+    startProgressAnimation(false);
+    if (!quota.isEligible) {
+      setAiProgressText(`🔒 Daily Fast Cloud Limit Reached (2/2 Used). Processing via 100% In-Browser Engine...`);
+    } else {
+      setAiProgressText(`AI Segmenting Portrait Subject in Browser...`);
+    }
 
     try {
       const { removeBackground } = await import('@imgly/background-removal');
@@ -91,9 +152,6 @@ export const PassportPhotoModal = ({ onClose }) => {
           if (total > 0) {
             const pct = Math.min(95, Math.round((current / total) * 100));
             setAiProgressPercent(pct);
-          }
-          if (key.includes('compute')) {
-            setAiProgressText('AI Segmenting Portrait Subject...');
           }
         }
       });
@@ -117,6 +175,7 @@ export const PassportPhotoModal = ({ onClose }) => {
       }
     }
   };
+
 
   const handleFileChange = async (file) => {
     if (!file) return;
@@ -508,15 +567,17 @@ export const PassportPhotoModal = ({ onClose }) => {
                     )}
                   </div>
 
-                  {/* AI Live Progress Bar Overlay Card */}
+                  {/* AI Live Progress Bar Overlay Card with Live Timer & Daily Quota */}
                   {isProcessing && (
-                    <div className="p-4 mb-4 rounded-2xl bg-blue-50 border border-blue-200 space-y-2">
+                    <div className="p-4 mb-4 rounded-2xl bg-blue-50 border border-blue-200 space-y-2.5 shadow-xs">
                       <div className="flex items-center justify-between text-xs font-bold text-blue-900">
                         <span className="flex items-center space-x-1.5">
                           <Sparkles className="w-4 h-4 text-blue-600 animate-gpu-spin" />
                           <span>{aiProgressText || 'Processing AI Portrait...'}</span>
                         </span>
-                        <span>{aiProgressPercent}%</span>
+                        <span className="px-2 py-0.5 rounded-full bg-blue-600 text-white text-[11px] font-mono font-bold">
+                          {elapsedSeconds}s
+                        </span>
                       </div>
                       <div className="w-full h-2 bg-blue-200 rounded-full overflow-hidden shadow-inner">
                         <div
@@ -524,8 +585,16 @@ export const PassportPhotoModal = ({ onClose }) => {
                           style={{ width: `${aiProgressPercent}%` }}
                         />
                       </div>
+                      <div className="flex items-center justify-between text-[11px] font-medium text-slate-500 pt-0.5">
+                        <span className="flex items-center space-x-1 text-blue-700 font-semibold">
+                          <Zap className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                          <span>Daily Fast Cloud AI Uses: {quotaInfo.usesLeft} of {quotaInfo.maxDaily} left</span>
+                        </span>
+                        <span>{aiProgressPercent}%</span>
+                      </div>
                     </div>
                   )}
+
 
                   {/* Preview Container */}
                   <div className={`relative flex items-center justify-center min-h-[260px] max-h-[320px] w-full p-4 rounded-2xl border border-slate-200 shadow-inner overflow-hidden ${selectedBg.value === 'transparent' ? 'bg-checkered' : 'bg-white'}`}>

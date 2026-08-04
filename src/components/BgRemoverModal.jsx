@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { normalizeImageForProcessing } from '../utils/imageEngine';
+import { getCloudGpuQuota, incrementCloudGpuQuota } from '../utils/cloudQuota';
 import confetti from 'canvas-confetti';
-import { Upload, Download, X, RefreshCw, Sparkles, CheckCircle, Wand2, ArrowLeft } from 'lucide-react';
+import { Upload, Download, X, RefreshCw, Sparkles, CheckCircle, Wand2, ArrowLeft, Zap } from 'lucide-react';
 
 export const BgRemoverModal = ({ onClose }) => {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -9,6 +10,27 @@ export const BgRemoverModal = ({ onClose }) => {
   const [removedBlob, setRemovedBlob] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [bgColor, setBgColor] = useState('transparent');
+
+  const [quotaInfo, setQuotaInfo] = useState(() => getCloudGpuQuota());
+  const [elapsedSeconds, setElapsedSeconds] = useState('0.0');
+  const [statusMessage, setStatusMessage] = useState('');
+  const timerRef = useRef(null);
+
+  const startLiveTimer = () => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    const startTime = Date.now();
+    setElapsedSeconds('0.0');
+    timerRef.current = setInterval(() => {
+      setElapsedSeconds(((Date.now() - startTime) / 1000).toFixed(1));
+    }, 100);
+  };
+
+  const stopLiveTimer = () => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+  };
 
   const bgOptions = [
     { label: 'Transparent', value: 'transparent' },
@@ -22,22 +44,64 @@ export const BgRemoverModal = ({ onClose }) => {
     setIsProcessing(true);
     setRemovedBlob(null);
     setPreviewUrl(null);
+    startLiveTimer();
 
     const normalized = await normalizeImageForProcessing(file, 1200);
     setSelectedFile(normalized);
 
+    const quota = getCloudGpuQuota();
+    setQuotaInfo(quota);
+
+    // 1. Try Cloud Edge GPU if quota is available
+    if (quota.isEligible) {
+      setStatusMessage(`⚡ Cloud Edge GPU Processing... (Free Use ${quota.usedToday + 1}/2)`);
+      try {
+        const formData = new FormData();
+        formData.append('image', normalized);
+
+        const response = await fetch('./api/remove-bg', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (response.ok) {
+          const blob = await response.blob();
+          if (blob && blob.size > 0) {
+            const updatedQuota = incrementCloudGpuQuota();
+            setQuotaInfo(updatedQuota);
+            stopLiveTimer();
+            setRemovedBlob(blob);
+            renderCompositePreview(blob, bgColor);
+            setIsProcessing(false);
+            return;
+          }
+        }
+      } catch (cloudErr) {
+        console.warn('Cloud Edge GPU fallback:', cloudErr);
+      }
+    }
+
+    // 2. Fallback to Local In-Browser WASM Engine
+    if (!quota.isEligible) {
+      setStatusMessage(`🔒 Daily Fast Cloud Limit Reached (2/2 Used). Processing via 100% In-Browser Engine...`);
+    } else {
+      setStatusMessage(`AI Segmenting Portrait Subject in Browser...`);
+    }
+
     try {
-      // Run AI Background Removal lazily
       const { removeBackground } = await import('@imgly/background-removal');
       const blob = await removeBackground(normalized);
+      stopLiveTimer();
       setRemovedBlob(blob);
       renderCompositePreview(blob, bgColor);
     } catch (err) {
       console.error('AI BG Removal Error:', err);
     } finally {
+      stopLiveTimer();
       setIsProcessing(false);
     }
   };
+
 
   const renderCompositePreview = (fgBlob, color) => {
     const img = new Image();
@@ -178,17 +242,25 @@ export const BgRemoverModal = ({ onClose }) => {
 
                 <div className={`relative flex-1 flex items-center justify-center min-h-[220px] max-h-[300px] w-full p-4 rounded-xl border border-slate-200 shadow-inner ${bgColor === 'transparent' ? 'bg-checkered' : 'bg-white'}`}>
                   {isProcessing ? (
-                    <div className="flex flex-col items-center justify-center space-y-3 text-purple-600 p-6">
+                    <div className="flex flex-col items-center justify-center space-y-3 text-purple-600 p-6 text-center">
                       <div className="relative">
                         <div className="w-12 h-12 rounded-full border-2 border-purple-200 border-t-purple-600 animate-spin" />
                         <Sparkles className="w-5 h-5 absolute inset-0 m-auto text-purple-600 animate-pulse" />
                       </div>
-                      <div className="text-center">
-                        <span className="text-xs font-bold text-slate-900 block mb-0.5">Running AI Segmentation</span>
-                        <span className="text-[11px] text-slate-500 font-medium">Processing image in local browser memory...</span>
+                      <div className="text-center space-y-1">
+                        <div className="flex items-center justify-center space-x-2">
+                          <span className="text-xs font-bold text-slate-900">{statusMessage || 'Running AI Segmentation'}</span>
+                          <span className="px-2 py-0.5 rounded-full bg-purple-600 text-white text-[10px] font-mono font-bold">
+                            {elapsedSeconds}s
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-slate-500 font-medium">
+                          ⚡ Free Daily Fast Uses: {quotaInfo.usesLeft} of {quotaInfo.maxDaily} remaining today
+                        </p>
                       </div>
                     </div>
                   ) : previewUrl ? (
+
                     <img
                       src={previewUrl}
                       alt="AI Background Removed"
