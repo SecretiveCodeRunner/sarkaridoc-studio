@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { removeBackground } from '@imgly/background-removal';
 import { binaryCompressToTargetSize } from '../utils/imageEngine';
 import confetti from 'canvas-confetti';
-import { Upload, Download, X, RefreshCw, Sparkles, CheckCircle, Camera, Crop, Palette, Printer, Sliders, Sun, Zap, ShieldCheck } from 'lucide-react';
+import { Upload, Download, X, RefreshCw, Sparkles, CheckCircle, Camera, Crop, Palette, Printer, Sliders, Sun, Image as ImageIcon } from 'lucide-react';
 
 const PASSPORT_SIZES = [
   { label: 'India Passport (3.5 x 4.5 cm)', width: 413, height: 531, ratio: '3.5:4.5' },
@@ -13,16 +13,16 @@ const PASSPORT_SIZES = [
 ];
 
 const BG_COLOR_PALETTE = [
-  { label: 'White', value: '#FFFFFF', border: 'border-slate-300' },
+  { label: 'Original BG', value: 'original', border: 'border-slate-400 bg-slate-100' },
   { label: 'Light Blue', value: '#93C5FD', border: 'border-blue-300' },
+  { label: 'White', value: '#FFFFFF', border: 'border-slate-300' },
   { label: 'Royal Blue', value: '#2563EB', border: 'border-blue-600' },
-  { label: 'Off-White', value: '#F3F4F6', border: 'border-slate-300' },
   { label: 'Navy Blue', value: '#1E3A8A', border: 'border-blue-900' },
+  { label: 'Off-White', value: '#F3F4F6', border: 'border-slate-300' },
   { label: 'Light Gray', value: '#E2E8F0', border: 'border-slate-400' },
   { label: 'Soft Cream', value: '#FEF3C7', border: 'border-amber-200' },
   { label: 'Crimson Red', value: '#DC2626', border: 'border-red-600' },
-  { label: 'Emerald Green', value: '#16A34A', border: 'border-green-600' },
-  { label: 'Transparent (PNG)', value: 'transparent', border: 'border-dashed border-slate-400' }
+  { label: 'Transparent', value: 'transparent', border: 'border-dashed border-slate-400' }
 ];
 
 const MAX_SIZE_OPTIONS = [
@@ -36,7 +36,6 @@ export const PassportPhotoModal = ({ onClose }) => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [removedBlob, setRemovedBlob] = useState(null);
-  const [enableAiBg, setEnableAiBg] = useState(true); // AI BG Removal Toggle
   const [aiProgressText, setAiProgressText] = useState('');
   const [aiProgressPercent, setAiProgressPercent] = useState(0);
 
@@ -50,39 +49,61 @@ export const PassportPhotoModal = ({ onClose }) => {
 
   // Version counter ref to prevent race conditions during rapid option clicks
   const runVersionRef = useRef(0);
+  const progressTimerRef = useRef(null);
+
+  const startProgressAnimation = () => {
+    if (progressTimerRef.current) clearInterval(progressTimerRef.current);
+    setAiProgressPercent(15);
+    setAiProgressText('Downloading AI Portrait Model...');
+
+    progressTimerRef.current = setInterval(() => {
+      setAiProgressPercent((prev) => {
+        if (prev >= 92) return 92;
+        const next = prev + (prev < 40 ? 8 : prev < 70 ? 5 : 2);
+        if (next > 50) setAiProgressText('AI Segmenting Portrait Subject...');
+        return next;
+      });
+    }, 350);
+  };
+
+  const stopProgressAnimation = () => {
+    if (progressTimerRef.current) {
+      clearInterval(progressTimerRef.current);
+      progressTimerRef.current = null;
+    }
+  };
 
   const processAiBackgroundRemoval = async (file, currentVersion) => {
-    if (!file || !enableAiBg) return;
+    if (!file) return;
     setIsProcessing(true);
-    setAiProgressText('Initializing AI Model...');
-    setAiProgressPercent(10);
+    startProgressAnimation();
 
     try {
       const blob = await removeBackground(file, {
         progress: (key, current, total) => {
-          if (runVersionRef.current !== currentVersion) return; // Discard stale jobs
-          let pct = 20;
-          if (total > 0) pct = Math.min(95, Math.round((current / total) * 100));
-          
-          let text = 'Segmenting Subject...';
-          if (key.includes('fetch')) text = `Downloading AI Model (${pct}%)`;
-          else if (key.includes('compute')) text = `AI Removing Background (${pct}%)`;
-
-          setAiProgressPercent(pct);
-          setAiProgressText(text);
+          if (runVersionRef.current !== currentVersion) return;
+          if (total > 0) {
+            const pct = Math.min(95, Math.round((current / total) * 100));
+            setAiProgressPercent(pct);
+          }
         }
       });
 
       if (runVersionRef.current === currentVersion) {
+        stopProgressAnimation();
+        setAiProgressPercent(100);
+        setAiProgressText('Background Removed Successfully!');
         setRemovedBlob(blob);
       }
     } catch (err) {
       console.warn('Passport Photo AI Removal fallback:', err);
       if (runVersionRef.current === currentVersion) {
+        stopProgressAnimation();
         setRemovedBlob(file);
       }
     } finally {
       if (runVersionRef.current === currentVersion) {
+        stopProgressAnimation();
         setIsProcessing(false);
       }
     }
@@ -95,31 +116,42 @@ export const PassportPhotoModal = ({ onClose }) => {
     setRemovedBlob(null);
     setFinalPreviewUrl(null);
 
-    if (enableAiBg) {
+    // If user has a studio background selected, run AI removal
+    if (selectedBg.value !== 'original') {
       processAiBackgroundRemoval(file, nextVersion);
     } else {
       setIsProcessing(false);
     }
   };
 
-  // Re-run AI if toggle is switched ON manually
-  const handleToggleAiBg = (newVal) => {
-    setEnableAiBg(newVal);
-    if (selectedFile) {
+  // Handle color palette click
+  const handleSelectBg = (bgOption) => {
+    setSelectedBg(bgOption);
+
+    // If user clicked 'original', stop AI processing immediately
+    if (bgOption.value === 'original') {
+      runVersionRef.current++;
+      stopProgressAnimation();
+      setIsProcessing(false);
+      return;
+    }
+
+    // If user selected a studio color and AI cutout doesn't exist yet, trigger AI removal
+    if (selectedFile && !removedBlob && !isProcessing) {
       const nextVersion = ++runVersionRef.current;
-      if (newVal) {
-        processAiBackgroundRemoval(selectedFile, nextVersion);
-      } else {
-        setRemovedBlob(null);
-        setIsProcessing(false);
-      }
+      processAiBackgroundRemoval(selectedFile, nextVersion);
     }
   };
+
+  // Cleanup timers on unmount
+  useEffect(() => {
+    return () => stopProgressAnimation();
+  }, []);
 
   // Render composite canvas when settings or photo source changes
   useEffect(() => {
     if (!selectedFile && !removedBlob) return;
-    const imgSource = (enableAiBg ? removedBlob : null) || selectedFile;
+    const imgSource = (selectedBg.value !== 'original' && removedBlob) ? removedBlob : selectedFile;
     if (!imgSource) return;
 
     let isMounted = true;
@@ -138,8 +170,8 @@ export const PassportPhotoModal = ({ onClose }) => {
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = 'high';
 
-        // 1. Fill background color (only if AI background is removed or transparent selected)
-        if (selectedBg.value !== 'transparent') {
+        // 1. Fill studio background color (if not original and not transparent)
+        if (selectedBg.value !== 'original' && selectedBg.value !== 'transparent') {
           ctx.fillStyle = selectedBg.value;
           ctx.fillRect(0, 0, canvas.width, canvas.height);
         } else {
@@ -193,7 +225,7 @@ export const PassportPhotoModal = ({ onClose }) => {
     return () => {
       isMounted = false;
     };
-  }, [removedBlob, selectedFile, selectedSize, selectedBg, brightness, contrast, maxKb, enableAiBg]);
+  }, [removedBlob, selectedFile, selectedSize, selectedBg, brightness, contrast, maxKb]);
 
   const handleDownloadSingle = () => {
     if (!finalPreviewUrl) return;
@@ -323,32 +355,6 @@ export const PassportPhotoModal = ({ onClose }) => {
                   </button>
                 </div>
 
-                {/* AI Toggle Switch Card */}
-                <div className="p-3.5 rounded-2xl bg-blue-50/70 border border-blue-200 flex items-center justify-between">
-                  <div className="flex items-center space-x-2.5">
-                    <div className="p-1.5 rounded-lg bg-blue-600 text-white">
-                      <Zap className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <span className="text-xs font-bold text-slate-900 block">AI Studio BG Removal</span>
-                      <span className="text-[10px] text-slate-500 font-medium">Turn OFF for instant speed on low-end mobile devices</span>
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={() => handleToggleAiBg(!enableAiBg)}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      enableAiBg ? 'bg-blue-600' : 'bg-slate-300'
-                    }`}
-                  >
-                    <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        enableAiBg ? 'translate-x-6' : 'translate-x-1'
-                      }`}
-                    />
-                  </button>
-                </div>
-
                 {/* 1. Size Preset */}
                 <div>
                   <label className="text-xs font-bold text-slate-700 block mb-2 flex items-center gap-1.5">
@@ -374,25 +380,32 @@ export const PassportPhotoModal = ({ onClose }) => {
 
                 {/* 2. Studio Background Colors */}
                 <div>
-                  <label className="text-xs font-bold text-slate-700 block mb-2 flex items-center gap-1.5">
-                    <Palette className="w-3.5 h-3.5 text-blue-600" />
-                    <span>Background Color Palette</span>
-                  </label>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                      <Palette className="w-3.5 h-3.5 text-blue-600" />
+                      <span>Studio Background Color</span>
+                    </label>
+                    <span className="text-[10px] text-slate-400 font-medium">Select 'Original BG' for instant 0s wait</span>
+                  </div>
+
                   <div className="grid grid-cols-5 gap-2">
                     {BG_COLOR_PALETTE.map((bg) => (
                       <button
                         key={bg.label}
-                        onClick={() => setSelectedBg(bg)}
+                        onClick={() => handleSelectBg(bg)}
                         title={bg.label}
                         className={`h-10 rounded-xl border flex items-center justify-center transition-all relative ${bg.border} ${
                           selectedBg.label === bg.label ? 'ring-2 ring-blue-600 ring-offset-2 scale-105 shadow-md' : 'hover:scale-95'
                         }`}
-                        style={{ backgroundColor: bg.value === 'transparent' ? '#FFFFFF' : bg.value }}
+                        style={{ backgroundColor: (bg.value === 'transparent' || bg.value === 'original') ? '#FFFFFF' : bg.value }}
                       >
+                        {bg.value === 'original' && (
+                          <span className="text-[9px] font-bold text-slate-700 text-center leading-tight">ORIGINAL</span>
+                        )}
                         {bg.value === 'transparent' && (
                           <span className="text-[10px] font-bold text-slate-500">PNG</span>
                         )}
-                        {selectedBg.label === bg.label && bg.value !== 'transparent' && (
+                        {selectedBg.label === bg.label && bg.value !== 'transparent' && bg.value !== 'original' && (
                           <CheckCircle className={`w-4 h-4 ${['#FFFFFF', '#F3F4F6', '#93C5FD', '#E2E8F0', '#FEF3C7'].includes(bg.value) ? 'text-slate-800' : 'text-white'}`} />
                         )}
                       </button>
@@ -469,7 +482,7 @@ export const PassportPhotoModal = ({ onClose }) => {
                     {isProcessing ? (
                       <span className="text-xs font-bold text-blue-600 flex items-center space-x-1 animate-pulse">
                         <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                        <span>AI Neural Network...</span>
+                        <span>AI Studio Processing...</span>
                       </span>
                     ) : (
                       <span className="text-xs font-bold text-emerald-600 flex items-center space-x-1">
@@ -505,10 +518,10 @@ export const PassportPhotoModal = ({ onClose }) => {
                         <img
                           src={finalPreviewUrl}
                           alt="Passport Photo Preview"
-                          className="max-h-[240px] shadow-lg rounded-sm border border-slate-300"
+                          className="max-h-[240px] shadow-lg rounded-sm border border-slate-300 transition-all duration-300"
                         />
                         <span className="text-[11px] font-semibold text-slate-400 mt-2">
-                          {selectedSize.width} x {selectedSize.height} px ({selectedSize.ratio})
+                          {selectedSize.width} x {selectedSize.height} px ({selectedSize.ratio}) — {selectedBg.label}
                         </span>
                       </div>
                     ) : (
@@ -524,7 +537,7 @@ export const PassportPhotoModal = ({ onClose }) => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-6">
                   <button
                     onClick={handleDownloadSingle}
-                    disabled={!finalPreviewUrl || isProcessing}
+                    disabled={!finalPreviewUrl}
                     className="py-3.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center justify-center space-x-2 shadow-md transition-all active:scale-95 disabled:opacity-50"
                   >
                     <Download className="w-4 h-4" />
@@ -533,7 +546,7 @@ export const PassportPhotoModal = ({ onClose }) => {
 
                   <button
                     onClick={handleDownloadPrintSheet}
-                    disabled={!finalPreviewUrl || isProcessing}
+                    disabled={!finalPreviewUrl}
                     className="py-3.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center space-x-2 shadow-md transition-all active:scale-95 disabled:opacity-50"
                   >
                     <Printer className="w-4 h-4" />
