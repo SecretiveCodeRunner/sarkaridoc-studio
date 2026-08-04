@@ -173,7 +173,7 @@ export const BgRemoverModal = ({ onClose }) => {
                   ) : null}
                 </div>
 
-                <div className="relative flex-1 flex items-center justify-center min-h-[220px] max-h-[300px] w-full p-4 bg-white rounded-xl border border-slate-200 shadow-inner">
+                <div className={`relative flex-1 flex items-center justify-center min-h-[220px] max-h-[300px] w-full p-4 rounded-xl border border-slate-200 shadow-inner ${bgColor === 'transparent' ? 'bg-checkered' : 'bg-white'}`}>
                   {isProcessing ? (
                     <div className="flex flex-col items-center justify-center space-y-3 text-purple-600 p-6">
                       <div className="relative">

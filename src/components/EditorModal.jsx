@@ -41,7 +41,7 @@ export const EditorModal = ({ preset, onClose }) => {
     { label: 'White', value: '#FFFFFF' },
     { label: 'Royal Blue', value: '#2563EB' },
     { label: 'Sky Blue', value: '#93C5FD' },
-    { label: 'Light Gray', value: '#F1F5F9' },
+    { label: 'Transparent', value: 'transparent' },
   ];
 
   const handleFileChange = (file) => {
@@ -419,17 +419,17 @@ export const EditorModal = ({ preset, onClose }) => {
                   )}
                 </div>
 
-                <div className="relative flex-1 flex items-center justify-center min-h-[260px] max-h-[340px] w-full p-4 bg-white rounded-xl border border-slate-200 shadow-inner">
+                <div className={`relative flex-1 flex items-center justify-center min-h-[260px] max-h-[340px] w-full p-4 rounded-xl border border-slate-200 shadow-inner ${bgColor === 'transparent' ? 'bg-checkered' : 'bg-white'}`}>
                   {isProcessing ? (
                     <div className="flex flex-col items-center space-y-2 text-blue-600">
-                      <RefreshCw className="w-6 h-6 animate-spin" />
+                      <RefreshCw className="w-6 h-6 animate-gpu-spin" />
                       <span className="text-xs font-semibold">Running AI segmentation & canvas compression...</span>
                     </div>
                   ) : result ? (
                     <img
                       src={result.downloadUrl}
                       alt="Processed Preview"
-                      className="max-h-[280px] max-w-full object-contain rounded shadow-md border border-slate-200"
+                      className={`max-h-[280px] max-w-full object-contain rounded shadow-md border border-slate-200 ${bgColor === 'transparent' ? 'bg-checkered' : ''}`}
                     />
                   ) : null}
                 </div>

@@ -521,13 +521,13 @@ export const PassportPhotoModal = ({ onClose }) => {
                   )}
 
                   {/* Preview Container */}
-                  <div className="relative flex items-center justify-center min-h-[260px] max-h-[320px] w-full p-4 bg-white rounded-2xl border border-slate-200 shadow-inner overflow-hidden">
+                  <div className={`relative flex items-center justify-center min-h-[260px] max-h-[320px] w-full p-4 rounded-2xl border border-slate-200 shadow-inner overflow-hidden ${selectedBg.value === 'transparent' ? 'bg-checkered' : 'bg-white'}`}>
                     {finalPreviewUrl ? (
                       <div className="flex flex-col items-center">
                         <img
                           src={finalPreviewUrl}
                           alt="Passport Photo Preview"
-                          className="max-h-[240px] shadow-lg rounded-sm border border-slate-300 transition-all duration-300"
+                          className={`max-h-[240px] shadow-lg rounded-sm border border-slate-300 transition-all duration-300 ${selectedBg.value === 'transparent' ? 'bg-checkered' : ''}`}
                         />
                         <span className="text-[11px] font-semibold text-slate-400 mt-2">
                           {selectedSize.width} x {selectedSize.height} px ({selectedSize.ratio}) — {selectedBg.label}

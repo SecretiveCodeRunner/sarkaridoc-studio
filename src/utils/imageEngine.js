@@ -312,7 +312,8 @@ export const processSarkariImage = async ({
   const minKb = customSettings?.minKb || preset.minKb;
   const maxKb = customSettings?.maxKb || preset.maxKb;
   const targetKb = customSettings?.targetKb || preset.targetKb;
-  const format = customSettings?.format || preset.format;
+  const isTransparent = bgColor === 'transparent';
+  const format = isTransparent ? 'image/png' : (customSettings?.format || preset.format);
 
   const canvas = document.createElement('canvas');
   canvas.width = targetWidth;
@@ -322,9 +323,12 @@ export const processSarkariImage = async ({
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = 'high';
 
-  // Fill Solid Pure White (#FFFFFF) Background Canvas
-  ctx.fillStyle = (preset.type === 'signature') ? '#FFFFFF' : (bgColor || '#FFFFFF');
-  ctx.fillRect(0, 0, targetWidth, targetHeight);
+  if (!isTransparent) {
+    ctx.fillStyle = (preset.type === 'signature') ? '#FFFFFF' : (bgColor || '#FFFFFF');
+    ctx.fillRect(0, 0, targetWidth, targetHeight);
+  } else {
+    ctx.clearRect(0, 0, targetWidth, targetHeight);
+  }
 
   // Compute Cover Scale
   const aspectWidth = targetWidth / sourceImg.width;
@@ -338,7 +342,7 @@ export const processSarkariImage = async ({
   const drawX = (targetWidth - scaledWidth) / 2 + (panX * (targetWidth / 100));
   const drawY = (targetHeight - scaledHeight) / 2 + (panY * (targetHeight / 100));
 
-  // Draw AI-extracted subject/signature onto Pure White Canvas
+  // Draw AI-extracted subject/signature onto Canvas
   ctx.drawImage(sourceImg, drawX, drawY, scaledWidth, scaledHeight);
 
   // Sharpen signature ink lines
@@ -367,6 +371,6 @@ export const processSarkariImage = async ({
     downloadUrl,
     width: targetWidth,
     height: targetHeight,
-    format: preset.extension || 'jpg'
+    format: isTransparent ? 'png' : (preset.extension || 'jpg')
   };
 };

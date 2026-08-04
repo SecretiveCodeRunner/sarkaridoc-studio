@@ -63,3 +63,15 @@
   will-change: transform;
   transform: translateZ(0);
 }
+
+/* Transparency Checkerboard Grid Pattern */
+.bg-checkered {
+  background-color: #ffffff !important;
+  background-image: 
+    linear-gradient(45deg, #cbd5e1 25%, transparent 25%), 
+    linear-gradient(-45deg, #cbd5e1 25%, transparent 25%), 
+    linear-gradient(45deg, transparent 75%, #cbd5e1 75%), 
+    linear-gradient(-45deg, transparent 75%, #cbd5e1 75%) !important;
+  background-size: 16px 16px !important;
+  background-position: 0 0, 0 8px, 8px -8px, -8px 0px !important;
+}
