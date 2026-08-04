@@ -94,22 +94,23 @@ export const PassportPhotoModal = ({ onClose }) => {
     stopLiveTimer();
   };
 
-  // Heavy Neural AI Model (Optional fallback for complex outdoor backgrounds)
-  const processDeepNeuralAi = async () => {
-    if (!selectedFile) return;
-    const currentVersion = ++runVersionRef.current;
+  const processAiBackgroundRemoval = async (file, currentVersion) => {
+    if (!file) return;
     setIsProcessing(true);
     startLiveTimer();
     startProgressAnimation(false);
 
     try {
       const { removeBackground } = await import('@imgly/background-removal');
-      const blob = await removeBackground(selectedFile, {
+      const blob = await removeBackground(file, {
         progress: (key, current, total) => {
           if (runVersionRef.current !== currentVersion) return;
           if (total > 0) {
             const pct = Math.min(95, Math.round((current / total) * 100));
             setAiProgressPercent(pct);
+          }
+          if (key && key.includes('compute')) {
+            setAiProgressText('AI Segmenting Subject from Background...');
           }
         }
       });
@@ -117,11 +118,11 @@ export const PassportPhotoModal = ({ onClose }) => {
       if (runVersionRef.current === currentVersion && blob) {
         stopProgressAnimation();
         setAiProgressPercent(100);
-        setAiProgressText('Deep Neural AI Cutout Complete!');
+        setAiProgressText('Studio Background AI Cutout Complete!');
         setRemovedBlob(blob);
       }
     } catch (err) {
-      console.warn('Deep Neural AI Fallback:', err);
+      console.warn('AI Background Removal error:', err);
     } finally {
       if (runVersionRef.current === currentVersion) {
         stopProgressAnimation();
@@ -135,27 +136,19 @@ export const PassportPhotoModal = ({ onClose }) => {
     const nextVersion = ++runVersionRef.current;
     setIsProcessing(true);
 
-    // 1. Normalize heavy raw camera photo first (max 1200px)
+    // 1. Normalize heavy raw camera photo to max 1200px
     const normalized = await normalizeImageForProcessing(file, 1200);
     setSelectedFile(normalized);
     setRemovedBlob(null);
     setFinalPreviewUrl(null);
 
-    // 2. Instant 0.01s Fast Color Threshold Cutout for Govt Photo backgrounds!
-    try {
-      const fastBlob = await fastThresholdCutout(normalized, 45);
-      if (runVersionRef.current === nextVersion && fastBlob) {
-        setRemovedBlob(fastBlob);
-      }
-    } catch (err) {
-      console.warn('Instant Threshold Cutout fallback:', err);
-    } finally {
-      if (runVersionRef.current === nextVersion) {
-        setIsProcessing(false);
-      }
+    // 2. If user has a studio background selected (not original), run high-precision AI removal
+    if (selectedBg.value !== 'original') {
+      processAiBackgroundRemoval(normalized, nextVersion);
+    } else {
+      setIsProcessing(false);
     }
   };
-
 
   // Handle color palette click
   const handleSelectBg = (bgOption) => {
@@ -175,6 +168,7 @@ export const PassportPhotoModal = ({ onClose }) => {
       processAiBackgroundRemoval(selectedFile, nextVersion);
     }
   };
+
 
   // Cleanup timers on unmount
   useEffect(() => {
