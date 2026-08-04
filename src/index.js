@@ -64,7 +64,23 @@ export default {
       });
     }
 
-    // 3. Serve Vite client SPA assets
-    return env.ASSETS.fetch(request);
+    // 3. Serve Vite client SPA assets with COOP & COEP multi-threading acceleration headers
+    const assetResponse = await env.ASSETS.fetch(request);
+    
+    // Don't modify streaming / non-200 responses
+    if (!assetResponse.ok && assetResponse.status !== 304) {
+      return assetResponse;
+    }
+
+    const headers = new Headers(assetResponse.headers);
+    headers.set('Cross-Origin-Opener-Policy', 'same-origin');
+    headers.set('Cross-Origin-Embedder-Policy', 'credentialless');
+
+    return new Response(assetResponse.body, {
+      status: assetResponse.status,
+      statusText: assetResponse.statusText,
+      headers
+    });
+
   }
 };
