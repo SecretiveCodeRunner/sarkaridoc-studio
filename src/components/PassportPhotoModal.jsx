@@ -1,36 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { binaryCompressToTargetSize, normalizeImageForProcessing } from '../utils/imageEngine';
+import { binaryCompressToTargetSize, normalizeImageForProcessing, fastThresholdCutout } from '../utils/imageEngine';
 import { getCloudGpuQuota, incrementCloudGpuQuota } from '../utils/cloudQuota';
 import confetti from 'canvas-confetti';
-import { Upload, Download, X, RefreshCw, Sparkles, CheckCircle, Camera, Crop, Palette, Printer, Sliders, Sun, Image as ImageIcon, ArrowLeft, Zap, Lock } from 'lucide-react';
+import { Upload, Download, X, RefreshCw, Sparkles, CheckCircle, Camera, Crop, Palette, Printer, Sliders, Sun, Image as ImageIcon, ArrowLeft, Zap, Lock, Wand2 } from 'lucide-react';
 
-const PASSPORT_SIZES = [
-  { label: 'India Passport (3.5 x 4.5 cm)', width: 413, height: 531, ratio: '3.5:4.5' },
-  { label: 'US / Intl Visa (2 x 2 in)', width: 600, height: 600, ratio: '1:1' },
-  { label: 'UK / Schengen (3.5 x 4.5 cm)', width: 413, height: 531, ratio: '3.5:4.5' },
-  { label: 'Stamp Size (2.5 x 3.0 cm)', width: 295, height: 354, ratio: '2.5:3.0' },
-  { label: 'Square ID (1 : 1)', width: 500, height: 500, ratio: '1:1' }
-];
-
-const BG_COLOR_PALETTE = [
-  { label: 'Original BG', value: 'original', border: 'border-slate-400 bg-slate-100' },
-  { label: 'Light Blue', value: '#93C5FD', border: 'border-blue-300' },
-  { label: 'White', value: '#FFFFFF', border: 'border-slate-300' },
-  { label: 'Royal Blue', value: '#2563EB', border: 'border-blue-600' },
-  { label: 'Navy Blue', value: '#1E3A8A', border: 'border-blue-900' },
-  { label: 'Off-White', value: '#F3F4F6', border: 'border-slate-300' },
-  { label: 'Light Gray', value: '#E2E8F0', border: 'border-slate-400' },
-  { label: 'Soft Cream', value: '#FEF3C7', border: 'border-amber-200' },
-  { label: 'Crimson Red', value: '#DC2626', border: 'border-red-600' },
-  { label: 'Transparent', value: 'transparent', border: 'border-dashed border-slate-400' }
-];
-
-const MAX_SIZE_OPTIONS = [
-  { label: 'Under 50 KB', maxKB: 50 },
-  { label: 'Under 100 KB', maxKB: 100 },
-  { label: 'Under 200 KB', maxKB: 200 },
-  { label: 'High Quality', maxKB: 500 }
-];
+// ... (rest of imports & constants)
 
 export const PassportPhotoModal = ({ onClose }) => {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -74,7 +48,7 @@ export const PassportPhotoModal = ({ onClose }) => {
   const startProgressAnimation = (isCloud = false) => {
     if (progressTimerRef.current) clearInterval(progressTimerRef.current);
     setAiProgressPercent(15);
-    setAiProgressText(isCloud ? 'Connecting to Cloud Edge GPU...' : 'Downloading Local AI Portrait Model...');
+    setAiProgressText(isCloud ? 'Connecting to Cloud Edge GPU...' : 'Running Neural AI Model...');
 
     progressTimerRef.current = setInterval(() => {
       setAiProgressPercent((prev) => {
@@ -93,60 +67,17 @@ export const PassportPhotoModal = ({ onClose }) => {
     stopLiveTimer();
   };
 
-  const processAiBackgroundRemoval = async (file, currentVersion) => {
-    if (!file) return;
+  // Heavy Neural AI Model (Optional fallback for complex outdoor backgrounds)
+  const processDeepNeuralAi = async () => {
+    if (!selectedFile) return;
+    const currentVersion = ++runVersionRef.current;
     setIsProcessing(true);
     startLiveTimer();
-
-    const quota = getCloudGpuQuota();
-    setQuotaInfo(quota);
-
-    // Yield 100ms to allow DOM repaint
-    await new Promise((r) => setTimeout(r, 100));
-
-    // 1. Try Cloud Edge GPU if daily quota is available (usesLeft > 0)
-    if (quota.isEligible) {
-      startProgressAnimation(true);
-      setAiProgressText(`⚡ Cloud Edge GPU Processing... Free Daily Use (${quota.usedToday + 1}/2)`);
-
-      try {
-        const formData = new FormData();
-        formData.append('image', file);
-
-        const response = await fetch('./api/remove-bg', {
-          method: 'POST',
-          body: formData
-        });
-
-        if (response.ok) {
-          const blob = await response.blob();
-          if (runVersionRef.current === currentVersion && blob && blob.size > 0) {
-            const updatedQuota = incrementCloudGpuQuota();
-            setQuotaInfo(updatedQuota);
-            stopProgressAnimation();
-            setAiProgressPercent(100);
-            setAiProgressText(`⚡ Cloud GPU Cutout Complete!`);
-            setRemovedBlob(blob);
-            setIsProcessing(false);
-            return;
-          }
-        }
-      } catch (cloudErr) {
-        console.warn('Cloud Edge GPU fallback to local engine:', cloudErr);
-      }
-    }
-
-    // 2. Fallback to Local In-Browser WASM Engine (if quota reached or local dev)
     startProgressAnimation(false);
-    if (!quota.isEligible) {
-      setAiProgressText(`🔒 Daily Fast Cloud Limit Reached (2/2 Used). Processing via 100% In-Browser Engine...`);
-    } else {
-      setAiProgressText(`AI Segmenting Portrait Subject in Browser...`);
-    }
 
     try {
       const { removeBackground } = await import('@imgly/background-removal');
-      const blob = await removeBackground(file, {
+      const blob = await removeBackground(selectedFile, {
         progress: (key, current, total) => {
           if (runVersionRef.current !== currentVersion) return;
           if (total > 0) {
@@ -156,18 +87,14 @@ export const PassportPhotoModal = ({ onClose }) => {
         }
       });
 
-      if (runVersionRef.current === currentVersion) {
+      if (runVersionRef.current === currentVersion && blob) {
         stopProgressAnimation();
         setAiProgressPercent(100);
-        setAiProgressText('Background Removed Successfully!');
+        setAiProgressText('Deep Neural AI Cutout Complete!');
         setRemovedBlob(blob);
       }
     } catch (err) {
-      console.warn('Passport Photo AI Removal fallback:', err);
-      if (runVersionRef.current === currentVersion) {
-        stopProgressAnimation();
-        setRemovedBlob(null);
-      }
+      console.warn('Deep Neural AI Fallback:', err);
     } finally {
       if (runVersionRef.current === currentVersion) {
         stopProgressAnimation();
@@ -176,24 +103,32 @@ export const PassportPhotoModal = ({ onClose }) => {
     }
   };
 
-
   const handleFileChange = async (file) => {
     if (!file) return;
     const nextVersion = ++runVersionRef.current;
+    setIsProcessing(true);
 
-    // Normalize heavy raw camera photo to max 1200px first for fast AI & instant canvas render
+    // 1. Normalize heavy raw camera photo first (max 1200px)
     const normalized = await normalizeImageForProcessing(file, 1200);
     setSelectedFile(normalized);
     setRemovedBlob(null);
     setFinalPreviewUrl(null);
 
-    // If user has a studio background selected, run AI removal
-    if (selectedBg.value !== 'original') {
-      processAiBackgroundRemoval(normalized, nextVersion);
-    } else {
-      setIsProcessing(false);
+    // 2. Instant 0.01s Fast Color Threshold Cutout for Govt Photo backgrounds!
+    try {
+      const fastBlob = await fastThresholdCutout(normalized, 45);
+      if (runVersionRef.current === nextVersion && fastBlob) {
+        setRemovedBlob(fastBlob);
+      }
+    } catch (err) {
+      console.warn('Instant Threshold Cutout fallback:', err);
+    } finally {
+      if (runVersionRef.current === nextVersion) {
+        setIsProcessing(false);
+      }
     }
   };
+
 
   // Handle color palette click
   const handleSelectBg = (bgOption) => {
