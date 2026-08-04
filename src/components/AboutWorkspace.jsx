@@ -102,7 +102,7 @@ export const AboutWorkspace = ({ onClose }) => {
         <div className="p-6 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-between text-xs text-blue-900 font-medium">
           <div className="flex items-center space-x-2">
             <Heart className="w-4 h-4 text-red-500 fill-red-500" />
-            <span>Crafted with care for Apurba & Indian exam candidates nationwide.</span>
+            <span>Crafted with care for Indian students & exam candidates nationwide.</span>
           </div>
           <button
             onClick={onClose}
@@ -111,6 +111,7 @@ export const AboutWorkspace = ({ onClose }) => {
             Back to Tools
           </button>
         </div>
+
 
       </main>
     </div>
