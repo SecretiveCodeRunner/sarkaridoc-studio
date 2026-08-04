@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://sarkaridoc-studio.document-resizer.workers.dev/sitemap.xml
