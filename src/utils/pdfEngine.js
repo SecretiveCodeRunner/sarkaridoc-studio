@@ -6,7 +6,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLi
 
 /**
  * Converts multiple image files into a compressed PDF document matching target KB limits.
- * Stays strictly BELOW targetMaxKb without over-compressing.
+ * Prioritizes high JPEG quality (q >= 0.65) with clean canvas scaling for crystal-clear text.
  * Reports real-time progress callbacks for multi-page feedback.
  */
 export const convertImagesToPdf = async (imageFiles, targetMaxKb = 300, onProgress = null) => {
@@ -37,12 +37,15 @@ export const convertImagesToPdf = async (imageFiles, targetMaxKb = 300, onProgre
 
       const img = await loadImage(file);
       const canvas = document.createElement('canvas');
-      const targetWidth = Math.min(img.width * scaleFactor, 1400);
+      const targetWidth = Math.min(img.width * scaleFactor, 1600);
       const scale = targetWidth / img.width;
       canvas.width = Math.max(10, Math.round(targetWidth));
       canvas.height = Math.max(10, Math.round(img.height * scale));
 
-      const ctx = canvas.getContext('2d');
+      const ctx = canvas.getContext('2d', { willReadFrequently: true });
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+
       ctx.fillStyle = '#FFFFFF';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
@@ -72,12 +75,12 @@ export const convertImagesToPdf = async (imageFiles, targetMaxKb = 300, onProgre
     return { blob: resultBlob, kb: kbVal };
   };
 
-  // 1. Initial Pass: Test quality 0.85 at scale 1.0 (No artificial 1.2x resolution expansion)
+  // 1. Initial Pass: High Quality 0.90 at scale 1.0
   if (onProgress) {
     onProgress({ current: 1, total: totalFiles, percent: 5, text: `Starting Image to PDF conversion (${totalFiles} file(s))...` });
   }
 
-  const { blob: initialBlob, kb: initialKb } = await createPdfWithQuality(0.85, 1.0, true);
+  const { blob: initialBlob, kb: initialKb } = await createPdfWithQuality(0.90, 1.0, true);
 
   if (initialKb <= targetKb) {
     bestBlob = initialBlob;
@@ -87,47 +90,35 @@ export const convertImagesToPdf = async (imageFiles, targetMaxKb = 300, onProgre
       onProgress({ current: totalFiles, total: totalFiles, percent: 80, text: `Optimizing PDF quality for target ${targetKb} KB...` });
     }
 
-    // 2. Binary search quality in [0.05, 0.85] at scale 1.0
-    let lowQ = 0.05;
-    let highQ = 0.85;
+    // 2. High-Quality-First Multi-Tier Search (Prefers High JPEG Quality q >= 0.65 with scale down over muddy low-q artifacts)
+    const tiers = [
+      { scale: 1.0, qList: [0.80, 0.70, 0.60] },
+      { scale: 0.85, qList: [0.85, 0.75, 0.65] },
+      { scale: 0.75, qList: [0.85, 0.75, 0.65] },
+      { scale: 0.65, qList: [0.85, 0.75, 0.60] },
+      { scale: 0.50, qList: [0.80, 0.70, 0.55] },
+      { scale: 0.40, qList: [0.80, 0.65, 0.50, 0.35] },
+      { scale: 0.30, qList: [0.75, 0.50, 0.30, 0.15] },
+      { scale: 0.20, qList: [0.70, 0.40, 0.20, 0.10] }
+    ];
 
-    for (let step = 0; step < 7; step++) {
+    for (const tier of tiers) {
       await new Promise((r) => setTimeout(r, 0));
-      const midQ = (lowQ + highQ) / 2;
-      const { blob: testBlob, kb: currentKb } = await createPdfWithQuality(midQ, 1.0, false);
-
-      if (currentKb <= targetKb) {
-        if (!bestBlob || currentKb > bestKb) {
-          bestBlob = testBlob;
-          bestKb = currentKb;
-        }
-        lowQ = midQ;
-      } else {
-        highQ = midQ;
-      }
-    }
-
-    // 3. Fallback: If quality alone at scale 1.0 is still > targetKb, downscale resolution & quality iteratively
-    if (!bestBlob || bestKb > targetKb) {
-      let scale = 0.9;
-      while (scale >= 0.1) {
-        await new Promise((r) => setTimeout(r, 0));
-        const testQualities = [0.70, 0.40, 0.20, 0.05];
-        for (const testQ of testQualities) {
-          const { blob: testBlob, kb: currentKb } = await createPdfWithQuality(testQ, scale, false);
-          if (currentKb <= targetKb) {
+      for (const q of tier.qList) {
+        const { blob: testBlob, kb: currentKb } = await createPdfWithQuality(q, tier.scale, false);
+        if (currentKb <= targetKb) {
+          if (!bestBlob || currentKb > bestKb) {
             bestBlob = testBlob;
             bestKb = currentKb;
-            break;
           }
+          break;
         }
-        if (bestBlob && bestKb <= targetKb) break;
-        scale -= 0.1;
       }
+      if (bestBlob && bestKb <= targetKb) break;
     }
   }
 
-  // 4. Fail-Safe: NEVER return an oversized blob! If targetKb couldn't be reached, return smallestBlob generated
+  // Fail-Safe: Return bestBlob or smallestBlob generated
   if (!bestBlob) {
     bestBlob = smallestBlob || initialBlob;
     bestKb = smallestKb !== Infinity ? smallestKb : initialKb;
@@ -149,7 +140,7 @@ export const convertImagesToPdf = async (imageFiles, targetMaxKb = 300, onProgre
 
 /**
  * Dynamic PDF Compression Engine with Binary Quality Iteration matching user's exact target KB.
- * Stays strictly BELOW targetMaxKb without over-compressing or inflating file size.
+ * Prioritizes high JPEG quality (q >= 0.65) with high-quality canvas bicubic rendering for ultra-sharp text.
  * Reports page-by-page progress callbacks for real-time visual feedback.
  */
 export const compressExistingPdf = async (pdfFile, targetMaxKb = 300, onProgress = null) => {
@@ -185,7 +176,10 @@ export const compressExistingPdf = async (pdfFile, targetMaxKb = 300, onProgress
       const canvas = document.createElement('canvas');
       canvas.width = Math.max(10, Math.round(viewport.width));
       canvas.height = Math.max(10, Math.round(viewport.height));
-      const ctx = canvas.getContext('2d');
+      const ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
 
       ctx.fillStyle = '#FFFFFF';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -221,8 +215,8 @@ export const compressExistingPdf = async (pdfFile, targetMaxKb = 300, onProgress
     onProgress({ current: 1, total: numPages, percent: 5, text: `Reading PDF document (${numPages} page(s))...` });
   }
 
-  // 1. Initial Pass: Test scale = 1.0 (No 1.2x scale resolution inflation) at quality 0.85
-  const { blob: initialBlob, kb: initialKb } = await renderPdfWithQuality(0.85, 1.0, true);
+  // 1. Initial Pass: Test scale = 1.0 at quality 0.90
+  const { blob: initialBlob, kb: initialKb } = await renderPdfWithQuality(0.90, 1.0, true);
 
   let bestBlob = null;
   let bestKb = 0;
@@ -235,47 +229,35 @@ export const compressExistingPdf = async (pdfFile, targetMaxKb = 300, onProgress
       onProgress({ current: numPages, total: numPages, percent: 80, text: `Optimizing PDF quality for target ${targetKb} KB...` });
     }
 
-    // 2. Binary search quality in [0.05, 0.85] at scale 1.0
-    let lowQ = 0.05;
-    let highQ = 0.85;
+    // 2. High-Quality-First Multi-Tier Search (Prefers High JPEG Quality q >= 0.65 over blurry low-q artifacts)
+    const tiers = [
+      { scale: 1.0, qList: [0.80, 0.70, 0.60] },
+      { scale: 0.85, qList: [0.85, 0.75, 0.65] },
+      { scale: 0.75, qList: [0.85, 0.75, 0.65] },
+      { scale: 0.65, qList: [0.85, 0.75, 0.60] },
+      { scale: 0.50, qList: [0.80, 0.70, 0.55] },
+      { scale: 0.40, qList: [0.80, 0.65, 0.50, 0.35] },
+      { scale: 0.30, qList: [0.75, 0.50, 0.30, 0.15] },
+      { scale: 0.20, qList: [0.70, 0.40, 0.20, 0.10] }
+    ];
 
-    for (let step = 0; step < 7; step++) {
+    for (const tier of tiers) {
       await new Promise((r) => setTimeout(r, 0));
-      const midQ = (lowQ + highQ) / 2;
-      const { blob: testBlob, kb: currentKb } = await renderPdfWithQuality(midQ, 1.0, false);
-
-      if (currentKb <= targetKb) {
-        if (!bestBlob || currentKb > bestKb) {
-          bestBlob = testBlob;
-          bestKb = currentKb;
-        }
-        lowQ = midQ;
-      } else {
-        highQ = midQ;
-      }
-    }
-
-    // 3. Fallback: If binary quality search at scale 1.0 is still > targetKb, downscale resolution & quality iteratively
-    if (!bestBlob || bestKb > targetKb) {
-      let scale = 0.9;
-      while (scale >= 0.1) {
-        await new Promise((r) => setTimeout(r, 0));
-        const testQualities = [0.70, 0.40, 0.20, 0.05];
-        for (const testQ of testQualities) {
-          const { blob: testBlob, kb: currentKb } = await renderPdfWithQuality(testQ, scale, false);
-          if (currentKb <= targetKb) {
+      for (const q of tier.qList) {
+        const { blob: testBlob, kb: currentKb } = await renderPdfWithQuality(q, tier.scale, false);
+        if (currentKb <= targetKb) {
+          if (!bestBlob || currentKb > bestKb) {
             bestBlob = testBlob;
             bestKb = currentKb;
-            break;
           }
+          break;
         }
-        if (bestBlob && bestKb <= targetKb) break;
-        scale -= 0.1;
       }
+      if (bestBlob && bestKb <= targetKb) break;
     }
   }
 
-  // 4. Fail-Safe: NEVER return initialBlob (1.9MB) if target size could not be met. Return smallestBlob!
+  // Fail-Safe: Return bestBlob or smallestBlob generated
   if (!bestBlob) {
     bestBlob = smallestBlob || initialBlob;
     bestKb = smallestKb !== Infinity ? smallestKb : initialKb;

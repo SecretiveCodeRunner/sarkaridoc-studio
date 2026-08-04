@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { removeBackground } from '@imgly/background-removal';
+import { binaryCompressToTargetSize } from '../utils/imageEngine';
 import confetti from 'canvas-confetti';
-import { Upload, Download, X, RefreshCw, Sparkles, CheckCircle, Camera, Crop, Palette, Printer, Sliders, Sun } from 'lucide-react';
-import imageCompression from 'browser-image-compression';
+import { Upload, Download, X, RefreshCw, Sparkles, CheckCircle, Camera, Crop, Palette, Printer, Sliders, Sun, Zap, ShieldCheck } from 'lucide-react';
 
 const PASSPORT_SIZES = [
   { label: 'India Passport (3.5 x 4.5 cm)', width: 413, height: 531, ratio: '3.5:4.5' },
@@ -36,6 +36,10 @@ export const PassportPhotoModal = ({ onClose }) => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [removedBlob, setRemovedBlob] = useState(null);
+  const [enableAiBg, setEnableAiBg] = useState(true); // AI BG Removal Toggle
+  const [aiProgressText, setAiProgressText] = useState('');
+  const [aiProgressPercent, setAiProgressPercent] = useState(0);
+
   const [selectedSize, setSelectedSize] = useState(PASSPORT_SIZES[0]);
   const [selectedBg, setSelectedBg] = useState(BG_COLOR_PALETTE[1]); // Default Light Blue for Passport
   const [maxKb, setMaxKb] = useState(MAX_SIZE_OPTIONS[1]); // Default 100KB
@@ -44,100 +48,152 @@ export const PassportPhotoModal = ({ onClose }) => {
   const [finalPreviewUrl, setFinalPreviewUrl] = useState(null);
   const [finalFileSizeBytes, setFinalFileSizeBytes] = useState(0);
 
-  const canvasRef = useRef(null);
+  // Version counter ref to prevent race conditions during rapid option clicks
+  const runVersionRef = useRef(0);
 
-  const handleFileChange = async (file) => {
-    if (!file) return;
-    setSelectedFile(file);
+  const processAiBackgroundRemoval = async (file, currentVersion) => {
+    if (!file || !enableAiBg) return;
     setIsProcessing(true);
+    setAiProgressText('Initializing AI Model...');
+    setAiProgressPercent(10);
+
+    try {
+      const blob = await removeBackground(file, {
+        progress: (key, current, total) => {
+          if (runVersionRef.current !== currentVersion) return; // Discard stale jobs
+          let pct = 20;
+          if (total > 0) pct = Math.min(95, Math.round((current / total) * 100));
+          
+          let text = 'Segmenting Subject...';
+          if (key.includes('fetch')) text = `Downloading AI Model (${pct}%)`;
+          else if (key.includes('compute')) text = `AI Removing Background (${pct}%)`;
+
+          setAiProgressPercent(pct);
+          setAiProgressText(text);
+        }
+      });
+
+      if (runVersionRef.current === currentVersion) {
+        setRemovedBlob(blob);
+      }
+    } catch (err) {
+      console.warn('Passport Photo AI Removal fallback:', err);
+      if (runVersionRef.current === currentVersion) {
+        setRemovedBlob(file);
+      }
+    } finally {
+      if (runVersionRef.current === currentVersion) {
+        setIsProcessing(false);
+      }
+    }
+  };
+
+  const handleFileChange = (file) => {
+    if (!file) return;
+    const nextVersion = ++runVersionRef.current;
+    setSelectedFile(file);
     setRemovedBlob(null);
     setFinalPreviewUrl(null);
 
-    try {
-      // AI Background Removal
-      const blob = await removeBackground(file);
-      setRemovedBlob(blob);
-    } catch (err) {
-      console.error('Passport Photo AI Error:', err);
-      // Fallback: use raw file if AI fails
-      setRemovedBlob(file);
-    } finally {
+    if (enableAiBg) {
+      processAiBackgroundRemoval(file, nextVersion);
+    } else {
       setIsProcessing(false);
     }
   };
 
-  // Render composite canvas when settings change
+  // Re-run AI if toggle is switched ON manually
+  const handleToggleAiBg = (newVal) => {
+    setEnableAiBg(newVal);
+    if (selectedFile) {
+      const nextVersion = ++runVersionRef.current;
+      if (newVal) {
+        processAiBackgroundRemoval(selectedFile, nextVersion);
+      } else {
+        setRemovedBlob(null);
+        setIsProcessing(false);
+      }
+    }
+  };
+
+  // Render composite canvas when settings or photo source changes
   useEffect(() => {
-    if (!removedBlob && !selectedFile) return;
-    const imgSource = removedBlob || selectedFile;
+    if (!selectedFile && !removedBlob) return;
+    const imgSource = (enableAiBg ? removedBlob : null) || selectedFile;
     if (!imgSource) return;
 
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = selectedSize.width;
-      canvas.height = selectedSize.height;
-      const ctx = canvas.getContext('2d');
+    let isMounted = true;
 
-      // 1. Fill background color
-      if (selectedBg.value !== 'transparent') {
-        ctx.fillStyle = selectedBg.value;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-      } else {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-      }
+    const renderComposite = async () => {
+      // Yield to UI thread to keep touch scrolling responsive
+      await new Promise((r) => setTimeout(r, 0));
 
-      // 2. Apply Brightness & Contrast filter
-      ctx.filter = `brightness(${brightness}%) contrast(${contrast}%)`;
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = async () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = selectedSize.width;
+        canvas.height = selectedSize.height;
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
 
-      // 3. Object-fit cover cropping onto passport canvas dimensions
-      const aspectImg = img.width / img.height;
-      const aspectCanvas = canvas.width / canvas.height;
-      let renderW, renderH, renderX, renderY;
+        // 1. Fill background color (only if AI background is removed or transparent selected)
+        if (selectedBg.value !== 'transparent') {
+          ctx.fillStyle = selectedBg.value;
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+        } else {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
 
-      if (aspectImg > aspectCanvas) {
-        renderH = canvas.height;
-        renderW = canvas.height * aspectImg;
-        renderX = (canvas.width - renderW) / 2;
-        renderY = 0;
-      } else {
-        renderW = canvas.width;
-        renderH = canvas.width / aspectImg;
-        renderX = 0;
-        renderY = (canvas.height - renderH) / 2;
-      }
+        // 2. Apply Brightness & Contrast filter
+        ctx.filter = `brightness(${brightness}%) contrast(${contrast}%)`;
 
-      ctx.drawImage(img, renderX, renderY, renderW, renderH);
-      ctx.filter = 'none';
+        // 3. Object-fit cover cropping onto passport canvas dimensions
+        const aspectImg = img.width / img.height;
+        const aspectCanvas = canvas.width / canvas.height;
+        let renderW, renderH, renderX, renderY;
 
-      // 4. Compress to target file size limit
-      const rawDataUrl = canvas.toDataURL(selectedBg.value === 'transparent' ? 'image/png' : 'image/jpeg', 0.95);
-      
-      // Binary compress blob
-      fetch(rawDataUrl)
-        .then(res => res.blob())
-        .then(blob => {
-          if (selectedBg.value === 'transparent' || maxKb.maxKB >= 500) {
-            setFinalPreviewUrl(URL.createObjectURL(blob));
-            setFinalFileSizeBytes(blob.size);
-          } else {
-            imageCompression(new File([blob], 'passport.jpg', { type: 'image/jpeg' }), {
-              maxSizeMB: maxKb.maxKB / 1024,
-              useWebWorker: true
-            }).then(compressedBlob => {
-              setFinalPreviewUrl(URL.createObjectURL(compressedBlob));
-              setFinalFileSizeBytes(compressedBlob.size);
-            }).catch(() => {
-              setFinalPreviewUrl(URL.createObjectURL(blob));
-              setFinalFileSizeBytes(blob.size);
-            });
-          }
-        });
+        if (aspectImg > aspectCanvas) {
+          renderH = canvas.height;
+          renderW = canvas.height * aspectImg;
+          renderX = (canvas.width - renderW) / 2;
+          renderY = 0;
+        } else {
+          renderW = canvas.width;
+          renderH = canvas.width / aspectImg;
+          renderX = 0;
+          renderY = (canvas.height - renderH) / 2;
+        }
+
+        ctx.drawImage(img, renderX, renderY, renderW, renderH);
+        ctx.filter = 'none';
+
+        // 4. Precision Binary Compression to land below target maxKB
+        const format = selectedBg.value === 'transparent' ? 'image/png' : 'image/jpeg';
+        const res = await binaryCompressToTargetSize(
+          canvas,
+          format,
+          0,
+          maxKb.maxKB,
+          maxKb.maxKB
+        );
+
+        if (isMounted) {
+          setFinalPreviewUrl(URL.createObjectURL(res.blob));
+          setFinalFileSizeBytes(res.blob.size);
+        }
+      };
+
+      img.src = URL.createObjectURL(imgSource);
     };
 
-    img.src = URL.createObjectURL(imgSource);
-  }, [removedBlob, selectedFile, selectedSize, selectedBg, brightness, contrast, maxKb]);
+    renderComposite();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [removedBlob, selectedFile, selectedSize, selectedBg, brightness, contrast, maxKb, enableAiBg]);
 
   const handleDownloadSingle = () => {
     if (!finalPreviewUrl) return;
@@ -165,7 +221,9 @@ export const PassportPhotoModal = ({ onClose }) => {
       const sheet = document.createElement('canvas');
       sheet.width = 1200;  // 4 inches @ 300 DPI
       sheet.height = 1800; // 6 inches @ 300 DPI
-      const ctx = sheet.getContext('2d');
+      const ctx = sheet.getContext('2d', { willReadFrequently: true });
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
 
       ctx.fillStyle = '#FFFFFF';
       ctx.fillRect(0, 0, sheet.width, sheet.height);
@@ -258,10 +316,36 @@ export const PassportPhotoModal = ({ onClose }) => {
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Configuration</span>
                   <button
-                    onClick={() => { setSelectedFile(null); setFinalPreviewUrl(null); }}
+                    onClick={() => { setSelectedFile(null); setFinalPreviewUrl(null); setRemovedBlob(null); }}
                     className="text-xs text-blue-600 hover:underline font-semibold"
                   >
                     Upload New Photo
+                  </button>
+                </div>
+
+                {/* AI Toggle Switch Card */}
+                <div className="p-3.5 rounded-2xl bg-blue-50/70 border border-blue-200 flex items-center justify-between">
+                  <div className="flex items-center space-x-2.5">
+                    <div className="p-1.5 rounded-lg bg-blue-600 text-white">
+                      <Zap className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <span className="text-xs font-bold text-slate-900 block">AI Studio BG Removal</span>
+                      <span className="text-[10px] text-slate-500 font-medium">Turn OFF for instant speed on low-end mobile devices</span>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => handleToggleAiBg(!enableAiBg)}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      enableAiBg ? 'bg-blue-600' : 'bg-slate-300'
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        enableAiBg ? 'translate-x-6' : 'translate-x-1'
+                      }`}
+                    />
                   </button>
                 </div>
 
@@ -385,7 +469,7 @@ export const PassportPhotoModal = ({ onClose }) => {
                     {isProcessing ? (
                       <span className="text-xs font-bold text-blue-600 flex items-center space-x-1 animate-pulse">
                         <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                        <span>AI Studio Processing...</span>
+                        <span>AI Neural Network...</span>
                       </span>
                     ) : (
                       <span className="text-xs font-bold text-emerald-600 flex items-center space-x-1">
@@ -395,14 +479,28 @@ export const PassportPhotoModal = ({ onClose }) => {
                     )}
                   </div>
 
+                  {/* AI Live Progress Bar Overlay Card */}
+                  {isProcessing && (
+                    <div className="p-4 mb-4 rounded-2xl bg-blue-50 border border-blue-200 space-y-2">
+                      <div className="flex items-center justify-between text-xs font-bold text-blue-900">
+                        <span className="flex items-center space-x-1.5">
+                          <Sparkles className="w-4 h-4 text-blue-600 animate-spin" />
+                          <span>{aiProgressText || 'Processing AI Portrait...'}</span>
+                        </span>
+                        <span>{aiProgressPercent}%</span>
+                      </div>
+                      <div className="w-full h-2 bg-blue-200 rounded-full overflow-hidden shadow-inner">
+                        <div
+                          className="h-full bg-blue-600 rounded-full transition-all duration-300 ease-out"
+                          style={{ width: `${aiProgressPercent}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
+
                   {/* Preview Container */}
                   <div className="relative flex items-center justify-center min-h-[260px] max-h-[320px] w-full p-4 bg-white rounded-2xl border border-slate-200 shadow-inner overflow-hidden">
-                    {isProcessing ? (
-                      <div className="flex flex-col items-center justify-center space-y-3 text-blue-600 p-6">
-                        <RefreshCw className="w-8 h-8 animate-spin" />
-                        <span className="text-xs font-bold text-slate-900">Isolating Portrait & Lighting</span>
-                      </div>
-                    ) : finalPreviewUrl ? (
+                    {finalPreviewUrl ? (
                       <div className="flex flex-col items-center">
                         <img
                           src={finalPreviewUrl}
@@ -413,7 +511,12 @@ export const PassportPhotoModal = ({ onClose }) => {
                           {selectedSize.width} x {selectedSize.height} px ({selectedSize.ratio})
                         </span>
                       </div>
-                    ) : null}
+                    ) : (
+                      <div className="flex flex-col items-center justify-center space-y-3 text-blue-600 p-6">
+                        <RefreshCw className="w-8 h-8 animate-spin" />
+                        <span className="text-xs font-bold text-slate-900">Loading Studio Preview...</span>
+                      </div>
+                    )}
                   </div>
                 </div>
 
