@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { normalizeImageForProcessing, fastThresholdCutout, cleanSignatureDocument } from '../utils/imageEngine';
+import { normalizeImageForProcessing, fastThresholdCutout } from '../utils/imageEngine';
 import { getCloudGpuQuota, incrementCloudGpuQuota } from '../utils/cloudQuota';
 import confetti from 'canvas-confetti';
 import { Upload, Download, RefreshCw, Sparkles, CheckCircle, Wand2, ArrowLeft, Crop, FileText, User } from 'lucide-react';
@@ -65,7 +65,9 @@ export const BgRemoverModal = ({ onClose }) => {
 
     // Dispatch to chosen cutout mode
     if (cutoutMode === 'signature') {
-      runSignatureCutout(normalized, bgColor);
+      const sigColor = bgColor === 'transparent' ? '#FFFFFF' : bgColor;
+      setBgColor(sigColor);
+      runSignatureCutout(normalized, sigColor);
     } else if (cutoutMode === 'portrait') {
       runPortraitCutout(normalized, bgColor);
     } else {
@@ -95,49 +97,13 @@ export const BgRemoverModal = ({ onClose }) => {
     }
   };
 
-  // 2. Adaptive signature & document paper cleaner (CamScanner style, 5ms, never vanishes ink!)
-  const runSignatureCutout = async (file, color) => {
-    setIsProcessing(true);
-    setStatusMessage('✍️ Cleaning Paper Shadows & Enhancing Ink...');
-    startLiveTimer();
-
-    try {
-      const img = new Image();
-      const url = URL.createObjectURL(file);
-      await new Promise((resolve, reject) => {
-        img.onload = resolve;
-        img.onerror = reject;
-        img.src = url;
-      });
-
-      const canvas = document.createElement('canvas');
-      canvas.width = img.naturalWidth || img.width;
-      canvas.height = img.naturalHeight || img.height;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0);
-
-      // Clean paper shadows into pure white and preserve bold ink
-      cleanSignatureDocument(ctx, canvas.width, canvas.height, color === 'transparent');
-
-      canvas.toBlob(
-        (blob) => {
-          setRemovedBlob(blob);
-          renderCompositePreview(blob, color);
-          stopLiveTimer();
-          setIsProcessing(false);
-        },
-        color === 'transparent' ? 'image/png' : 'image/jpeg',
-        0.96
-      );
-    } catch (err) {
-      console.warn('Signature clean error:', err);
-      stopLiveTimer();
-      setIsProcessing(false);
-    }
+  // 2. High-precision neural signature cutout (uses IS-Net model to isolate clean ink strokes with 0 markings!)
+  const runSignatureCutout = async (file, color = '#FFFFFF') => {
+    return runDeepAiCutout(file, color, '✍️ Neural AI Isolating Signature Strokes (Zero Markings)...');
   };
 
-  // 3. High-precision neural network model (for complex general non-person objects)
-  const runDeepAiCutout = async (file, color) => {
+  // 3. High-precision neural network model (for complex general non-person objects & signatures)
+  const runDeepAiCutout = async (file, color, customMsg = null) => {
     isCancelledRef.current = false;
     setIsProcessing(true);
     setRemovedBlob(null);
@@ -148,7 +114,7 @@ export const BgRemoverModal = ({ onClose }) => {
 
     // Try Cloud Edge GPU first if quota is available
     if (quota.isEligible) {
-      setStatusMessage(`⚡ Cloud Edge GPU Processing... (Free Use ${quota.usedToday + 1}/2)`);
+      setStatusMessage(customMsg || `⚡ Cloud Edge GPU Processing... (Free Use ${quota.usedToday + 1}/2)`);
       try {
         const formData = new FormData();
         formData.append('image', file);
@@ -180,7 +146,7 @@ export const BgRemoverModal = ({ onClose }) => {
       return;
     }
 
-    setStatusMessage('Downloading AI Model & Segmenting Subject...');
+    setStatusMessage(customMsg || '⚡ AI Segmenting Subject & Removing Background...');
 
     try {
       const { removeBackground } = await import('@imgly/background-removal');
@@ -232,11 +198,7 @@ export const BgRemoverModal = ({ onClose }) => {
   const handleColorSelect = (color) => {
     setBgColor(color);
     if (removedBlob) {
-      if (cutoutMode === 'signature') {
-        if (selectedFile) runSignatureCutout(selectedFile, color);
-      } else {
-        renderCompositePreview(removedBlob, color);
-      }
+      renderCompositePreview(removedBlob, color);
     }
   };
 
@@ -389,7 +351,9 @@ export const BgRemoverModal = ({ onClose }) => {
                   <button
                     onClick={() => {
                       setCutoutMode('signature');
-                      if (selectedFile) runSignatureCutout(selectedFile, bgColor);
+                      const sigColor = bgColor === 'transparent' ? '#FFFFFF' : bgColor;
+                      setBgColor(sigColor);
+                      if (selectedFile) runSignatureCutout(selectedFile, sigColor);
                     }}
                     className={`p-2.5 rounded-xl text-left border transition-all ${
                       cutoutMode === 'signature'
@@ -401,7 +365,7 @@ export const BgRemoverModal = ({ onClose }) => {
                       <FileText className="w-3.5 h-3.5 text-purple-600" />
                       <span>Signature</span>
                     </div>
-                    <p className="text-[10px] text-slate-500 leading-tight">Pure White Paper</p>
+                    <p className="text-[10px] text-slate-500 leading-tight">Neural Ink Cutout</p>
                   </button>
 
                   <button

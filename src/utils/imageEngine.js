@@ -105,57 +105,87 @@ export const cleanSignatureDocument = (ctx, width, height, makeTransparent = fal
   const imageData = ctx.getImageData(0, 0, width, height);
   const data = imageData.data;
 
-  // 1. Sample pixels to compute paper background luminance
-  const sampleStep = Math.max(1, Math.floor(data.length / (4 * 1000)));
-  const samples = [];
-  for (let i = 0; i < data.length; i += sampleStep * 4) {
-    // Luminance formula
-    const lum = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
-    samples.push(lum);
+  // 1. Build localized background illumination grid (cell size ~24px)
+  // Completely eliminates phone shadows, gradients, and paper folds without leaving marks!
+  const cellSize = Math.max(16, Math.round(Math.min(width, height) / 12));
+  const cols = Math.ceil(width / cellSize);
+  const rows = Math.ceil(height / cellSize);
+  const bgGrid = new Float32Array(cols * rows);
+
+  for (let r = 0; r < rows; r++) {
+    const startY = r * cellSize;
+    const endY = Math.min(height, startY + cellSize);
+
+    for (let c = 0; c < cols; c++) {
+      const startX = c * cellSize;
+      const endX = Math.min(width, startX + cellSize);
+
+      let maxLum = 0;
+      let sumLum = 0;
+      let count = 0;
+
+      for (let y = startY; y < endY; y += 2) {
+        const rowOffset = y * width;
+        for (let x = startX; x < endX; x += 2) {
+          const idx = (rowOffset + x) * 4;
+          const lum = 0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2];
+          if (lum > maxLum) maxLum = lum;
+          sumLum += lum;
+          count++;
+        }
+      }
+
+      const avgLum = count > 0 ? sumLum / count : 180;
+      bgGrid[r * cols + c] = Math.max(80, maxLum * 0.75 + avgLum * 0.25);
+    }
   }
-  samples.sort((a, b) => a - b);
 
-  // Background paper is typically the 70th to 85th percentile of brightness
-  const paperBrightness = samples[Math.floor(samples.length * 0.75)] || 180;
-  const inkDarkness = samples[Math.floor(samples.length * 0.05)] || 40;
+  // 2. Classify each pixel relative to its LOCAL block paper brightness
+  for (let y = 0; y < height; y++) {
+    const r = Math.min(rows - 1, Math.floor(y / cellSize));
+    const rowOffset = y * width;
 
-  // Thresholds: anything near or above paperBrightness is paper
-  const paperCutoff = Math.max(135, paperBrightness * 0.82);
+    for (let x = 0; x < width; x++) {
+      const c = Math.min(cols - 1, Math.floor(x / cellSize));
+      const localPaper = bgGrid[r * cols + c];
 
-  for (let i = 0; i < data.length; i += 4) {
-    const r = data[i];
-    const g = data[i + 1];
-    const b = data[i + 2];
-    const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+      const idx = (rowOffset + x) * 4;
+      const red = data[idx];
+      const green = data[idx + 1];
+      const blue = data[idx + 2];
+      const lum = 0.299 * red + 0.587 * green + 0.114 * blue;
 
-    if (lum >= paperCutoff) {
-      // Background Paper -> 100% Pure White
-      if (makeTransparent) {
-        data[i + 3] = 0; // Transparent for PNG
+      // If within 22 luminance points of local paper background -> it is paper!
+      const isPaper = lum >= (localPaper - 22);
+
+      if (isPaper) {
+        if (makeTransparent) {
+          data[idx + 3] = 0; // Transparent for PNG
+        } else {
+          data[idx] = 255;
+          data[idx + 1] = 255;
+          data[idx + 2] = 255;
+          data[idx + 3] = 255;
+        }
       } else {
-        data[i] = 255;
-        data[i + 1] = 255;
-        data[i + 2] = 255;
-        data[i + 3] = 255;
-      }
-    } else {
-      // Ink Stroke -> Boost contrast so it is bold, crisp, and clearly legible
-      const isBlueInk = (b > r + 10) && (b > g);
-      const ratio = Math.max(0, Math.min(1, (lum - inkDarkness) / (paperCutoff - inkDarkness)));
+        // True ink stroke!
+        const isBlueInk = (blue > red + 10) && (blue > green);
+        const darkRatio = Math.max(0, Math.min(1, (localPaper - 22 - lum) / 60));
 
-      if (isBlueInk) {
-        // Enhance blue ballpoint/gel pen ink
-        data[i] = Math.round(ratio * 35);
-        data[i + 1] = Math.round(ratio * 65);
-        data[i + 2] = Math.round(115 + (1 - ratio) * 100);
-      } else {
-        // Deepen black / dark ink
-        const darkVal = Math.round(ratio * 40);
-        data[i] = darkVal;
-        data[i + 1] = darkVal;
-        data[i + 2] = darkVal;
+        if (isBlueInk) {
+          // Enhance blue ballpoint/gel pen ink
+          data[idx] = Math.round(red * 0.4);
+          data[idx + 1] = Math.round(green * 0.6);
+          data[idx + 2] = Math.min(255, Math.round(blue * 1.1 + 30));
+        } else {
+          // Deepen black/dark pen ink
+          const v = Math.round(25 * (1 - darkRatio));
+          data[idx] = v;
+          data[idx + 1] = v;
+          data[idx + 2] = v;
+        }
+        data[idx + 3] = 255; // Keep ink 100% opaque
       }
-      data[i + 3] = 255; // Always keep ink 100% opaque!
     }
   }
 

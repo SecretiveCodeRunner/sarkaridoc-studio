@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { convertImagesToPdf, compressExistingPdf } from '../utils/pdfEngine';
 import confetti from 'canvas-confetti';
 import { Upload, Download, FileText, CheckCircle, RefreshCw, FilePlus, Layers, ArrowLeft, Camera, Sliders } from 'lucide-react';
@@ -10,34 +10,71 @@ export const PdfStudioModal = ({ onClose }) => {
   const [progressInfo, setProgressInfo] = useState(null);
   const [pdfResult, setPdfResult] = useState(null);
 
-  const handleFilesSelected = async (selectedFiles, customKb = targetMaxKb) => {
-    if (!selectedFiles || selectedFiles.length === 0) return;
-    const fileList = Array.from(selectedFiles);
-    setFiles(fileList);
-    setPdfResult(null);
+  const debounceTimerRef = useRef(null);
+  const runVersionRef = useRef(0);
 
+  // Clear debounce timer on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+    };
+  }, []);
+
+  const runCompression = async (fileList, customKb) => {
+    const currentVersion = ++runVersionRef.current;
     setIsProcessing(true);
-    setProgressInfo({ current: 0, total: fileList.length, percent: 5, text: 'Initializing compression engine...' });
+    setProgressInfo({ current: 0, total: fileList.length, percent: 5, text: `Optimizing PDF for max ${customKb} KB...` });
 
-    // Yield to browser UI thread so touch scroll and spinner update immediately
-    await new Promise((r) => setTimeout(r, 40));
+    // Yield to browser UI thread
+    await new Promise((r) => setTimeout(r, 30));
 
     const onProgress = (info) => {
-      setProgressInfo(info);
+      if (runVersionRef.current === currentVersion) {
+        setProgressInfo(info);
+      }
     };
 
     try {
       if (fileList.length === 1 && fileList[0].type === 'application/pdf') {
         const res = await compressExistingPdf(fileList[0], customKb, onProgress);
-        setPdfResult(res);
+        if (runVersionRef.current === currentVersion) {
+          setPdfResult(res);
+        }
       } else {
         const res = await convertImagesToPdf(fileList, customKb, onProgress);
-        setPdfResult(res);
+        if (runVersionRef.current === currentVersion) {
+          setPdfResult(res);
+        }
       }
     } catch (err) {
       console.error('PDF Processing Error:', err);
     } finally {
-      setIsProcessing(false);
+      if (runVersionRef.current === currentVersion) {
+        setIsProcessing(false);
+      }
+    }
+  };
+
+  const triggerDebouncedCompression = (fileList, customKb) => {
+    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+    debounceTimerRef.current = setTimeout(() => {
+      runCompression(fileList, customKb);
+    }, 280);
+  };
+
+  const handleFilesSelected = (selectedFiles) => {
+    if (!selectedFiles || selectedFiles.length === 0) return;
+    const fileList = Array.from(selectedFiles);
+    setFiles(fileList);
+    setPdfResult(null);
+    runCompression(fileList, targetMaxKb);
+  };
+
+  const handleTargetKbChange = (newKb) => {
+    const val = Number(newKb);
+    setTargetMaxKb(newKb);
+    if (files.length > 0 && !isNaN(val) && val >= 20) {
+      triggerDebouncedCompression(files, val);
     }
   };
 
@@ -101,12 +138,10 @@ export const PdfStudioModal = ({ onClose }) => {
               <div className="flex items-center space-x-1 bg-emerald-50 px-3 py-1 rounded-xl border border-emerald-200">
                 <input
                   type="number"
+                  min="20"
+                  max="5000"
                   value={targetMaxKb}
-                  onChange={(e) => {
-                    const kb = Number(e.target.value);
-                    setTargetMaxKb(kb);
-                    if (files.length > 0) handleFilesSelected(files, kb);
-                  }}
+                  onChange={(e) => handleTargetKbChange(Number(e.target.value))}
                   className="w-16 text-center text-xs font-bold text-emerald-700 bg-transparent focus:outline-none"
                 />
                 <span className="text-xs text-emerald-800 font-bold">KB</span>
@@ -121,11 +156,7 @@ export const PdfStudioModal = ({ onClose }) => {
                 max="1000"
                 step="10"
                 value={targetMaxKb}
-                onChange={(e) => {
-                  const kb = Number(e.target.value);
-                  setTargetMaxKb(kb);
-                  if (files.length > 0) handleFilesSelected(files, kb);
-                }}
+                onChange={(e) => handleTargetKbChange(Number(e.target.value))}
                 className="w-full accent-emerald-600 cursor-pointer h-2 bg-slate-100 rounded-lg"
               />
               <div className="flex justify-between text-[10px] text-slate-400 font-semibold px-0.5">
@@ -136,21 +167,19 @@ export const PdfStudioModal = ({ onClose }) => {
               </div>
             </div>
 
-            <div className="flex items-center space-x-2 pt-1">
-              {[100, 150, 200, 300, 500].map((kb) => (
+            <div className="flex items-center space-x-2 pt-1 flex-wrap gap-y-2">
+              {[100, 200, 300, 500, 1000].map((kb) => (
                 <button
                   key={kb}
-                  onClick={() => {
-                    setTargetMaxKb(kb);
-                    if (files.length > 0) handleFilesSelected(files, kb);
-                  }}
+                  type="button"
+                  onClick={() => handleTargetKbChange(kb)}
                   className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                    targetMaxKb === kb
+                    Number(targetMaxKb) === kb
                       ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/20'
                       : 'bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200'
                   }`}
                 >
-                  {kb} KB
+                  {kb === 1000 ? '1 MB (1000 KB)' : `${kb} KB`}
                 </button>
               ))}
             </div>
