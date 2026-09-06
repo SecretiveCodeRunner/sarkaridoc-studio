@@ -20,7 +20,7 @@ const TOOL_CONFIG = {
     id: 'compress-pdf',
     title: 'PDF Compressor',
     shortTitle: 'Compress PDF',
-    subtitle: 'Reduce PDF file size to exact KB limits for Indian govt portal uploads',
+    subtitle: 'Reduce PDF file size to exact KB limits for portal and document uploads',
     icon: Sliders,
     urlParam: 'pdf-compressor',
   },
@@ -36,7 +36,7 @@ const TOOL_CONFIG = {
     id: 'pdf-to-jpg',
     title: 'PDF to JPG Converter',
     shortTitle: 'PDF to JPG',
-    subtitle: 'Extract high-resolution JPG images from multi-page PDFs or Admit Cards',
+    subtitle: 'Extract high-resolution JPG images from multi-page PDF documents',
     icon: FilePlus,
     urlParam: 'pdf-to-jpg',
   },
@@ -361,7 +361,7 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
                     <span>Document Layout &amp; Quality Settings</span>
                   </h2>
                   <p className="text-[11px] text-slate-500 font-medium">
-                    Combine Marksheets, Degree Certificates &amp; Aadhaar into one official PDF
+                    Combine photos, certificates &amp; scanned documents into one official PDF
                   </p>
                 </div>
 
@@ -377,10 +377,10 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
                 </div>
               </div>
 
-              {/* Govt Portal Compression Options (Optional) */}
+              {/* Document Size Compression Options (Optional) */}
               <div className="pt-2 border-t border-slate-100 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-slate-700 font-bold">Compress for Govt Portal (Optional):</span>
+                  <span className="text-xs text-slate-700 font-bold">Compress to Target Size (Optional):</span>
                   {imgTargetKb && (
                     <button
                       type="button"
@@ -728,7 +728,7 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
                     <Sliders className="w-4 h-4 text-emerald-600" />
                     <span>Target Maximum PDF Size</span>
                   </label>
-                  <p className="text-[11px] text-slate-500 font-medium">Select required KB limit for UPSC, SSC, NTA or State PSC portal</p>
+                  <p className="text-[11px] text-slate-500 font-medium">Select target maximum file size in KB for your documents</p>
                 </div>
 
                 <div className="flex items-center space-x-1 bg-emerald-50 px-3 py-1 rounded-xl border border-emerald-200">
@@ -1060,7 +1060,7 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
                     <FilePlus className="w-4 h-4 text-emerald-600" />
                     <span>PDF to JPG Converter</span>
                   </h3>
-                  <p className="text-[11px] text-slate-500 font-medium">Extract high-resolution JPG images from multi-page PDFs or Admit Cards</p>
+                  <p className="text-[11px] text-slate-500 font-medium">Extract high-resolution JPG images from multi-page PDF documents</p>
                 </div>
 
                 <div className="flex items-center space-x-1 text-xs">

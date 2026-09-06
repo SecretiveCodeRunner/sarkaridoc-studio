@@ -501,8 +501,8 @@ export const PassportPhotoModal = ({ onClose }) => {
                       </p>
                       <div className="grid grid-cols-2 gap-2 pt-1">
                         {[
-                          { id: 'studio', label: 'Studio Clean', desc: 'Balanced & natural hair' },
-                          { id: 'crisp', label: 'Crisp Cut', desc: 'Tight chin & neck cut' }
+                          { id: 'studio', label: 'Studio Clean', desc: 'Smooth & natural edges' },
+                          { id: 'crisp', label: 'Crisp Cut', desc: 'Tight & uniform cutout' }
                         ].map((p) => (
                           <button
                             key={p.id}
