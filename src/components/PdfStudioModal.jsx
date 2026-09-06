@@ -279,7 +279,7 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
     <div className="min-h-screen bg-slate-50 flex flex-col text-slate-900 antialiased" style={{ fontFamily: "'Lexend', sans-serif" }}>
       
       {/* Sticky Standalone Workspace Header */}
-      <header className="bg-white/95 backdrop-blur-md border-b border-slate-200 sticky top-0 z-30 px-3 sm:px-6 py-3 flex items-center justify-between shadow-xs">
+      <header className="bg-white/95 backdrop-blur-md border-b border-slate-200 sticky top-0 z-30 px-3 sm:px-6 py-3 flex items-center justify-between shadow-xs safe-area-top">
         <div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
           <button
             onClick={onClose}

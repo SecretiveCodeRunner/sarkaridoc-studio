@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Smartphone, Download, X, Share, PlusSquare, Sparkles } from 'lucide-react';
+import { Capacitor } from '@capacitor/core';
 
 export const InstallPwaBanner = () => {
+  const isNative = typeof window !== 'undefined' && Capacitor.isNativePlatform();
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [isIOS, setIsIOS] = useState(false);
   const [showIOSModal, setShowIOSModal] = useState(false);
@@ -58,7 +60,7 @@ export const InstallPwaBanner = () => {
     localStorage.setItem('sarkaridoc_pwa_dismissed', 'true');
   };
 
-  if (isInstalled || dismissed) return null;
+  if (isNative || isInstalled || dismissed) return null;
 
   // Render bottom bar if prompt is available OR if on iOS
   const shouldShowBanner = deferredPrompt || isIOS;

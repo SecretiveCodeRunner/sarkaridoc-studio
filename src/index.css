@@ -222,16 +222,21 @@ select:focus-visible {
   background: linear-gradient(90deg, transparent, #e2e8f0 20%, #e2e8f0 80%, transparent);
 }
 
-/* --- Reduced Motion Support --- */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-  .animate-gpu-spin {
-    animation: none !important;
-  }
+/* --- Android Material 3 & Safe Area System --- */
+.safe-area-top {
+  padding-top: max(env(safe-area-inset-top), 16px);
 }
+.safe-area-bottom {
+  padding-bottom: max(env(safe-area-inset-bottom), 12px);
+}
+.m3-surface {
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+/* Disable touch tap delay and blue highlight on mobile/Android */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+

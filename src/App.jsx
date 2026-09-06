@@ -6,6 +6,10 @@ import { Footer } from './components/Footer';
 import { EXAM_PRESETS } from './data/presets';
 import { InstallPwaBanner } from './components/InstallPwaBanner';
 import { RefreshCw } from 'lucide-react';
+import { Capacitor } from '@capacitor/core';
+import { App as CapApp } from '@capacitor/app';
+import { StatusBar, Style } from '@capacitor/status-bar';
+import { AndroidShell } from './components/android/AndroidShell';
 
 // Code-split heavy tool workspaces into isolated lazy chunks
 const EditorModal = lazy(() => import('./components/EditorModal').then(m => ({ default: m.EditorModal })));
@@ -24,6 +28,20 @@ export function App() {
   const [isPassportPhotoOpen, setIsPassportPhotoOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
 
+  const isNative = typeof window !== 'undefined' && Capacitor.isNativePlatform();
+  const [isMobileView, setIsMobileView] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return window.innerWidth < 768;
+  });
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobileView(window.innerWidth < 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const activeTool = selectedPreset 
     ? `preset:${selectedPreset.id}` 
     : isPassportPhotoOpen 
@@ -37,6 +55,30 @@ export function App() {
     : isAboutOpen 
     ? 'about'
     : null;
+
+  // Configure Android Status Bar and Hardware Back Button via Capacitor
+  useEffect(() => {
+    if (isNative) {
+      try {
+        StatusBar.setBackgroundColor({ color: '#ffffff' });
+        StatusBar.setStyle({ style: Style.Light });
+      } catch (e) {
+        console.debug('StatusBar configuration error', e);
+      }
+
+      const backListener = CapApp.addListener('backButton', () => {
+        if (activeTool) {
+          closeAllTools(true);
+        } else {
+          CapApp.exitApp();
+        }
+      });
+
+      return () => {
+        backListener.then((handler) => handler.remove());
+      };
+    }
+  }, [isNative, activeTool]);
 
   // Open tool helper with history pushState for mobile back button navigation
   const openTool = (type, preset = null) => {
@@ -185,36 +227,50 @@ export function App() {
   return (
     <div className="min-h-screen flex flex-col bg-white text-slate-900 antialiased">
       {!activeTool ? (
-        // 1. Home Page View (Rendered ONLY when no tool is active)
-        <>
-          <Navbar
+        // 1. Home / Shell View (Rendered ONLY when no tool is active)
+        isNative || isMobileView ? (
+          <AndroidShell
             onOpenPassportPhoto={() => openTool('passport-photo')}
             onOpenImageToPdf={() => openTool('image-to-pdf')}
-            onOpenPdfStudio={() => openTool('pdf-studio')}
+            onOpenPdfCompressor={() => openTool('pdf-compressor')}
+            onOpenMergePdf={() => openTool('merge-pdf')}
+            onOpenPdfToJpg={() => openTool('pdf-to-jpg')}
             onOpenBgRemover={() => openTool('bg-remover')}
             onOpenImageResizer={() => openTool('image-resizer')}
-            onOpenAbout={() => openTool('about')}
+            onSelectPreset={(preset) => openTool('preset', preset)}
           />
-
-          <main className="flex-1 bg-white">
-            <PresetSelector
-              selectedPresetId={selectedPreset?.id}
-              onSelectPreset={(preset) => openTool('preset', preset)}
+        ) : (
+          // Desktop Browser View
+          <>
+            <Navbar
               onOpenPassportPhoto={() => openTool('passport-photo')}
               onOpenImageToPdf={() => openTool('image-to-pdf')}
               onOpenPdfStudio={() => openTool('pdf-studio')}
-              onOpenMergePdf={() => openTool('merge-pdf')}
-              onOpenPdfToJpg={() => openTool('pdf-to-jpg')}
               onOpenBgRemover={() => openTool('bg-remover')}
               onOpenImageResizer={() => openTool('image-resizer')}
+              onOpenAbout={() => openTool('about')}
             />
-            
-            <SeoContentSection />
-          </main>
 
-          <InstallPwaBanner />
-          <Footer onOpenAbout={() => openTool('about')} />
-        </>
+            <main className="flex-1 bg-white">
+              <PresetSelector
+                selectedPresetId={selectedPreset?.id}
+                onSelectPreset={(preset) => openTool('preset', preset)}
+                onOpenPassportPhoto={() => openTool('passport-photo')}
+                onOpenImageToPdf={() => openTool('image-to-pdf')}
+                onOpenPdfStudio={() => openTool('pdf-studio')}
+                onOpenMergePdf={() => openTool('merge-pdf')}
+                onOpenPdfToJpg={() => openTool('pdf-to-jpg')}
+                onOpenBgRemover={() => openTool('bg-remover')}
+                onOpenImageResizer={() => openTool('image-resizer')}
+              />
+              
+              <SeoContentSection />
+            </main>
+
+            <InstallPwaBanner />
+            <Footer onOpenAbout={() => openTool('about')} />
+          </>
+        )
       ) : (
         // 2. Isolated Full-Page Tool Workspace (Home Page is 100% UNMOUNTED for ultra mobile speed)
         <Suspense fallback={

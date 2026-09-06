@@ -339,7 +339,7 @@ export const PassportPhotoModal = ({ onClose }) => {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-['Outfit'] text-slate-900 antialiased">
       {/* Sticky Workspace Top Header */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-30 px-4 sm:px-8 py-3.5 flex items-center justify-between shadow-xs">
+      <header className="bg-white border-b border-slate-200 sticky top-0 z-30 px-4 sm:px-8 py-3.5 flex items-center justify-between shadow-xs safe-area-top">
         <div className="flex items-center space-x-3">
           <button
             onClick={onClose}
