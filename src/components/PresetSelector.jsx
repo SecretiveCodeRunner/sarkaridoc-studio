@@ -1,11 +1,17 @@
 import React, { useState } from 'react';
 import { EXAM_PRESETS } from '../data/presets';
-import { Search, Sparkles, FileText, Image as ImageIcon, SlidersHorizontal, Wand2, Check, ArrowRight, Zap, Camera } from 'lucide-react';
+import { 
+  Search, Sparkles, FileText, Image as ImageIcon, SlidersHorizontal, 
+  Wand2, Check, ArrowRight, Zap, Camera, Merge
+} from 'lucide-react';
 
 export const PresetSelector = ({ 
   onSelectPreset, 
   selectedPresetId,
   onOpenPdfStudio,
+  onOpenImageToPdf,
+  onOpenMergePdf,
+  onOpenPdfToJpg: _onOpenPdfToJpg,
   onOpenBgRemover,
   onOpenImageResizer,
   onOpenPassportPhoto
@@ -41,8 +47,8 @@ export const PresetSelector = ({
           <span className="block text-blue-600 mt-1">Ready in Seconds</span>
         </h1>
         <p className="mt-4 text-slate-600 text-sm sm:text-base max-w-2xl mx-auto leading-relaxed font-medium" style={{ fontFamily: "'Source Sans 3', sans-serif" }}>
-          Pixel-exact KB compressor · Passport Photo Maker · AI background remover · PDF resizer.<br className="hidden sm:block" />
-          <strong className="text-slate-800">100% client-side</strong> — zero server uploads, your files never leave your device.
+          Passport Size Photo Maker · Image to PDF Converter · Background Remover · Exact KB Resizer.<br className="hidden sm:block" />
+          <strong className="text-slate-800">100% client-side privacy</strong> — zero server uploads, your files never leave your device.
         </p>
 
         {/* Trust signals strip */}
@@ -56,93 +62,137 @@ export const PresetSelector = ({
           <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-amber-500 flex-shrink-0"></span>50+ Exam Presets</span>
         </div>
 
-        {/* 🌟 4 HERO STUDIO TOOLS 🌟 */}
-        <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 max-w-5xl mx-auto">
+        {/* 🌟 6 HERO STUDIO TOOLS (RESTRUCTURED SUITE) 🌟 */}
+        <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 max-w-5xl mx-auto">
           
-          {/* Tool 1: Passport Photo Maker */}
+          {/* Tool 1: Passport Size Photo Maker */}
           <button
             onClick={onOpenPassportPhoto}
-            aria-label="Open Passport Photo Studio — Create exam photos in 3.5x4.5cm or 2x2 inch format"
+            aria-label="Open Passport Size Photo Maker — Create exam photos in 3.5x4.5cm or 2x2 inch format"
             style={{ willChange: 'transform, box-shadow' }}
-            className="group relative p-4 rounded-2xl bg-white border-2 border-blue-300 hover:border-blue-600 transition-all duration-200 shadow-xs hover:shadow-md text-left flex items-center space-x-3.5 hover:-translate-y-1 min-h-[88px]"
+            className="group relative p-4 rounded-2xl bg-white border-2 border-blue-200 hover:border-blue-600 transition-all duration-200 shadow-xs hover:shadow-md text-left flex items-center space-x-3.5 hover:-translate-y-1 min-h-[92px]"
           >
-            <div className="w-11 h-11 rounded-2xl bg-blue-600 text-white flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform shadow-md shadow-blue-500/20">
+            <div className="w-11 h-11 rounded-2xl bg-blue-600 text-white flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform shadow-md shadow-blue-500/20">
               <Camera className="w-5 h-5" aria-hidden="true" />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center space-x-1.5 mb-0.5">
                 <h3 className="font-bold text-slate-900 text-sm group-hover:text-blue-700 transition-colors" style={{ fontFamily: "'Lexend', sans-serif" }}>
-                  Passport Studio
+                  Passport Size Photo Maker
                 </h3>
-                <span className="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-blue-600 text-white uppercase">New</span>
+                <span className="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-blue-600 text-white uppercase">Popular</span>
               </div>
               <p className="text-xs text-slate-500 line-clamp-1">3.5×4.5cm, 2×2″ &amp; Studio Colors</p>
             </div>
             <ArrowRight className="w-4 h-4 text-blue-600 group-hover:translate-x-1 transition-transform flex-shrink-0" aria-hidden="true" />
           </button>
 
-          {/* Tool 2: PDF Resizer */}
+          {/* Tool 2: Image to PDF (Most Searched Document Tool) */}
           <button
-            onClick={onOpenPdfStudio}
-            aria-label="Open PDF Resizer — Compress PDF files under 300KB"
+            onClick={onOpenImageToPdf || onOpenPdfStudio}
+            aria-label="Open Image to PDF Converter — Combine marksheets and certificates under 200KB"
             style={{ willChange: 'transform, box-shadow' }}
-            className="group relative p-4 rounded-2xl bg-white border-2 border-emerald-300 hover:border-emerald-600 transition-all duration-200 shadow-xs hover:shadow-md text-left flex items-center space-x-3.5 hover:-translate-y-1 min-h-[88px]"
+            className="group relative p-4 rounded-2xl bg-white border-2 border-emerald-200 hover:border-emerald-600 transition-all duration-200 shadow-xs hover:shadow-md text-left flex items-center space-x-3.5 hover:-translate-y-1 min-h-[92px]"
           >
-            <div className="w-11 h-11 rounded-2xl bg-emerald-600 text-white flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform shadow-md shadow-emerald-500/20">
-              <FileText className="w-5 h-5" aria-hidden="true" />
+            <div className="w-11 h-11 rounded-2xl bg-emerald-600 text-white flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform shadow-md shadow-emerald-500/20">
+              <ImageIcon className="w-5 h-5" aria-hidden="true" />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center space-x-1.5 mb-0.5">
                 <h3 className="font-bold text-slate-900 text-sm group-hover:text-emerald-700 transition-colors" style={{ fontFamily: "'Lexend', sans-serif" }}>
-                  PDF Resizer
+                  Image to PDF
                 </h3>
-                <span className="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-emerald-600 text-white uppercase">Tool</span>
+                <span className="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-emerald-600 text-white uppercase">Top Searched</span>
               </div>
-              <p className="text-xs text-slate-500 line-clamp-1">Compress PDF under 300KB</p>
+              <p className="text-xs text-slate-500 line-clamp-1">Combine Marksheets under 200KB</p>
             </div>
             <ArrowRight className="w-4 h-4 text-emerald-600 group-hover:translate-x-1 transition-transform flex-shrink-0" aria-hidden="true" />
           </button>
 
-          {/* Tool 3: AI Background Remover */}
+          {/* Tool 3: Background Remover (AI Studio) */}
           <button
             onClick={onOpenBgRemover}
-            aria-label="Open AI Background Remover — 1-click transparent or colored backgrounds"
+            aria-label="Open Background Remover — 1-click transparent or colored backgrounds"
             style={{ willChange: 'transform, box-shadow' }}
-            className="group relative p-4 rounded-2xl bg-white border-2 border-purple-300 hover:border-purple-600 transition-all duration-200 shadow-xs hover:shadow-md text-left flex items-center space-x-3.5 hover:-translate-y-1 min-h-[88px]"
+            className="group relative p-4 rounded-2xl bg-white border-2 border-purple-200 hover:border-purple-600 transition-all duration-200 shadow-xs hover:shadow-md text-left flex items-center space-x-3.5 hover:-translate-y-1 min-h-[92px]"
           >
-            <div className="w-11 h-11 rounded-2xl bg-purple-600 text-white flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform shadow-md shadow-purple-500/20">
+            <div className="w-11 h-11 rounded-2xl bg-purple-600 text-white flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform shadow-md shadow-purple-500/20">
               <Wand2 className="w-5 h-5" aria-hidden="true" />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center space-x-1.5 mb-0.5">
                 <h3 className="font-bold text-slate-900 text-sm group-hover:text-purple-700 transition-colors" style={{ fontFamily: "'Lexend', sans-serif" }}>
-                  AI BG Remover
+                  Background Remover
                 </h3>
-                <span className="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-purple-600 text-white uppercase">AI</span>
+                <span className="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-purple-600 text-white uppercase">AI Studio</span>
               </div>
-              <p className="text-xs text-slate-500 line-clamp-1">1-Click Transparent / Color</p>
+              <p className="text-xs text-slate-500 line-clamp-1">1-Click Transparent / White / Blue</p>
             </div>
             <ArrowRight className="w-4 h-4 text-purple-600 group-hover:translate-x-1 transition-transform flex-shrink-0" aria-hidden="true" />
           </button>
 
-          {/* Tool 4: General Image Resizer */}
+          {/* Tool 4: PDF Compressor & Resizer */}
+          <button
+            onClick={onOpenPdfStudio}
+            aria-label="Open PDF Compressor — Shrink PDF files under 100KB, 200KB, 300KB"
+            style={{ willChange: 'transform, box-shadow' }}
+            className="group relative p-4 rounded-2xl bg-white border-2 border-teal-200 hover:border-teal-600 transition-all duration-200 shadow-xs hover:shadow-md text-left flex items-center space-x-3.5 hover:-translate-y-1 min-h-[92px]"
+          >
+            <div className="w-11 h-11 rounded-2xl bg-teal-600 text-white flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform shadow-md shadow-teal-500/20">
+              <FileText className="w-5 h-5" aria-hidden="true" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center space-x-1.5 mb-0.5">
+                <h3 className="font-bold text-slate-900 text-sm group-hover:text-teal-700 transition-colors" style={{ fontFamily: "'Lexend', sans-serif" }}>
+                  PDF Compressor
+                </h3>
+                <span className="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-teal-600 text-white uppercase">Tool</span>
+              </div>
+              <p className="text-xs text-slate-500 line-clamp-1">Compress PDF under 100KB–300KB</p>
+            </div>
+            <ArrowRight className="w-4 h-4 text-teal-600 group-hover:translate-x-1 transition-transform flex-shrink-0" aria-hidden="true" />
+          </button>
+
+          {/* Tool 5: Merge PDF */}
+          <button
+            onClick={onOpenMergePdf || onOpenPdfStudio}
+            aria-label="Open Merge PDF — Combine multiple PDF documents into one"
+            style={{ willChange: 'transform, box-shadow' }}
+            className="group relative p-4 rounded-2xl bg-white border-2 border-indigo-200 hover:border-indigo-600 transition-all duration-200 shadow-xs hover:shadow-md text-left flex items-center space-x-3.5 hover:-translate-y-1 min-h-[92px]"
+          >
+            <div className="w-11 h-11 rounded-2xl bg-indigo-600 text-white flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform shadow-md shadow-indigo-500/20">
+              <Merge className="w-5 h-5" aria-hidden="true" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center space-x-1.5 mb-0.5">
+                <h3 className="font-bold text-slate-900 text-sm group-hover:text-indigo-700 transition-colors" style={{ fontFamily: "'Lexend', sans-serif" }}>
+                  Merge PDF
+                </h3>
+                <span className="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-indigo-600 text-white uppercase">New</span>
+              </div>
+              <p className="text-xs text-slate-500 line-clamp-1">Combine Marksheets into Single PDF</p>
+            </div>
+            <ArrowRight className="w-4 h-4 text-indigo-600 group-hover:translate-x-1 transition-transform flex-shrink-0" aria-hidden="true" />
+          </button>
+
+          {/* Tool 6: Signature & Photo Resizer */}
           <button
             onClick={onOpenImageResizer}
-            aria-label="Open Image Resizer — Custom KB, pixels, or JPG output"
+            aria-label="Open Signature & Image Resizer — Custom KB, pixels, or JPG output"
             style={{ willChange: 'transform, box-shadow' }}
-            className="group relative p-4 rounded-2xl bg-white border-2 border-slate-300 hover:border-slate-600 transition-all duration-200 shadow-xs hover:shadow-md text-left flex items-center space-x-3.5 hover:-translate-y-1 min-h-[88px]"
+            className="group relative p-4 rounded-2xl bg-white border-2 border-slate-200 hover:border-slate-600 transition-all duration-200 shadow-xs hover:shadow-md text-left flex items-center space-x-3.5 hover:-translate-y-1 min-h-[92px]"
           >
-            <div className="w-11 h-11 rounded-2xl bg-slate-900 text-white flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform shadow-md shadow-slate-900/20">
+            <div className="w-11 h-11 rounded-2xl bg-slate-900 text-white flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform shadow-md shadow-slate-900/20">
               <SlidersHorizontal className="w-5 h-5" aria-hidden="true" />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center space-x-1.5 mb-0.5">
                 <h3 className="font-bold text-slate-900 text-sm group-hover:text-slate-700 transition-colors" style={{ fontFamily: "'Lexend', sans-serif" }}>
-                  Image Resizer
+                  Signature &amp; Image Resizer
                 </h3>
-                <span className="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-slate-800 text-white uppercase">Tool</span>
+                <span className="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-slate-800 text-white uppercase">Utility</span>
               </div>
-              <p className="text-xs text-slate-500 line-clamp-1">Custom KB / Pixels / JPG</p>
+              <p className="text-xs text-slate-500 line-clamp-1">Exact KB &amp; Pixels for SSC / UPSC</p>
             </div>
             <ArrowRight className="w-4 h-4 text-slate-600 group-hover:translate-x-1 transition-transform flex-shrink-0" aria-hidden="true" />
           </button>

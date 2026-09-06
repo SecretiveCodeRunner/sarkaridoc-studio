@@ -188,9 +188,10 @@ export const compressExistingPdf = async (pdfFile, targetMaxKb = 300, onProgress
  * Converts multiple image files into a compressed PDF document matching target KB limits.
  * Scales resolution up to 2600px and JPEG quality up to 0.88 when larger target budgets allow.
  */
-export const convertImagesToPdf = async (imageFiles, targetMaxKb = 300, onProgress = null) => {
+export const convertImagesToPdf = async (imageFiles, targetMaxKb = 300, onProgress = null, options = {}) => {
   const targetKb = Number(targetMaxKb) || 300;
   const totalFiles = imageFiles.length;
+  const { pageSize = 'a4', margin = 15, orientation = 'auto' } = options;
 
   const IMAGE_PDF_TIERS = [
     { maxDim: 2600, q: 0.88 },
@@ -205,6 +206,10 @@ export const convertImagesToPdf = async (imageFiles, targetMaxKb = 300, onProgre
     { maxDim: 450, q: 0.50 },
     { maxDim: 300, q: 0.40 }
   ];
+
+  // A4 dimensions in points (72 points per inch)
+  const A4_PORTRAIT = [595.28, 841.89];
+  const A4_LANDSCAPE = [841.89, 595.28];
 
   const createPdfWithTier = async (tier, isInitialPass = false) => {
     const pdfDoc = await PDFDocument.create();
@@ -242,13 +247,36 @@ export const convertImagesToPdf = async (imageFiles, targetMaxKb = 300, onProgre
       const jpegImageBytes = await fetch(jpegDataUrl).then((res) => res.arrayBuffer());
 
       const embeddedImage = await pdfDoc.embedJpg(jpegImageBytes);
-      const page = pdfDoc.addPage([embeddedImage.width, embeddedImage.height]);
-      page.drawImage(embeddedImage, {
-        x: 0,
-        y: 0,
-        width: embeddedImage.width,
-        height: embeddedImage.height,
-      });
+
+      if (pageSize === 'a4') {
+        const isLandscape = orientation === 'landscape' || (orientation === 'auto' && img.width > img.height);
+        const [pageW, pageH] = isLandscape ? A4_LANDSCAPE : A4_PORTRAIT;
+        const page = pdfDoc.addPage([pageW, pageH]);
+
+        const availW = Math.max(10, pageW - 2 * margin);
+        const availH = Math.max(10, pageH - 2 * margin);
+        const fitScale = Math.min(availW / embeddedImage.width, availH / embeddedImage.height);
+        const drawW = embeddedImage.width * fitScale;
+        const drawH = embeddedImage.height * fitScale;
+        const drawX = margin + (availW - drawW) / 2;
+        const drawY = margin + (availH - drawH) / 2;
+
+        page.drawImage(embeddedImage, {
+          x: drawX,
+          y: drawY,
+          width: drawW,
+          height: drawH,
+        });
+      } else {
+        // 'fit' page mode (exact image dimensions)
+        const page = pdfDoc.addPage([embeddedImage.width, embeddedImage.height]);
+        page.drawImage(embeddedImage, {
+          x: 0,
+          y: 0,
+          width: embeddedImage.width,
+          height: embeddedImage.height,
+        });
+      }
     }
 
     const pdfBytes = await pdfDoc.save({ useObjectStreams: true });
@@ -298,3 +326,102 @@ export const convertImagesToPdf = async (imageFiles, targetMaxKb = 300, onProgre
     downloadUrl
   };
 };
+
+/**
+ * Merge multiple PDF documents into a single consolidated PDF file.
+ * Preserves vector text and embeds with zero re-compression loss.
+ */
+export const mergePdfFiles = async (pdfFiles, onProgress = null) => {
+  const mergedPdf = await PDFDocument.create();
+  const total = pdfFiles.length;
+
+  for (let i = 0; i < total; i++) {
+    if (onProgress) {
+      const p = Math.round(((i + 1) / total) * 90);
+      onProgress({
+        current: i + 1,
+        total,
+        percent: p,
+        text: `Merging document ${i + 1} of ${total} (${pdfFiles[i].name})...`
+      });
+    }
+
+    await new Promise((r) => setTimeout(r, 0));
+    const arrayBuffer = await pdfFiles[i].arrayBuffer();
+    const loadedDoc = await PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
+    const pageIndices = loadedDoc.getPageIndices();
+    const copiedPages = await mergedPdf.copyPages(loadedDoc, pageIndices);
+    copiedPages.forEach((page) => mergedPdf.addPage(page));
+  }
+
+  if (onProgress) {
+    onProgress({ current: total, total, percent: 100, text: 'Finalizing merged PDF...' });
+  }
+
+  const bytes = await mergedPdf.save({ useObjectStreams: true });
+  const blob = new Blob([bytes], { type: 'application/pdf' });
+  const finalKb = Math.round((blob.size / 1024) * 100) / 100;
+
+  return {
+    blob,
+    finalKb,
+    downloadUrl: URL.createObjectURL(blob),
+    pageCount: mergedPdf.getPageCount()
+  };
+};
+
+/**
+ * Converts a PDF document into an array of high-resolution JPEG images.
+ * Useful for portals that require JPG certificate uploads instead of PDF.
+ */
+export const convertPdfToImages = async (pdfFile, scale = 2.0, onProgress = null) => {
+  const arrayBuffer = await pdfFile.arrayBuffer();
+  const loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) });
+  const pdfDoc = await loadingTask.promise;
+  const numPages = pdfDoc.numPages;
+  const images = [];
+
+  for (let i = 1; i <= numPages; i++) {
+    if (onProgress) {
+      const p = Math.round((i / numPages) * 90);
+      onProgress({
+        current: i,
+        total: numPages,
+        percent: p,
+        text: `Rendering Page ${i} of ${numPages} (${Math.round(scale * 72)} DPI)...`
+      });
+    }
+
+    await new Promise((r) => setTimeout(r, 0));
+    const page = await pdfDoc.getPage(i);
+    const viewport = page.getViewport({ scale });
+
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.round(viewport.width);
+    canvas.height = Math.round(viewport.height);
+    const ctx = canvas.getContext('2d');
+
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    await page.render({ canvasContext: ctx, viewport }).promise;
+
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.92));
+    const kb = Math.round((blob.size / 1024) * 100) / 100;
+    images.push({
+      pageNumber: i,
+      blob,
+      kb,
+      url: URL.createObjectURL(blob),
+      width: canvas.width,
+      height: canvas.height
+    });
+  }
+
+  if (onProgress) {
+    onProgress({ current: numPages, total: numPages, percent: 100, text: `Successfully extracted ${numPages} page(s)!` });
+  }
+
+  return images;
+};
+

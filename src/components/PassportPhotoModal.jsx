@@ -17,7 +17,7 @@ const PASSPORT_SIZES = [
 ];
 
 const BG_COLOR_PALETTE = [
-  { label: 'Original BG', value: 'original', border: 'border-slate-400 bg-slate-100' },
+  { label: 'Original Background', value: 'original', border: 'border-slate-400 bg-slate-100' },
   { label: 'Light Blue', value: '#93C5FD', border: 'border-blue-300' },
   { label: 'White', value: '#FFFFFF', border: 'border-slate-300' },
   { label: 'Royal Blue', value: '#2563EB', border: 'border-blue-600' },
@@ -48,7 +48,8 @@ export const PassportPhotoModal = ({ onClose }) => {
   const [elapsedSeconds, setElapsedSeconds] = useState('0.0');
 
   const [selectedSize, setSelectedSize] = useState(PASSPORT_SIZES[0]);
-  const [selectedBg, setSelectedBg] = useState(BG_COLOR_PALETTE[0]); // Default Original BG — zero forced AI lag
+  const [selectedBg, setSelectedBg] = useState(BG_COLOR_PALETTE[0]); // Default Original BG
+  const [cutPrecision, setCutPrecision] = useState('studio'); // 'studio' | 'crisp' | 'natural'
   const [maxKb, setMaxKb] = useState(MAX_SIZE_OPTIONS[1]); // Default 100KB
   const [brightness, setBrightness] = useState(100);
   const [contrast, setContrast] = useState(100);
@@ -111,17 +112,45 @@ export const PassportPhotoModal = ({ onClose }) => {
     setCropModalOpen(true);
   };
 
-  // Called when user clicks "Apply Crop & Continue" in Cropper Modal
-  const handleCropComplete = async (croppedBlob) => {
+  // Reusable neural background cutout runner with configurable edge precision
+  const runNeuralCutout = async (fileToCut, bgOption, precision = cutPrecision) => {
+    if (!fileToCut) return;
+    setIsProcessing(true);
+    startLiveTimer();
+    startProgressAnimation();
+    try {
+      const { removePortraitBackground } = await import('../utils/aiSegmentation');
+      const cutBlob = await removePortraitBackground(fileToCut, 'transparent', { cutPrecision: precision });
+      setRemovedBlob(cutBlob);
+    } catch (err) {
+      console.warn('Neural cutout error, falling back:', err);
+      const fallbackCutout = await fastThresholdCutout(fileToCut, 42);
+      setRemovedBlob(fallbackCutout);
+    } finally {
+      stopProgressAnimation();
+      setIsProcessing(false);
+    }
+  };
+
+  // Called when user clicks "Apply Crop & Create Photo" in Cropper Modal
+  const handleCropComplete = async (croppedBlob, chosenBg = null) => {
     setCropModalOpen(false);
     const normalized = await normalizeImageForProcessing(croppedBlob, 1200);
     setSelectedFile(normalized);
     setRemovedBlob(null);
     setFinalPreviewUrl(null);
-    setIsProcessing(false);
+
+    // If user chose a non-original background right in the crop modal, immediately trigger neural cutout!
+    if (chosenBg && chosenBg.value !== 'original') {
+      setSelectedBg(chosenBg);
+      runNeuralCutout(normalized, chosenBg, cutPrecision);
+    } else {
+      if (chosenBg) setSelectedBg(chosenBg);
+      setIsProcessing(false);
+    }
   };
 
-  // Handle color palette click
+  // Handle color palette click in main workspace
   const handleSelectBg = async (bgOption) => {
     setSelectedBg(bgOption);
 
@@ -134,23 +163,18 @@ export const PassportPhotoModal = ({ onClose }) => {
       return;
     }
 
-    // High-speed Neural Portrait Cutout (<1 second) using local MediaPipe AI
-    if (selectedFile && !removedBlob && !isProcessing) {
-      setIsProcessing(true);
-      startLiveTimer();
-      startProgressAnimation();
-      try {
-        const { removePortraitBackground } = await import('../utils/aiSegmentation');
-        const cutBlob = await removePortraitBackground(selectedFile, 'transparent');
-        setRemovedBlob(cutBlob);
-      } catch (err) {
-        console.warn('Neural cutout error, falling back:', err);
-        const fallbackCutout = await fastThresholdCutout(selectedFile, 42);
-        setRemovedBlob(fallbackCutout);
-      } finally {
-        stopProgressAnimation();
-        setIsProcessing(false);
-      }
+    // High-speed Neural Portrait Cutout with defringing and sub-pixel edge matting
+    if (selectedFile && !isProcessing) {
+      runNeuralCutout(selectedFile, bgOption, cutPrecision);
+    }
+  };
+
+  // Handle Edge Cut Precision change (Studio, Crisp Cut, Natural Soft)
+  const handlePrecisionChange = (newPrecision) => {
+    setCutPrecision(newPrecision);
+    if (selectedFile && selectedBg.value !== 'original' && !isProcessing) {
+      setRemovedBlob(null);
+      runNeuralCutout(selectedFile, selectedBg, newPrecision);
     }
   };
 
@@ -331,8 +355,8 @@ export const PassportPhotoModal = ({ onClose }) => {
               <Camera className="w-4 h-4" />
             </div>
             <div>
-              <h1 className="font-bold text-slate-900 text-sm sm:text-lg">Passport Photo Studio</h1>
-              <p className="text-[11px] text-slate-500 font-medium hidden sm:block">Create official passport & ID photos with studio background colors</p>
+              <h1 className="font-bold text-slate-900 text-sm sm:text-lg">Passport Size Photo Maker</h1>
+              <p className="text-[11px] text-slate-500 font-medium hidden sm:block">Create official passport size &amp; ID photos with studio background colors</p>
             </div>
           </div>
         </div>
@@ -348,8 +372,8 @@ export const PassportPhotoModal = ({ onClose }) => {
                   <Camera className="w-8 h-8" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-slate-900 mb-1" style={{ fontFamily: "'Lexend', sans-serif" }}>Select Photo for Passport Studio</h3>
-                  <p className="text-xs text-slate-500 max-w-sm mx-auto font-medium">Automatically crops aspect ratio & replaces background with official studio colors.</p>
+                  <h3 className="text-lg font-bold text-slate-900 mb-1" style={{ fontFamily: "'Lexend', sans-serif" }}>Select Photo for Passport Size Photo Maker</h3>
+                  <p className="text-xs text-slate-500 max-w-sm mx-auto font-medium">Automatically crops aspect ratio &amp; replaces background with official studio colors.</p>
                 </div>
 
                 {/* Dual Upload Actions: Gallery vs Camera */}
@@ -433,7 +457,7 @@ export const PassportPhotoModal = ({ onClose }) => {
                       <Palette className="w-3.5 h-3.5 text-blue-600" />
                       <span>Studio Background Color</span>
                     </label>
-                    <span className="text-[10px] text-slate-400 font-medium">Select 'Original BG' for instant 0s wait</span>
+                    <span className="text-[10px] text-slate-400 font-medium">Select 'Original Background' for instant 0s wait</span>
                   </div>
 
                   <div className="grid grid-cols-5 gap-2">
@@ -459,6 +483,47 @@ export const PassportPhotoModal = ({ onClose }) => {
                       </button>
                     ))}
                   </div>
+
+                  {/* Edge Cut Cleanliness Control (when a background color is chosen) */}
+                  {selectedBg.value !== 'original' && (
+                    <div className="mt-3 p-3 bg-blue-50/70 rounded-xl border border-blue-200/80 space-y-1.5">
+                      <div className="flex items-center justify-between text-xs font-semibold text-slate-800">
+                        <span className="flex items-center gap-1.5">
+                          <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+                          <span>Edge Cleanliness & Defringe</span>
+                        </span>
+                        <span className="text-[10px] uppercase font-bold text-blue-700 bg-blue-100 px-1.5 py-0.5 rounded">
+                          {cutPrecision}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-500">
+                        Fine-tune boundary transition if ambient wall light reflects on hair or shoulders.
+                      </p>
+                      <div className="grid grid-cols-3 gap-1.5 pt-1">
+                        {[
+                          { id: 'natural', label: 'Natural Soft', desc: 'Fine hair' },
+                          { id: 'studio', label: 'Studio Clean', desc: 'Default' },
+                          { id: 'crisp', label: 'Crisp Cut', desc: 'Zero halo' }
+                        ].map((p) => (
+                          <button
+                            key={p.id}
+                            type="button"
+                            onClick={() => handlePrecisionChange(p.id)}
+                            className={`px-2 py-1.5 rounded-lg text-xs font-semibold border transition-all text-center ${
+                              cutPrecision === p.id
+                                ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
+                                : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
+                            }`}
+                          >
+                            <div className="leading-tight font-bold">{p.label}</div>
+                            <div className={`text-[9px] ${cutPrecision === p.id ? 'text-blue-100' : 'text-slate-400'}`}>
+                              {p.desc}
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* 3. Image Touchup Sliders */}
@@ -633,7 +698,7 @@ export const PassportPhotoModal = ({ onClose }) => {
           )}
         </main>
 
-      {/* Interactive Crop & Align Modal */}
+      {/* Interactive Crop & Align Modal with Post-Crop Background Selection */}
       {cropModalOpen && cropSourceUrl && (
         <ImageCropModal
           imageSrc={cropSourceUrl}
@@ -645,8 +710,10 @@ export const PassportPhotoModal = ({ onClose }) => {
             { label: 'Stamp Size (2.5:3.0)', value: 2.5 / 3.0 },
             { label: 'Freeform', value: null }
           ]}
-          title="Align & Crop Passport Photo"
-          subtitle="Position and center your face inside the official frame"
+          bgOptions={BG_COLOR_PALETTE}
+          initialBg={selectedBg}
+          title="Align, Crop & Choose Studio Background"
+          subtitle="Position face inside the frame and pick your official background color"
           onCropComplete={handleCropComplete}
           onCancel={() => setCropModalOpen(false)}
         />

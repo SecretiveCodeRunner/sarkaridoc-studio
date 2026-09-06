@@ -38,7 +38,7 @@ export const ProcessingStepsGuide = ({
       icon: Wand2,
       color: 'bg-purple-50 text-purple-600 border-purple-200',
       badge: 'Step 3',
-      title: isSignature ? 'Neural Ink Isolation & Pure White BG' : 'Studio Background Setup',
+      title: isSignature ? 'Neural Ink Isolation & Pure White Background' : 'Studio Background Setup',
       desc: isSignature
         ? 'Deep neural AI isolates crisp ink strokes, eliminating paper shadows and dark markings with 100% pure white paper.'
         : isPassport

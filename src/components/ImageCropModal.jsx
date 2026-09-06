@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import Cropper from 'react-easy-crop';
-import { ZoomIn, ZoomOut, RotateCw, Check, X, Crop, Move, RefreshCw } from 'lucide-react';
+import { ZoomIn, ZoomOut, RotateCw, Check, X, Crop, Move, RefreshCw, Palette } from 'lucide-react';
 
 /**
  * Creates an HTML Image element from a source URL
@@ -79,6 +79,8 @@ export const ImageCropModal = ({
     { label: 'Signature (7:2)', value: 7 / 2 },
     { label: 'Freeform', value: null },
   ],
+  bgOptions = null,
+  initialBg = null,
   title = 'Crop & Frame Image',
   subtitle = 'Drag to position face or signature inside the guide box',
   onCropComplete,
@@ -88,6 +90,7 @@ export const ImageCropModal = ({
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
   const [aspect, setAspect] = useState(initialAspect);
+  const [selectedBg, setSelectedBg] = useState(initialBg || (bgOptions ? bgOptions[0] : null));
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -104,7 +107,7 @@ export const ImageCropModal = ({
     setIsProcessing(true);
     try {
       const croppedBlob = await getCroppedImg(imageSrc, croppedAreaPixels, rotation);
-      onCropComplete(croppedBlob);
+      onCropComplete(croppedBlob, selectedBg);
     } catch (err) {
       console.error('Error applying crop:', err);
     } finally {
@@ -189,6 +192,46 @@ export const ImageCropModal = ({
           ))}
         </div>
 
+        {/* Studio Background Selector (when enabled) */}
+        {bgOptions && bgOptions.length > 0 && (
+          <div className="space-y-1.5 pt-1 border-t border-slate-800">
+            <div className="flex items-center justify-between text-[11px] text-slate-300 font-medium">
+              <span className="flex items-center gap-1.5 font-bold">
+                <Palette className="w-3.5 h-3.5 text-blue-400" />
+                Choose Background Color:
+              </span>
+              <span className="text-blue-400 font-semibold">{selectedBg?.label || 'Original Background'}</span>
+            </div>
+            <div className="flex items-center space-x-1.5 overflow-x-auto pb-1 scrollbar-none">
+              {bgOptions.map((bg) => (
+                <button
+                  key={bg.label}
+                  type="button"
+                  onClick={() => setSelectedBg(bg)}
+                  className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-xl text-xs font-semibold border transition-all ${
+                    selectedBg?.value === bg.value
+                      ? 'bg-blue-600 text-white border-blue-400 shadow-md ring-2 ring-blue-400/40'
+                      : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'
+                  }`}
+                >
+                  <span
+                    className="w-3 h-3 rounded-full border border-white/40 flex-shrink-0"
+                    style={{
+                      backgroundColor:
+                        bg.value === 'transparent'
+                          ? 'transparent'
+                          : bg.value === 'original'
+                          ? '#94A3B8'
+                          : bg.value,
+                    }}
+                  />
+                  <span className="whitespace-nowrap">{bg.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Zoom & Rotation Controls + Action Buttons */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-1">
           
@@ -237,12 +280,16 @@ export const ImageCropModal = ({
               {isProcessing ? (
                 <>
                   <RefreshCw className="w-4 h-4 animate-gpu-spin" />
-                  <span>Cropping...</span>
+                  <span>Processing...</span>
                 </>
               ) : (
                 <>
                   <Check className="w-4 h-4" />
-                  <span>Apply Crop & Continue</span>
+                  <span>
+                    {selectedBg && selectedBg.value !== 'original'
+                      ? `Create with ${selectedBg.label}`
+                      : 'Apply Crop & Create Photo'}
+                  </span>
                 </>
               )}
             </button>

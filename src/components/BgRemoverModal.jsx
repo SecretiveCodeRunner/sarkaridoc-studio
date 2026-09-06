@@ -56,22 +56,27 @@ export const BgRemoverModal = ({ onClose }) => {
   };
 
   // Called after crop is applied
-  const handleCropComplete = async (croppedBlob) => {
+  const handleCropComplete = async (croppedBlob, chosenBg = null) => {
     setCropModalOpen(false);
     const normalized = await normalizeImageForProcessing(croppedBlob, 1200);
     setSelectedFile(normalized);
     setRemovedBlob(null);
     setPreviewUrl(null);
 
+    const activeBg = chosenBg || bgColor;
+    if (chosenBg) {
+      setBgColor(chosenBg);
+    }
+
     // Dispatch to chosen cutout mode
     if (cutoutMode === 'signature') {
-      const sigColor = bgColor === 'transparent' ? '#FFFFFF' : bgColor;
+      const sigColor = activeBg === 'transparent' ? '#FFFFFF' : activeBg;
       setBgColor(sigColor);
       runSignatureCutout(normalized, sigColor);
     } else if (cutoutMode === 'portrait') {
-      runPortraitCutout(normalized, bgColor);
+      runPortraitCutout(normalized, activeBg);
     } else {
-      runDeepAiCutout(normalized, bgColor);
+      runDeepAiCutout(normalized, activeBg);
     }
   };
 
@@ -498,8 +503,10 @@ export const BgRemoverModal = ({ onClose }) => {
             { label: 'Square (1:1)', value: 1 / 1 },
             { label: '16:9', value: 16 / 9 },
           ]}
+          bgOptions={bgOptions}
+          initialBg={bgColor}
           title="Crop & Frame Subject"
-          subtitle="Align the subject inside the frame before removing background"
+          subtitle="Align subject and choose background color before cutout"
           onCropComplete={handleCropComplete}
           onCancel={() => setCropModalOpen(false)}
         />

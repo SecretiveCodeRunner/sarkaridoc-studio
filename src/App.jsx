@@ -18,6 +18,7 @@ const AboutWorkspace = lazy(() => import('./components/AboutWorkspace').then(m =
 export function App() {
   const [selectedPreset, setSelectedPreset] = useState(null);
   const [isPdfStudioOpen, setIsPdfStudioOpen] = useState(false);
+  const [pdfStudioTab, setPdfStudioTab] = useState('image-to-pdf');
   const [isBgRemoverOpen, setIsBgRemoverOpen] = useState(false);
   const [isImageResizerOpen, setIsImageResizerOpen] = useState(false);
   const [isPassportPhotoOpen, setIsPassportPhotoOpen] = useState(false);
@@ -28,7 +29,7 @@ export function App() {
     : isPassportPhotoOpen 
     ? 'passport-photo' 
     : isPdfStudioOpen 
-    ? 'pdf-studio' 
+    ? `pdf-studio:${pdfStudioTab}` 
     : isBgRemoverOpen 
     ? 'bg-remover' 
     : isImageResizerOpen 
@@ -48,12 +49,25 @@ export function App() {
     } else if (type === 'passport-photo') {
       setIsPassportPhotoOpen(true);
       search = '?tool=passport-photo';
-    } else if (type === 'pdf-studio') {
+    } else if (type === 'image-to-pdf') {
+      setPdfStudioTab('image-to-pdf');
       setIsPdfStudioOpen(true);
-      search = '?tool=pdf-studio';
-    } else if (type === 'bg-remover') {
+      search = '?tool=image-to-pdf';
+    } else if (type === 'pdf-studio' || type === 'pdf-compressor') {
+      setPdfStudioTab('compress-pdf');
+      setIsPdfStudioOpen(true);
+      search = '?tool=pdf-compressor';
+    } else if (type === 'merge-pdf') {
+      setPdfStudioTab('merge-pdf');
+      setIsPdfStudioOpen(true);
+      search = '?tool=merge-pdf';
+    } else if (type === 'pdf-to-jpg') {
+      setPdfStudioTab('pdf-to-jpg');
+      setIsPdfStudioOpen(true);
+      search = '?tool=pdf-to-jpg';
+    } else if (type === 'bg-remover' || type === 'background-remover') {
       setIsBgRemoverOpen(true);
-      search = '?tool=bg-remover';
+      search = '?tool=background-remover';
     } else if (type === 'image-resizer') {
       setIsImageResizerOpen(true);
       search = '?tool=image-resizer';
@@ -104,14 +118,39 @@ export function App() {
         setIsBgRemoverOpen(false);
         setIsImageResizerOpen(false);
         setIsAboutOpen(false);
-      } else if (toolParam === 'pdf-studio') {
+      } else if (toolParam === 'image-to-pdf') {
+        setPdfStudioTab('image-to-pdf');
         setIsPdfStudioOpen(true);
         setSelectedPreset(null);
         setIsPassportPhotoOpen(false);
         setIsBgRemoverOpen(false);
         setIsImageResizerOpen(false);
         setIsAboutOpen(false);
-      } else if (toolParam === 'bg-remover') {
+      } else if (toolParam === 'pdf-studio' || toolParam === 'pdf-compressor') {
+        setPdfStudioTab('compress-pdf');
+        setIsPdfStudioOpen(true);
+        setSelectedPreset(null);
+        setIsPassportPhotoOpen(false);
+        setIsBgRemoverOpen(false);
+        setIsImageResizerOpen(false);
+        setIsAboutOpen(false);
+      } else if (toolParam === 'merge-pdf') {
+        setPdfStudioTab('merge-pdf');
+        setIsPdfStudioOpen(true);
+        setSelectedPreset(null);
+        setIsPassportPhotoOpen(false);
+        setIsBgRemoverOpen(false);
+        setIsImageResizerOpen(false);
+        setIsAboutOpen(false);
+      } else if (toolParam === 'pdf-to-jpg') {
+        setPdfStudioTab('pdf-to-jpg');
+        setIsPdfStudioOpen(true);
+        setSelectedPreset(null);
+        setIsPassportPhotoOpen(false);
+        setIsBgRemoverOpen(false);
+        setIsImageResizerOpen(false);
+        setIsAboutOpen(false);
+      } else if (toolParam === 'bg-remover' || toolParam === 'background-remover') {
         setIsBgRemoverOpen(true);
         setSelectedPreset(null);
         setIsPassportPhotoOpen(false);
@@ -150,6 +189,7 @@ export function App() {
         <>
           <Navbar
             onOpenPassportPhoto={() => openTool('passport-photo')}
+            onOpenImageToPdf={() => openTool('image-to-pdf')}
             onOpenPdfStudio={() => openTool('pdf-studio')}
             onOpenBgRemover={() => openTool('bg-remover')}
             onOpenImageResizer={() => openTool('image-resizer')}
@@ -161,7 +201,10 @@ export function App() {
               selectedPresetId={selectedPreset?.id}
               onSelectPreset={(preset) => openTool('preset', preset)}
               onOpenPassportPhoto={() => openTool('passport-photo')}
+              onOpenImageToPdf={() => openTool('image-to-pdf')}
               onOpenPdfStudio={() => openTool('pdf-studio')}
+              onOpenMergePdf={() => openTool('merge-pdf')}
+              onOpenPdfToJpg={() => openTool('pdf-to-jpg')}
               onOpenBgRemover={() => openTool('bg-remover')}
               onOpenImageResizer={() => openTool('image-resizer')}
             />
@@ -197,6 +240,7 @@ export function App() {
 
           {isPdfStudioOpen && (
             <PdfStudioModal
+              initialTab={pdfStudioTab}
               onClose={() => closeAllTools(true)}
             />
           )}

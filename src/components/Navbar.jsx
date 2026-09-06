@@ -1,7 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { ShieldCheck, Sparkles, Camera, FileText, Share2, Smartphone, MoreVertical } from 'lucide-react';
+import { ShieldCheck, Sparkles, Camera, FileText, Share2, Smartphone, MoreVertical, Wand2 } from 'lucide-react';
 
-export const Navbar = ({ onOpenPdfStudio, onOpenBgRemover: _onOpenBgRemover, onOpenImageResizer: _onOpenImageResizer, onOpenPassportPhoto, onOpenAbout }) => {
+export const Navbar = ({ 
+  onOpenPdfStudio, 
+  onOpenBgRemover, 
+  onOpenImageResizer: _onOpenImageResizer, 
+  onOpenPassportPhoto, 
+  onOpenAbout,
+  onOpenImageToPdf 
+}) => {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [isInstalled, setIsInstalled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -100,22 +107,32 @@ export const Navbar = ({ onOpenPdfStudio, onOpenBgRemover: _onOpenBgRemover, onO
 
           <button
             onClick={onOpenPassportPhoto}
-            aria-label="Open Passport Photo Studio"
+            aria-label="Open Passport Size Photo Maker"
+            title="Passport Size Photo Maker (3.5×4.5cm, 2×2″, Studio Colors)"
             className="flex items-center space-x-1 px-2 sm:px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-200 text-xs font-semibold shadow-xs transition-all active:scale-95 flex-shrink-0"
           >
             <Camera className="w-3.5 h-3.5 text-blue-600 flex-shrink-0" aria-hidden="true" />
-            <span>Passport</span>
-            <span className="hidden md:inline">Photo</span>
+            <span>Passport Photo</span>
           </button>
 
           <button
-            onClick={onOpenPdfStudio}
-            aria-label="Open PDF Resizer tool"
+            onClick={onOpenImageToPdf || onOpenPdfStudio}
+            aria-label="Open Image to PDF Converter"
+            title="Convert and combine images to PDF under 200KB/300KB"
             className="flex items-center space-x-1 px-2 sm:px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-semibold shadow-xs transition-all active:scale-95 flex-shrink-0"
           >
             <FileText className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" aria-hidden="true" />
-            <span>PDF</span>
-            <span className="hidden md:inline">Resizer</span>
+            <span>Image to PDF</span>
+          </button>
+
+          <button
+            onClick={onOpenBgRemover}
+            aria-label="Open Background Remover"
+            title="1-Click AI Background Remover"
+            className="hidden lg:flex items-center space-x-1 px-2.5 sm:px-3 py-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-200 text-xs font-semibold shadow-xs transition-all active:scale-95 flex-shrink-0"
+          >
+            <Wand2 className="w-3.5 h-3.5 text-purple-600 flex-shrink-0" aria-hidden="true" />
+            <span>Background Remover</span>
           </button>
 
           {/* Desktop-only quick action buttons */}
@@ -173,6 +190,20 @@ export const Navbar = ({ onOpenPdfStudio, onOpenBgRemover: _onOpenBgRemover, onO
               role="menu"
               aria-orientation="vertical"
             >
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  onOpenBgRemover();
+                }}
+                role="menuitem"
+                className="w-full flex items-center space-x-2.5 px-3 py-2 rounded-xl hover:bg-purple-50 text-purple-900 text-xs font-semibold transition-colors text-left"
+              >
+                <div className="w-6 h-6 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0 text-purple-700">
+                  <Wand2 className="w-3.5 h-3.5" aria-hidden="true" />
+                </div>
+                <span>Background Remover</span>
+              </button>
+
               <button
                 onClick={() => {
                   setMobileMenuOpen(false);

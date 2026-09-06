@@ -75,15 +75,18 @@ export async function getSegmenter() {
 /**
  * High-speed studio background removal for portraits & passport photos
  * Runs in ~50-200ms using Google MediaPipe Neural Segmentation.
- * Applies high-precision Hermite smoothstep refinement & sub-pixel boundary erosion
- * to eliminate halos, shadows, and background artifacts for a razor-clean studio cut.
+ * Applies high-precision Hermite smoothstep refinement, sub-pixel boundary erosion,
+ * and edge color decontamination (defringing) to completely eliminate background halos,
+ * ambient light spill, and dirty wall fringes for a razor-clean studio cut.
  * 
  * @param {Blob|File|HTMLImageElement} imageSource 
  * @param {string} targetBgColor - 'transparent', or hex color like '#93C5FD'
+ * @param {Object} options - { cutPrecision: 'studio' | 'crisp' | 'natural' }
  * @returns {Promise<Blob>}
  */
-export async function removePortraitBackground(imageSource, targetBgColor = 'transparent') {
+export async function removePortraitBackground(imageSource, targetBgColor = 'transparent', options = {}) {
   const segmenter = await getSegmenter();
+  const cutPrecision = options?.cutPrecision || 'studio';
 
   // Convert input to HTMLImageElement
   let img;
@@ -142,11 +145,21 @@ export async function removePortraitBackground(imageSource, targetBgColor = 'tra
         const maskPixels = maskImageData.data;
 
         // 2. High-speed Precomputed S-Curve LUT (Hermite smoothstep interpolation)
-        // Suppresses background noise below threshold (0 to 110 -> 0)
-        // Anchors solid foreground subject above threshold (185 to 255 -> 255)
-        // Hermite smoothstep between 110 and 185 ensures silky anti-aliased edge
-        const lowThresh = 110;
-        const highThresh = 185;
+        // Adjust thresholds based on requested cut precision
+        let lowThresh = 110;
+        let highThresh = 185;
+        let erosionMinWeight = 0.75;
+
+        if (cutPrecision === 'crisp') {
+          lowThresh = 125;
+          highThresh = 195;
+          erosionMinWeight = 0.85; // Stronger erosion for high-contrast background clutter
+        } else if (cutPrecision === 'natural') {
+          lowThresh = 95;
+          highThresh = 175;
+          erosionMinWeight = 0.65; // Softer boundary for fine flyaway hair
+        }
+
         const range = highThresh - lowThresh;
         const lut = new Uint8Array(256);
         for (let i = 0; i < 256; i++) {
@@ -168,6 +181,7 @@ export async function removePortraitBackground(imageSource, targetBgColor = 'tra
 
         // 3. Sub-pixel Inward Boundary Erosion (Contracts ~1-1.5px away from background)
         // Removes any remaining background wall/halo fringe while preserving natural hair and collar contours
+        const erosionStayWeight = 1 - erosionMinWeight;
         for (let y = 0; y < height; y++) {
           const row = y * width;
           const prevRow = (y > 0 ? y - 1 : 0) * width;
@@ -185,11 +199,11 @@ export async function removePortraitBackground(imageSource, targetBgColor = 'tra
                 outA = 255;
               } else {
                 const minVal = Math.min(alphaMap[left], alphaMap[right], alphaMap[prevRow + x], alphaMap[nextRow + x]);
-                outA = Math.round(minVal * 0.75 + v * 0.25);
+                outA = Math.round(minVal * erosionMinWeight + v * erosionStayWeight);
               }
             } else {
               const minVal = Math.min(v, alphaMap[left], alphaMap[right], alphaMap[prevRow + x], alphaMap[nextRow + x]);
-              outA = Math.round(minVal * 0.75 + v * 0.25);
+              outA = Math.round(minVal * erosionMinWeight + v * erosionStayWeight);
             }
             maskPixels[p * 4] = 255;
             maskPixels[p * 4 + 1] = 255;
@@ -199,13 +213,85 @@ export async function removePortraitBackground(imageSource, targetBgColor = 'tra
         }
         maskCtx.putImageData(maskImageData, 0, 0);
 
-        // 4. Draw refined mask to main canvas
+        // 4. Edge Color Decontamination (Defringing & Light-Wrap Neutralizer)
+        // Samples nearest solid foreground interior colors to neutralize
+        // background wall/shadow light bleed wrapped around hair strands, collars, and shoulders.
+        const imgCanvas = document.createElement('canvas');
+        imgCanvas.width = width;
+        imgCanvas.height = height;
+        const imgCtx = imgCanvas.getContext('2d', { willReadFrequently: true });
+        imgCtx.drawImage(img, 0, 0, width, height);
+        const imgImageData = imgCtx.getImageData(0, 0, width, height);
+        const imgPixels = imgImageData.data;
+
+        for (let y = 0; y < height; y++) {
+          const row = y * width;
+          for (let x = 0; x < width; x++) {
+            const p = row + x;
+            const a = maskPixels[p * 4 + 3];
+            if (a > 0 && a < 242) {
+              let fgR = 0, fgG = 0, fgB = 0, fgCount = 0;
+              let bestA = 0, bestR = 0, bestG = 0, bestB = 0;
+
+              // Check up to 7x7 kernel (radius 3) for interior solid subject pixels
+              for (let dy = -3; dy <= 3; dy++) {
+                const ny = y + dy;
+                if (ny < 0 || ny >= height) continue;
+                const nRow = ny * width;
+                for (let dx = -3; dx <= 3; dx++) {
+                  const nx = x + dx;
+                  if (nx < 0 || nx >= width) continue;
+                  const np = nRow + nx;
+                  const nAlpha = maskPixels[np * 4 + 3];
+                  const nIdx = np * 4;
+
+                  if (nAlpha >= 235) {
+                    fgR += imgPixels[nIdx];
+                    fgG += imgPixels[nIdx + 1];
+                    fgB += imgPixels[nIdx + 2];
+                    fgCount++;
+                  } else if (nAlpha > bestA) {
+                    bestA = nAlpha;
+                    bestR = imgPixels[nIdx];
+                    bestG = imgPixels[nIdx + 1];
+                    bestB = imgPixels[nIdx + 2];
+                  }
+                }
+              }
+
+              let chosenR = 0, chosenG = 0, chosenB = 0;
+              let hasCandidate = false;
+
+              if (fgCount > 0) {
+                chosenR = fgR / fgCount;
+                chosenG = fgG / fgCount;
+                chosenB = fgB / fgCount;
+                hasCandidate = true;
+              } else if (bestA > 140) {
+                chosenR = bestR;
+                chosenG = bestG;
+                chosenB = bestB;
+                hasCandidate = true;
+              }
+
+              if (hasCandidate) {
+                // Adaptive decontamination blend: stronger near outer edge, gentle near solid core
+                const blendRatio = ((242 - a) / 242) * 0.92;
+                const pIdx = p * 4;
+                imgPixels[pIdx] = Math.round(imgPixels[pIdx] * (1 - blendRatio) + chosenR * blendRatio);
+                imgPixels[pIdx + 1] = Math.round(imgPixels[pIdx + 1] * (1 - blendRatio) + chosenG * blendRatio);
+                imgPixels[pIdx + 2] = Math.round(imgPixels[pIdx + 2] * (1 - blendRatio) + chosenB * blendRatio);
+              }
+            }
+          }
+        }
+        imgCtx.putImageData(imgImageData, 0, 0);
+
+        // 5. Composite clean decontaminated image with smooth alpha mask
         ctx.clearRect(0, 0, width, height);
         ctx.drawImage(maskCanvas, 0, 0);
-
-        // 5. Keep only the subject with smooth feathered alpha edges
         ctx.globalCompositeOperation = 'source-in';
-        ctx.drawImage(img, 0, 0, width, height);
+        ctx.drawImage(imgCanvas, 0, 0);
 
         // 6. If a studio color is requested, fill it behind the cut subject
         if (targetBgColor && targetBgColor !== 'transparent') {
