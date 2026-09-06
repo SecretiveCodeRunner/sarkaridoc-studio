@@ -60,7 +60,7 @@ export async function getSegmenter() {
     });
 
     segmenter.setOptions({
-      modelSelection: 1, // 1 = 244KB ultra-fast model; 0 = general 244KB model
+      modelSelection: 0, // 0 = 256x256 General Portrait model (superior boundary fidelity and edge clarity for portraits)
       selfieMode: false,
     });
 
@@ -75,7 +75,8 @@ export async function getSegmenter() {
 /**
  * High-speed studio background removal for portraits & passport photos
  * Runs in ~50-200ms using Google MediaPipe Neural Segmentation.
- * Produces clean anti-aliased hair and shoulder boundaries.
+ * Applies high-precision Hermite smoothstep refinement & sub-pixel boundary erosion
+ * to eliminate halos, shadows, and background artifacts for a razor-clean studio cut.
  * 
  * @param {Blob|File|HTMLImageElement} imageSource 
  * @param {string} targetBgColor - 'transparent', or hex color like '#93C5FD'
@@ -118,9 +119,12 @@ export async function removePortraitBackground(imageSource, targetBgColor = 'tra
       clearTimeout(timeout);
 
       try {
+        const width = img.naturalWidth || img.width;
+        const height = img.naturalHeight || img.height;
+
         const canvas = document.createElement('canvas');
-        canvas.width = img.naturalWidth || img.width;
-        canvas.height = img.naturalHeight || img.height;
+        canvas.width = width;
+        canvas.height = height;
         const ctx = canvas.getContext('2d');
 
         if (!ctx) {
@@ -128,18 +132,86 @@ export async function removePortraitBackground(imageSource, targetBgColor = 'tra
           return;
         }
 
-        // 1. Draw the continuous alpha confidence mask
-        ctx.drawImage(results.segmentationMask, 0, 0, canvas.width, canvas.height);
+        // 1. Render raw neural segmentation confidence to an offscreen mask canvas
+        const maskCanvas = document.createElement('canvas');
+        maskCanvas.width = width;
+        maskCanvas.height = height;
+        const maskCtx = maskCanvas.getContext('2d', { willReadFrequently: true });
+        maskCtx.drawImage(results.segmentationMask, 0, 0, width, height);
+        const maskImageData = maskCtx.getImageData(0, 0, width, height);
+        const maskPixels = maskImageData.data;
 
-        // 2. Keep only the subject with smooth feathered alpha edges
+        // 2. High-speed Precomputed S-Curve LUT (Hermite smoothstep interpolation)
+        // Suppresses background noise below threshold (0 to 110 -> 0)
+        // Anchors solid foreground subject above threshold (185 to 255 -> 255)
+        // Hermite smoothstep between 110 and 185 ensures silky anti-aliased edge
+        const lowThresh = 110;
+        const highThresh = 185;
+        const range = highThresh - lowThresh;
+        const lut = new Uint8Array(256);
+        for (let i = 0; i < 256; i++) {
+          if (i <= lowThresh) {
+            lut[i] = 0;
+          } else if (i >= highThresh) {
+            lut[i] = 255;
+          } else {
+            const t = (i - lowThresh) / range;
+            lut[i] = Math.round(t * t * (3 - 2 * t) * 255);
+          }
+        }
+
+        const totalPixels = width * height;
+        const alphaMap = new Uint8Array(totalPixels);
+        for (let i = 0, p = 0; i < maskPixels.length; i += 4, p++) {
+          alphaMap[p] = lut[maskPixels[i + 3]];
+        }
+
+        // 3. Sub-pixel Inward Boundary Erosion (Contracts ~1-1.5px away from background)
+        // Removes any remaining background wall/halo fringe while preserving natural hair and collar contours
+        for (let y = 0; y < height; y++) {
+          const row = y * width;
+          const prevRow = (y > 0 ? y - 1 : 0) * width;
+          const nextRow = (y < height - 1 ? y + 1 : height - 1) * width;
+          for (let x = 0; x < width; x++) {
+            const p = row + x;
+            const left = x > 0 ? p - 1 : p;
+            const right = x < width - 1 ? p + 1 : p;
+            const v = alphaMap[p];
+            let outA = 0;
+            if (v === 0) {
+              outA = 0;
+            } else if (v === 255) {
+              if (alphaMap[left] === 255 && alphaMap[right] === 255 && alphaMap[prevRow + x] === 255 && alphaMap[nextRow + x] === 255) {
+                outA = 255;
+              } else {
+                const minVal = Math.min(alphaMap[left], alphaMap[right], alphaMap[prevRow + x], alphaMap[nextRow + x]);
+                outA = Math.round(minVal * 0.75 + v * 0.25);
+              }
+            } else {
+              const minVal = Math.min(v, alphaMap[left], alphaMap[right], alphaMap[prevRow + x], alphaMap[nextRow + x]);
+              outA = Math.round(minVal * 0.75 + v * 0.25);
+            }
+            maskPixels[p * 4] = 255;
+            maskPixels[p * 4 + 1] = 255;
+            maskPixels[p * 4 + 2] = 255;
+            maskPixels[p * 4 + 3] = outA;
+          }
+        }
+        maskCtx.putImageData(maskImageData, 0, 0);
+
+        // 4. Draw refined mask to main canvas
+        ctx.clearRect(0, 0, width, height);
+        ctx.drawImage(maskCanvas, 0, 0);
+
+        // 5. Keep only the subject with smooth feathered alpha edges
         ctx.globalCompositeOperation = 'source-in';
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, width, height);
 
-        // 3. If a studio color is requested, fill it behind the cut subject
+        // 6. If a studio color is requested, fill it behind the cut subject
         if (targetBgColor && targetBgColor !== 'transparent') {
           ctx.globalCompositeOperation = 'destination-over';
           ctx.fillStyle = targetBgColor;
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.fillRect(0, 0, width, height);
         }
 
         canvas.toBlob(

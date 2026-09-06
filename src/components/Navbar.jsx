@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { ShieldCheck, Sparkles, Camera, FileText, Share2, Smartphone } from 'lucide-react';
+import { ShieldCheck, Sparkles, Camera, FileText, Share2, Smartphone, MoreVertical } from 'lucide-react';
 
 export const Navbar = ({ onOpenPdfStudio, onOpenBgRemover: _onOpenBgRemover, onOpenImageResizer: _onOpenImageResizer, onOpenPassportPhoto, onOpenAbout }) => {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [isInstalled, setIsInstalled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleBeforeInstallPrompt = (e) => {
@@ -67,26 +68,26 @@ export const Navbar = ({ onOpenPdfStudio, onOpenBgRemover: _onOpenBgRemover, onO
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-slate-200 bg-white/96 backdrop-blur-md shadow-[0_1px_3px_rgba(0,0,0,0.06)]" role="banner">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 flex items-center justify-between relative">
 
         {/* Logo — keyboard accessible */}
         <div
-          className="flex items-center space-x-3 cursor-pointer rounded-lg p-1 -m-1 focus-visible:outline-2 focus-visible:outline-blue-600"
+          className="flex items-center space-x-2 sm:space-x-3 cursor-pointer rounded-lg p-1 -m-1 focus-visible:outline-2 focus-visible:outline-blue-600 flex-shrink-0"
           onClick={onOpenAbout}
           onKeyDown={(e) => e.key === 'Enter' && onOpenAbout()}
           role="button"
           tabIndex={0}
           aria-label="SarkariDoc Studio — About this app"
         >
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center shadow-md shadow-blue-500/20 ring-1 ring-white flex-shrink-0">
-            <Sparkles className="w-5 h-5 text-white" aria-hidden="true" />
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center shadow-md shadow-blue-500/20 ring-1 ring-white flex-shrink-0">
+            <Sparkles className="w-4.5 h-4.5 sm:w-5 sm:h-5 text-white" aria-hidden="true" />
           </div>
           <div>
-            <div className="flex items-center space-x-2">
-              <span className="font-extrabold text-xl tracking-tight text-slate-900" style={{ fontFamily: "'Lexend', sans-serif" }}>
+            <div className="flex items-center space-x-1.5 sm:space-x-2">
+              <span className="font-extrabold text-lg sm:text-xl tracking-tight text-slate-900" style={{ fontFamily: "'Lexend', sans-serif" }}>
                 Sarkari<span className="text-blue-600">Doc</span>
               </span>
-              <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200 rounded-full" aria-label="Studio edition">
+              <span className="hidden sm:inline-flex px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200 rounded-full" aria-label="Studio edition">
                 Studio
               </span>
             </div>
@@ -95,58 +96,129 @@ export const Navbar = ({ onOpenPdfStudio, onOpenBgRemover: _onOpenBgRemover, onO
         </div>
 
         {/* Quick Tools */}
-        <nav className="flex items-center space-x-1.5 sm:space-x-2" aria-label="Quick tools">
+        <nav className="flex items-center space-x-1 sm:space-x-2" aria-label="Quick tools">
 
           <button
             onClick={onOpenPassportPhoto}
             aria-label="Open Passport Photo Studio"
-            className="flex items-center space-x-1 px-2.5 sm:px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-200 text-xs font-semibold shadow-xs transition-all active:scale-95"
+            className="flex items-center space-x-1 px-2 sm:px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-200 text-xs font-semibold shadow-xs transition-all active:scale-95 flex-shrink-0"
           >
             <Camera className="w-3.5 h-3.5 text-blue-600 flex-shrink-0" aria-hidden="true" />
-            <span className="hidden xs:inline">Passport Photo</span>
-            <span className="xs:hidden">Passport</span>
+            <span>Passport</span>
+            <span className="hidden md:inline">Photo</span>
           </button>
 
           <button
             onClick={onOpenPdfStudio}
             aria-label="Open PDF Resizer tool"
-            className="flex items-center space-x-1 px-2.5 sm:px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-semibold shadow-xs transition-all active:scale-95"
+            className="flex items-center space-x-1 px-2 sm:px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-semibold shadow-xs transition-all active:scale-95 flex-shrink-0"
           >
             <FileText className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" aria-hidden="true" />
-            <span className="hidden xs:inline">PDF Resizer</span>
-            <span className="xs:hidden">PDF</span>
+            <span>PDF</span>
+            <span className="hidden md:inline">Resizer</span>
           </button>
 
+          {/* Desktop-only quick action buttons */}
           <button
             onClick={onOpenAbout}
             aria-label="About Us — Privacy &amp; Security information"
-            className="flex items-center space-x-1 px-2.5 sm:px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200 text-xs font-semibold shadow-xs transition-all active:scale-95"
+            className="hidden sm:flex items-center space-x-1 px-2.5 sm:px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200 text-xs font-semibold shadow-xs transition-all active:scale-95 flex-shrink-0"
           >
             <ShieldCheck className="w-3.5 h-3.5 text-slate-600 flex-shrink-0" aria-hidden="true" />
-            <span className="hidden sm:inline">About Us</span>
+            <span>About Us</span>
           </button>
 
           <button
             onClick={handleShareApp}
             aria-label="Share SarkariDoc Studio with friends"
             title="Share App with Friends"
-            className="flex items-center space-x-1 px-2.5 sm:px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 text-xs font-semibold shadow-xs transition-all active:scale-95"
+            className="hidden sm:flex items-center space-x-1 px-2.5 sm:px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 text-xs font-semibold shadow-xs transition-all active:scale-95 flex-shrink-0"
           >
             <Share2 className="w-3.5 h-3.5 text-amber-600 flex-shrink-0" aria-hidden="true" />
-            <span className="hidden sm:inline">Share</span>
+            <span>Share</span>
           </button>
 
           {!isInstalled && (
             <button
               onClick={handleInstallPwa}
               aria-label="Install SarkariDoc Studio as an app on your device"
-              className="flex items-center space-x-1 px-2.5 sm:px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-md transition-all active:scale-95"
+              className="hidden sm:flex items-center space-x-1 px-2.5 sm:px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-md transition-all active:scale-95 flex-shrink-0"
             >
               <Smartphone className="w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />
               <span>Install</span>
             </button>
           )}
+
+          {/* Mobile More Options Button */}
+          <button
+            onClick={() => setMobileMenuOpen((prev) => !prev)}
+            aria-label="More options"
+            aria-expanded={mobileMenuOpen}
+            className="sm:hidden p-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-all active:scale-95 flex items-center justify-center flex-shrink-0"
+          >
+            <MoreVertical className="w-4 h-4" aria-hidden="true" />
+          </button>
         </nav>
+
+        {/* Mobile Dropdown Menu Popover */}
+        {mobileMenuOpen && (
+          <>
+            <div 
+              className="fixed inset-0 z-40 bg-black/10 backdrop-blur-[1px] sm:hidden" 
+              onClick={() => setMobileMenuOpen(false)}
+              aria-hidden="true"
+            />
+            <div 
+              className="absolute right-3 top-14 w-52 bg-white/98 backdrop-blur-xl border border-slate-200/90 rounded-2xl shadow-xl p-1.5 z-50 animate-in fade-in zoom-in-95 duration-150 sm:hidden"
+              role="menu"
+              aria-orientation="vertical"
+            >
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  onOpenAbout();
+                }}
+                role="menuitem"
+                className="w-full flex items-center space-x-2.5 px-3 py-2 rounded-xl hover:bg-slate-100 text-slate-800 text-xs font-semibold transition-colors text-left"
+              >
+                <div className="w-6 h-6 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0 text-slate-600">
+                  <ShieldCheck className="w-3.5 h-3.5" aria-hidden="true" />
+                </div>
+                <span>About &amp; Privacy</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  handleShareApp();
+                }}
+                role="menuitem"
+                className="w-full flex items-center space-x-2.5 px-3 py-2 rounded-xl hover:bg-amber-50 text-amber-900 text-xs font-semibold transition-colors text-left"
+              >
+                <div className="w-6 h-6 rounded-lg bg-amber-100/70 flex items-center justify-center flex-shrink-0 text-amber-700">
+                  <Share2 className="w-3.5 h-3.5" aria-hidden="true" />
+                </div>
+                <span>Share with Friends</span>
+              </button>
+
+              {!isInstalled && (
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    handleInstallPwa();
+                  }}
+                  role="menuitem"
+                  className="w-full flex items-center space-x-2.5 px-3 py-2 rounded-xl bg-blue-50/80 hover:bg-blue-100 text-blue-800 text-xs font-semibold transition-colors text-left mt-0.5 border border-blue-100"
+                >
+                  <div className="w-6 h-6 rounded-lg bg-blue-600 flex items-center justify-center flex-shrink-0 text-white shadow-xs">
+                    <Smartphone className="w-3.5 h-3.5" aria-hidden="true" />
+                  </div>
+                  <span>Install App</span>
+                </button>
+              )}
+            </div>
+          </>
+        )}
       </div>
     </header>
   );
