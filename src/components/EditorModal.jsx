@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { processSarkariImage, normalizeImageForProcessing } from '../utils/imageEngine';
-import confetti from 'canvas-confetti';
 import { 
   Upload, Download, RefreshCw, Sliders, 
   CheckCircle, Sparkles, Wand2, ArrowRight, ZoomIn, Palette, ArrowLeft, Crop, Zap
 } from 'lucide-react';
 import { ImageCropModal } from './ImageCropModal';
 import { ProcessingStepsGuide } from './ProcessingStepsGuide';
+import { downloadFile } from '../utils/downloadHelper';
+import { formatFileSize } from '../utils/formatUtils';
 
 
 
@@ -135,20 +136,14 @@ export const EditorModal = ({ preset, onClose }) => {
     customWidth, customHeight, customMinKb, customMaxKb, customTargetKb
   ]);
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     if (!result) return;
-    const link = document.createElement('a');
-    link.href = result.downloadUrl;
-    link.download = `SarkariDoc_${preset.id}_${Date.now()}.${result.format || 'jpg'}`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    confetti({
-      particleCount: 80,
-      spread: 70,
-      origin: { y: 0.8 },
-      colors: ['#2563eb', '#38bdf8', '#34d399', '#f59e0b']
+    const filename = `SarkariDoc_${preset.id}_${Date.now()}.${result.format || 'jpg'}`;
+    await downloadFile({
+      blob: result.blob,
+      blobUrl: result.downloadUrl,
+      filename,
+      mimeType: result.format === 'png' ? 'image/png' : 'image/jpeg',
     });
   };
 
@@ -521,13 +516,13 @@ export const EditorModal = ({ preset, onClose }) => {
                 <div className="w-full flex items-center justify-between mb-4">
                   <span className="text-xs font-bold text-slate-900">Live Preview</span>
                   {result && (
-                    <div className={`flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-bold border ${
+                    <div className={`px-2.5 py-1 rounded-full text-xs font-bold border flex items-center space-x-1.5 ${
                       result.finalKb >= (customMinKb || preset.minKb) && result.finalKb <= (customMaxKb || preset.maxKb)
                         ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
                         : 'bg-amber-50 text-amber-700 border-amber-300'
                     }`}>
                       <CheckCircle className="w-4 h-4" />
-                      <span>{result.finalKb} KB (Target: {customMinKb || preset.minKb}-{customMaxKb || preset.maxKb} KB)</span>
+                      <span>{formatFileSize(result.finalKb, 'kb')} (Target: {customMinKb || preset.minKb}-{customMaxKb || preset.maxKb} KB)</span>
                     </div>
                   )}
                 </div>
@@ -560,7 +555,7 @@ export const EditorModal = ({ preset, onClose }) => {
                     className="w-full btn-gradient py-3.5 px-6 rounded-xl text-white font-bold text-sm flex items-center justify-center space-x-2 shadow-lg disabled:opacity-50"
                   >
                     <Download className="w-5 h-5" />
-                    <span>Download Formatted Image ({result?.finalKb || 0} KB)</span>
+                    <span>Download Formatted Image ({formatFileSize(result?.finalKb || 0, 'kb')})</span>
                   </button>
                 </div>
 

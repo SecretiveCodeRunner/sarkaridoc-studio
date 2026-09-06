@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { binaryCompressToTargetSize, normalizeImageForProcessing, fastThresholdCutout } from '../utils/imageEngine';
 import { getCloudGpuQuota } from '../utils/cloudQuota';
-import confetti from 'canvas-confetti';
 import { Upload, Download, RefreshCw, Sparkles, CheckCircle, Camera, Crop, Palette, Printer, Sun, ArrowLeft, Zap } from 'lucide-react';
 import { ImageCropModal } from './ImageCropModal';
 import { ProcessingStepsGuide } from './ProcessingStepsGuide';
+import { downloadFile } from '../utils/downloadHelper';
+import { formatFileSize } from '../utils/formatUtils';
 
 
 const PASSPORT_SIZES = [
@@ -263,20 +264,13 @@ export const PassportPhotoModal = ({ onClose }) => {
     };
   }, [removedBlob, selectedFile, selectedSize, selectedBg, brightness, contrast, maxKb]);
 
-  const handleDownloadSingle = () => {
+  const handleDownloadSingle = async () => {
     if (!finalPreviewUrl) return;
-    const link = document.createElement('a');
-    link.href = finalPreviewUrl;
-    link.download = `Passport_Photo_${selectedSize.width}x${selectedSize.height}_${Date.now()}.${selectedBg.value === 'transparent' ? 'png' : 'jpg'}`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    confetti({
-      particleCount: 60,
-      spread: 60,
-      origin: { y: 0.8 },
-      colors: ['#2563eb', '#38bdf8', '#34d399']
+    const filename = `Passport_Photo_${selectedSize.width}x${selectedSize.height}_${Date.now()}.${selectedBg.value === 'transparent' ? 'png' : 'jpg'}`;
+    await downloadFile({
+      blobUrl: finalPreviewUrl,
+      filename,
+      mimeType: selectedBg.value === 'transparent' ? 'image/png' : 'image/jpeg',
     });
   };
 
@@ -318,20 +312,14 @@ export const PassportPhotoModal = ({ onClose }) => {
         }
       }
 
-      const printUrl = sheet.toDataURL('image/jpeg', 0.95);
-      const link = document.createElement('a');
-      link.href = printUrl;
-      link.download = `Printable_4x6_Passport_Sheet_${Date.now()}.jpg`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      confetti({
-        particleCount: 90,
-        spread: 70,
-        origin: { y: 0.8 },
-        colors: ['#2563eb', '#6366f1', '#10b981']
-      });
+      sheet.toBlob(async (sheetBlob) => {
+        const filename = `Printable_4x6_Passport_Sheet_${Date.now()}.jpg`;
+        await downloadFile({
+          blob: sheetBlob,
+          filename,
+          mimeType: 'image/jpeg',
+        });
+      }, 'image/jpeg', 0.95);
     };
     img.src = finalPreviewUrl;
   };
@@ -614,7 +602,7 @@ export const PassportPhotoModal = ({ onClose }) => {
                     ) : (
                       <span className="text-xs font-bold text-emerald-600 flex items-center space-x-1">
                         <CheckCircle className="w-3.5 h-3.5" />
-                        <span>{(finalFileSizeBytes / 1024).toFixed(1)} KB</span>
+                        <span>{formatFileSize(finalFileSizeBytes)}</span>
                       </span>
                     )}
                   </div>

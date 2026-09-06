@@ -4,7 +4,8 @@ import { AndroidBottomNav } from './AndroidBottomNav';
 import { AndroidStudioDashboard } from './AndroidStudioDashboard';
 import { AndroidPresetsScreen } from './AndroidPresetsScreen';
 import { AndroidPdfSuiteScreen } from './AndroidPdfSuiteScreen';
-import { AndroidInfoScreen } from './AndroidInfoScreen';
+import { AndroidSettingsScreen } from './AndroidSettingsScreen';
+import { shareAppLink } from '../../utils/downloadHelper';
 
 export const AndroidShell = ({
   onOpenPassportPhoto,
@@ -16,48 +17,19 @@ export const AndroidShell = ({
   onOpenImageResizer,
   onSelectPreset,
 }) => {
-  const [activeTab, setActiveTab] = useState('studio'); // 'studio' | 'passport' | 'pdf' | 'presets' | 'info'
-
-  const handleShare = async () => {
-    const shareData = {
-      title: 'SarkariDoc Studio — Offline Govt Exam Photo & PDF Suite',
-      text: 'Resize exam photos & compress PDFs under 200KB offline on your phone! Zero server uploads.',
-      url: window.location.href,
-    };
-
-    if (navigator.share) {
-      try {
-        await navigator.share(shareData);
-      } catch (err) {
-        if (err.name !== 'AbortError') {
-          console.debug('Share aborted or failed', err);
-        }
-      }
-    } else {
-      try {
-        await navigator.clipboard.writeText(window.location.href);
-        alert('App link copied to clipboard!');
-      } catch {
-        alert(`Share link: ${window.location.href}`);
-      }
-    }
-  };
+  const [activeTab, setActiveTab] = useState('studio'); // 'studio' | 'pdf' | 'presets' | 'settings'
 
   const handleTabSelect = (tabId) => {
-    if (tabId === 'passport') {
-      onOpenPassportPhoto();
-      return;
-    }
     setActiveTab(tabId);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col font-['Outfit'] text-slate-900 antialiased">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col font-['Outfit'] text-slate-900 dark:text-slate-100 antialiased transition-colors duration-200">
       {/* 1. Android Material 3 Top App Bar */}
       <AndroidTopBar
-        onOpenInfo={() => setActiveTab('info')}
-        onShare={handleShare}
+        onOpenSettings={() => setActiveTab('settings')}
+        onShare={shareAppLink}
       />
 
       {/* 2. Main Screen Area Based on Active Tab */}
@@ -91,10 +63,8 @@ export const AndroidShell = ({
           />
         )}
 
-        {activeTab === 'info' && (
-          <AndroidInfoScreen
-            onShare={handleShare}
-          />
+        {activeTab === 'settings' && (
+          <AndroidSettingsScreen />
         )}
       </main>
 

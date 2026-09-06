@@ -6,6 +6,8 @@ import {
   Layers, ArrowLeft, Camera, Sliders, Image as ImageIcon, Merge, 
   Trash2, ArrowUp, ArrowDown, Sparkles
 } from 'lucide-react';
+import { downloadFile } from '../utils/downloadHelper';
+import { formatFileSize } from '../utils/formatUtils';
 
 const TOOL_CONFIG = {
   'image-to-pdf': {
@@ -266,13 +268,12 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
     });
   };
 
-  const downloadBlob = (blobUrl, filename) => {
-    const link = document.createElement('a');
-    link.href = blobUrl;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const downloadBlob = async (blobUrl, filename) => {
+    await downloadFile({
+      blobUrl,
+      filename,
+      mimeType: filename.endsWith('.jpg') || filename.endsWith('.jpeg') ? 'image/jpeg' : 'application/pdf',
+    });
   };
 
   return (
@@ -602,7 +603,7 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
                           />
                           <div className="min-w-0">
                             <p className="text-xs font-bold text-slate-800 truncate">{item.file.name}</p>
-                            <p className="text-[11px] text-slate-500">{(item.file.size / 1024).toFixed(0)} KB</p>
+                            <p className="text-[11px] text-slate-500">{formatFileSize(item.file.size)}</p>
                           </div>
                         </div>
 
@@ -692,8 +693,8 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
                       <CheckCircle className="w-5 h-5 text-emerald-600" />
                       <span>
                         {imgTargetKb
-                          ? `PDF Created Successfully! Exact Size: ${imgPdfResult.finalKb} KB (Target: Under ${imgTargetKb} KB)`
-                          : `PDF Created Successfully! Exact Size: ${imgPdfResult.finalKb} KB (Original High Resolution)`}
+                          ? `PDF Created Successfully! Exact Size: ${formatFileSize(imgPdfResult.finalKb, 'kb')} (Target: Under ${formatFileSize(imgTargetKb, 'kb')})`
+                          : `PDF Created Successfully! Exact Size: ${formatFileSize(imgPdfResult.finalKb, 'kb')} (Original High Resolution)`}
                       </span>
                     </div>
 
@@ -703,7 +704,7 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
                       className="py-3.5 px-8 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm flex items-center space-x-2 shadow-lg shadow-emerald-600/25 transition-all active:scale-95"
                     >
                       <Download className="w-5 h-5" />
-                      <span>Download PDF Document ({imgPdfResult.finalKb} KB)</span>
+                      <span>Download PDF Document ({formatFileSize(imgPdfResult.finalKb, 'kb')})</span>
                     </button>
                   </div>
                 )}
@@ -822,7 +823,7 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
                     <FileText className="w-5 h-5 text-emerald-600" />
                     <div>
                       <h4 className="text-xs sm:text-sm font-bold text-slate-900">{compressFile.name}</h4>
-                      <p className="text-[11px] text-slate-500 font-medium">Original: {(compressFile.size / 1024).toFixed(0)} KB</p>
+                      <p className="text-[11px] text-slate-500 font-medium">Original: {formatFileSize(compressFile.size)}</p>
                     </div>
                   </div>
 
@@ -860,7 +861,7 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
                   <div className="p-6 rounded-2xl bg-emerald-50 border border-emerald-200 flex flex-col items-center justify-center space-y-4">
                     <div className="flex items-center space-x-2 text-emerald-700 font-bold text-sm">
                       <CheckCircle className="w-5 h-5" />
-                      <span>Compressed: {compressResult.finalKb} KB (Target: {compressTargetKb} KB)</span>
+                      <span>Compressed: {formatFileSize(compressResult.finalKb, 'kb')} (Target: {formatFileSize(compressTargetKb, 'kb')})</span>
                     </div>
 
                     <button
@@ -868,7 +869,7 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
                       className="py-3 px-8 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm flex items-center space-x-2 shadow-lg shadow-emerald-600/25 transition-all active:scale-95"
                     >
                       <Download className="w-5 h-5" />
-                      <span>Download Compressed PDF ({compressResult.finalKb} KB)</span>
+                      <span>Download Compressed PDF ({formatFileSize(compressResult.finalKb, 'kb')})</span>
                     </button>
                   </div>
                 )}
@@ -951,7 +952,7 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
                           </span>
                           <div className="min-w-0">
                             <p className="text-xs font-bold text-slate-800 truncate">{file.name}</p>
-                            <p className="text-[11px] text-slate-500">{(file.size / 1024).toFixed(0)} KB</p>
+                            <p className="text-[11px] text-slate-500">{formatFileSize(file.size)}</p>
                           </div>
                         </div>
 
@@ -1028,7 +1029,7 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
                   <div className="p-6 rounded-2xl bg-emerald-50 border border-emerald-300 flex flex-col items-center justify-center space-y-4">
                     <div className="flex items-center space-x-2 text-emerald-800 font-bold text-sm">
                       <CheckCircle className="w-5 h-5 text-emerald-600" />
-                      <span>Merged PDF Ready! Total Pages: {mergeResult.pageCount} ({mergeResult.finalKb} KB)</span>
+                      <span>Merged PDF Ready! Total Pages: {mergeResult.pageCount} ({formatFileSize(mergeResult.finalKb, 'kb')})</span>
                     </div>
 
                     <button
@@ -1037,7 +1038,7 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
                       className="py-3 px-8 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm flex items-center space-x-2 shadow-lg shadow-emerald-600/25 transition-all active:scale-95"
                     >
                       <Download className="w-5 h-5" />
-                      <span>Download Merged PDF ({mergeResult.finalKb} KB)</span>
+                      <span>Download Merged PDF ({formatFileSize(mergeResult.finalKb, 'kb')})</span>
                     </button>
                   </div>
                 )}

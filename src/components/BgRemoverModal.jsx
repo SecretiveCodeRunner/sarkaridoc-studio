@@ -1,10 +1,10 @@
 import React, { useState, useRef } from 'react';
 import { normalizeImageForProcessing, fastThresholdCutout } from '../utils/imageEngine';
 import { getCloudGpuQuota, incrementCloudGpuQuota } from '../utils/cloudQuota';
-import confetti from 'canvas-confetti';
 import { Upload, Download, RefreshCw, Sparkles, CheckCircle, Wand2, ArrowLeft, Crop, FileText, User } from 'lucide-react';
 import { ImageCropModal } from './ImageCropModal';
 import { ProcessingStepsGuide } from './ProcessingStepsGuide';
+import { downloadFile } from '../utils/downloadHelper';
 
 export const BgRemoverModal = ({ onClose }) => {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -207,20 +207,13 @@ export const BgRemoverModal = ({ onClose }) => {
     }
   };
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     if (!previewUrl) return;
-    const link = document.createElement('a');
-    link.href = previewUrl;
-    link.download = `SarkariDoc_BgRemoved_${Date.now()}.${bgColor === 'transparent' ? 'png' : 'jpg'}`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    confetti({
-      particleCount: 80,
-      spread: 70,
-      origin: { y: 0.8 },
-      colors: ['#a855f7', '#ec4899', '#3b82f6']
+    const filename = `SarkariDoc_BgRemoved_${Date.now()}.${bgColor === 'transparent' ? 'png' : 'jpg'}`;
+    await downloadFile({
+      blobUrl: previewUrl,
+      filename,
+      mimeType: bgColor === 'transparent' ? 'image/png' : 'image/jpeg',
     });
   };
 

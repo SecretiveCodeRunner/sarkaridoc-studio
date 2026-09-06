@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { binaryCompressToTargetSize, loadImage } from '../utils/imageEngine';
-import confetti from 'canvas-confetti';
 import { Upload, Download, RefreshCw, SlidersHorizontal, CheckCircle, ArrowLeft, Crop } from 'lucide-react';
 import { ImageCropModal } from './ImageCropModal';
 import { ProcessingStepsGuide } from './ProcessingStepsGuide';
+import { downloadFile } from '../utils/downloadHelper';
+import { formatFileSize } from '../utils/formatUtils';
 
 
 export const ImageResizerModal = ({ onClose }) => {
@@ -88,20 +89,14 @@ export const ImageResizerModal = ({ onClose }) => {
     };
   }, [selectedFile, targetKb, targetWidth, targetHeight, format]);
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     if (!result) return;
-    const link = document.createElement('a');
-    link.href = result.downloadUrl;
-    link.download = `SarkariDoc_Resized_${Date.now()}.${result.ext}`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    confetti({
-      particleCount: 70,
-      spread: 60,
-      origin: { y: 0.8 },
-      colors: ['#2563eb', '#10b981', '#f59e0b']
+    const filename = `SarkariDoc_Resized_${Date.now()}.${result.ext}`;
+    await downloadFile({
+      blob: result.blob,
+      blobUrl: result.downloadUrl,
+      filename,
+      mimeType: result.ext === 'png' ? 'image/png' : result.ext === 'webp' ? 'image/webp' : 'image/jpeg',
     });
   };
 
@@ -286,7 +281,7 @@ export const ImageResizerModal = ({ onClose }) => {
                   {result && (
                     <span className="text-xs font-bold text-emerald-600 flex items-center space-x-1">
                       <CheckCircle className="w-4 h-4" />
-                      <span>{result.finalKb} KB</span>
+                      <span>{formatFileSize(result.finalKb, 'kb')}</span>
                     </span>
                   )}
                 </div>
@@ -312,7 +307,7 @@ export const ImageResizerModal = ({ onClose }) => {
                   className="w-full mt-6 btn-gradient py-3.5 px-6 rounded-xl text-white font-bold text-sm flex items-center justify-center space-x-2 shadow-lg disabled:opacity-50"
                 >
                   <Download className="w-5 h-5" />
-                  <span>Download Resized Image ({result?.finalKb || 0} KB)</span>
+                  <span>Download Resized Image ({formatFileSize(result?.finalKb || 0, 'kb')})</span>
                 </button>
               </div>
 

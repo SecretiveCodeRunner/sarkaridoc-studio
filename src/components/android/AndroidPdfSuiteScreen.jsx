@@ -50,13 +50,13 @@ export const AndroidPdfSuiteScreen = ({
     <div className="space-y-3 px-4 py-3 pb-24 max-w-lg mx-auto select-none">
       
       {/* Privacy Guarantee Card */}
-      <div className="rounded-2xl bg-emerald-50/80 border border-emerald-200/80 p-3.5 flex items-center space-x-3">
+      <div className="rounded-2xl bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-800/60 p-3.5 flex items-center space-x-3">
         <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center flex-shrink-0">
           <ShieldCheck className="w-4 h-4" />
         </div>
         <div className="min-w-0">
-          <h3 className="text-xs font-bold text-emerald-950">100% Client-Side PDF Engine</h3>
-          <p className="text-[11px] text-emerald-800">Your documents are never uploaded to any server or cloud.</p>
+          <h3 className="text-xs font-bold text-emerald-950 dark:text-emerald-300">100% Client-Side PDF Engine</h3>
+          <p className="text-[11px] text-emerald-800 dark:text-emerald-400">Your documents are never uploaded to any server or cloud.</p>
         </div>
       </div>
 
@@ -69,7 +69,7 @@ export const AndroidPdfSuiteScreen = ({
               key={tool.id}
               type="button"
               onClick={tool.action}
-              className="w-full text-left p-4 rounded-3xl bg-white border border-slate-200/90 hover:border-blue-500 shadow-xs active:scale-[0.98] transition-all group"
+              className="w-full text-left p-4 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 hover:border-blue-500 dark:hover:border-blue-500 shadow-xs active:scale-[0.98] transition-all group"
             >
               <div className="flex items-start justify-between mb-2">
                 <div className={`w-11 h-11 rounded-2xl flex items-center justify-center text-white shadow-md ${
@@ -81,23 +81,23 @@ export const AndroidPdfSuiteScreen = ({
                   <Icon className="w-5 h-5" />
                 </div>
                 <span className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full ${
-                  tool.color === 'emerald' ? 'bg-emerald-100 text-emerald-800' :
-                  tool.color === 'indigo' ? 'bg-indigo-100 text-indigo-800' :
-                  tool.color === 'cyan' ? 'bg-cyan-100 text-cyan-800' :
-                  'bg-amber-100 text-amber-800'
+                  tool.color === 'emerald' ? 'bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300' :
+                  tool.color === 'indigo' ? 'bg-indigo-100 dark:bg-indigo-900/60 text-indigo-800 dark:text-indigo-300' :
+                  tool.color === 'cyan' ? 'bg-cyan-100 dark:bg-cyan-900/60 text-cyan-800 dark:text-cyan-300' :
+                  'bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-300'
                 }`}>
                   {tool.badge}
                 </span>
               </div>
 
-              <h4 className="font-bold text-slate-900 text-sm group-hover:text-blue-600 transition-colors" style={{ fontFamily: "'Lexend', sans-serif" }}>
+              <h4 className="font-bold text-slate-900 dark:text-white text-sm group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" style={{ fontFamily: "'Lexend', sans-serif" }}>
                 {tool.title}
               </h4>
-              <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
                 {tool.desc}
               </p>
 
-              <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-blue-600">
+              <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs font-bold text-blue-600 dark:text-blue-400">
                 <span>Open Tool</span>
                 <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
               </div>
