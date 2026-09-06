@@ -1,0 +1,8 @@
+{
+  "appId": "com.sarkaridoc.studio",
+  "appName": "SarkariDoc Studio",
+  "webDir": "dist/client",
+  "server": {
+    "androidScheme": "https"
+  }
+}

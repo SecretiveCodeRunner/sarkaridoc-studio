@@ -8,9 +8,14 @@
     "build": "vite build",
     "lint": "oxlint src",
     "preview": "npm run build && wrangler dev",
-    "deploy": "npm run build && wrangler deploy"
+    "deploy": "npm run build && wrangler deploy",
+    "apk:sync": "npm run build && npx cap sync android",
+    "apk": "npm run apk:sync && cd android && JAVA_HOME=/home/apurba/.bubblewrap/jdk/temurin-17 ./gradlew assembleRelease && cp app/build/outputs/apk/release/app-release.apk ../sarkaridoc_studio.apk"
   },
   "dependencies": {
+    "@capacitor/android": "^8.5.1",
+    "@capacitor/cli": "^8.5.1",
+    "@capacitor/core": "^8.5.1",
     "@imgly/background-removal": "^1.7.0",
     "@mediapipe/selfie_segmentation": "^0.1.1675465747",
     "browser-image-compression": "^2.0.2",
