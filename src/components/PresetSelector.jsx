@@ -26,148 +26,170 @@ export const PresetSelector = ({
   });
 
   return (
-    <section className="w-full py-8 bg-white font-['Outfit']">
+    <section className="w-full py-8 bg-white" aria-label="Document tools and exam presets">
       {/* Hero Section Banner */}
       <div className="text-center max-w-5xl mx-auto mb-8 px-4">
-        <div className="inline-flex items-center space-x-2 px-3.5 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-semibold mb-4">
-          <Sparkles className="w-3.5 h-3.5" />
-          <span>Updated for 2026 Exam & Passport Rules (SSC, NEET, UPSC, Passport)</span>
+        <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-semibold mb-5 trust-badge">
+          <Sparkles className="w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />
+          <span>Updated for 2026 Exam &amp; Passport Rules — SSC · NEET · UPSC · Passport</span>
         </div>
-        <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight font-['Outfit']">
-          Convert Govt Exam Photos & Passport IDs <span className="text-blue-600">Instantly</span>
+        <h1
+          className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-slate-900 tracking-tight leading-[1.15]"
+          style={{ fontFamily: "'Lexend', sans-serif", letterSpacing: '-0.03em' }}
+        >
+          Govt Exam Photos &amp; PDFs
+          <span className="block text-blue-600 mt-1">Ready in Seconds</span>
         </h1>
-        <p className="mt-3 text-slate-600 text-xs sm:text-sm max-w-2xl mx-auto leading-relaxed font-medium">
-          Pixel-exact KB compressor, Passport Maker, AI background remover, and PDF resizer. 100% Client-side — zero server uploads.
+        <p className="mt-4 text-slate-600 text-sm sm:text-base max-w-2xl mx-auto leading-relaxed font-medium" style={{ fontFamily: "'Source Sans 3', sans-serif" }}>
+          Pixel-exact KB compressor · Passport Photo Maker · AI background remover · PDF resizer.<br className="hidden sm:block" />
+          <strong className="text-slate-800">100% client-side</strong> — zero server uploads, your files never leave your device.
         </p>
 
-        {/* 🌟 4 HERO STUDIO TOOLS (Pure White Cards with Vibrant Colored Accents) 🌟 */}
-        <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto">
+        {/* Trust signals strip */}
+        <div className="mt-5 flex flex-wrap items-center justify-center gap-3 text-xs text-slate-600">
+          <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0"></span>Free Forever</span>
+          <span className="text-slate-300">|</span>
+          <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0"></span>0 Registration</span>
+          <span className="text-slate-300">|</span>
+          <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-indigo-500 flex-shrink-0"></span>Works Offline</span>
+          <span className="text-slate-300">|</span>
+          <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-amber-500 flex-shrink-0"></span>50+ Exam Presets</span>
+        </div>
+
+        {/* 🌟 4 HERO STUDIO TOOLS 🌟 */}
+        <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 max-w-5xl mx-auto">
           
           {/* Tool 1: Passport Photo Maker */}
           <button
             onClick={onOpenPassportPhoto}
-            className="group relative p-4 rounded-2xl bg-white border-2 border-blue-300 hover:border-blue-600 transition-all duration-200 shadow-xs hover:shadow-md text-left flex items-center space-x-3.5 hover:-translate-y-1"
+            aria-label="Open Passport Photo Studio — Create exam photos in 3.5x4.5cm or 2x2 inch format"
+            style={{ willChange: 'transform, box-shadow' }}
+            className="group relative p-4 rounded-2xl bg-white border-2 border-blue-300 hover:border-blue-600 transition-all duration-200 shadow-xs hover:shadow-md text-left flex items-center space-x-3.5 hover:-translate-y-1 min-h-[88px]"
           >
             <div className="w-11 h-11 rounded-2xl bg-blue-600 text-white flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform shadow-md shadow-blue-500/20">
-              <Camera className="w-5.5 h-5.5" />
+              <Camera className="w-5 h-5" aria-hidden="true" />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center space-x-1.5 mb-0.5">
-                <h3 className="font-bold text-slate-900 text-sm group-hover:text-blue-700 transition-colors">
+                <h3 className="font-bold text-slate-900 text-sm group-hover:text-blue-700 transition-colors" style={{ fontFamily: "'Lexend', sans-serif" }}>
                   Passport Studio
                 </h3>
-                <span className="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-blue-600 text-white uppercase">
-                  New
-                </span>
+                <span className="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-blue-600 text-white uppercase">New</span>
               </div>
-              <p className="text-xs text-slate-500 line-clamp-1">3.5x4.5cm, 2x2" & Studio Colors</p>
+              <p className="text-xs text-slate-500 line-clamp-1">3.5×4.5cm, 2×2″ &amp; Studio Colors</p>
             </div>
-            <ArrowRight className="w-4 h-4 text-blue-600 group-hover:translate-x-1 transition-transform" />
+            <ArrowRight className="w-4 h-4 text-blue-600 group-hover:translate-x-1 transition-transform flex-shrink-0" aria-hidden="true" />
           </button>
 
           {/* Tool 2: PDF Resizer */}
           <button
             onClick={onOpenPdfStudio}
-            className="group relative p-4 rounded-2xl bg-white border-2 border-emerald-300 hover:border-emerald-600 transition-all duration-200 shadow-xs hover:shadow-md text-left flex items-center space-x-3.5 hover:-translate-y-1"
+            aria-label="Open PDF Resizer — Compress PDF files under 300KB"
+            style={{ willChange: 'transform, box-shadow' }}
+            className="group relative p-4 rounded-2xl bg-white border-2 border-emerald-300 hover:border-emerald-600 transition-all duration-200 shadow-xs hover:shadow-md text-left flex items-center space-x-3.5 hover:-translate-y-1 min-h-[88px]"
           >
             <div className="w-11 h-11 rounded-2xl bg-emerald-600 text-white flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform shadow-md shadow-emerald-500/20">
-              <FileText className="w-5.5 h-5.5" />
+              <FileText className="w-5 h-5" aria-hidden="true" />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center space-x-1.5 mb-0.5">
-                <h3 className="font-bold text-slate-900 text-sm group-hover:text-emerald-700 transition-colors">
+                <h3 className="font-bold text-slate-900 text-sm group-hover:text-emerald-700 transition-colors" style={{ fontFamily: "'Lexend', sans-serif" }}>
                   PDF Resizer
                 </h3>
-                <span className="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-emerald-600 text-white uppercase">
-                  Tool
-                </span>
+                <span className="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-emerald-600 text-white uppercase">Tool</span>
               </div>
               <p className="text-xs text-slate-500 line-clamp-1">Compress PDF under 300KB</p>
             </div>
-            <ArrowRight className="w-4 h-4 text-emerald-600 group-hover:translate-x-1 transition-transform" />
+            <ArrowRight className="w-4 h-4 text-emerald-600 group-hover:translate-x-1 transition-transform flex-shrink-0" aria-hidden="true" />
           </button>
 
           {/* Tool 3: AI Background Remover */}
           <button
             onClick={onOpenBgRemover}
-            className="group relative p-4 rounded-2xl bg-white border-2 border-purple-300 hover:border-purple-600 transition-all duration-200 shadow-xs hover:shadow-md text-left flex items-center space-x-3.5 hover:-translate-y-1"
+            aria-label="Open AI Background Remover — 1-click transparent or colored backgrounds"
+            style={{ willChange: 'transform, box-shadow' }}
+            className="group relative p-4 rounded-2xl bg-white border-2 border-purple-300 hover:border-purple-600 transition-all duration-200 shadow-xs hover:shadow-md text-left flex items-center space-x-3.5 hover:-translate-y-1 min-h-[88px]"
           >
             <div className="w-11 h-11 rounded-2xl bg-purple-600 text-white flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform shadow-md shadow-purple-500/20">
-              <Wand2 className="w-5.5 h-5.5" />
+              <Wand2 className="w-5 h-5" aria-hidden="true" />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center space-x-1.5 mb-0.5">
-                <h3 className="font-bold text-slate-900 text-sm group-hover:text-purple-700 transition-colors">
+                <h3 className="font-bold text-slate-900 text-sm group-hover:text-purple-700 transition-colors" style={{ fontFamily: "'Lexend', sans-serif" }}>
                   AI BG Remover
                 </h3>
-                <span className="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-purple-600 text-white uppercase">
-                  AI
-                </span>
+                <span className="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-purple-600 text-white uppercase">AI</span>
               </div>
               <p className="text-xs text-slate-500 line-clamp-1">1-Click Transparent / Color</p>
             </div>
-            <ArrowRight className="w-4 h-4 text-purple-600 group-hover:translate-x-1 transition-transform" />
+            <ArrowRight className="w-4 h-4 text-purple-600 group-hover:translate-x-1 transition-transform flex-shrink-0" aria-hidden="true" />
           </button>
 
           {/* Tool 4: General Image Resizer */}
           <button
             onClick={onOpenImageResizer}
-            className="group relative p-4 rounded-2xl bg-white border-2 border-slate-300 hover:border-slate-600 transition-all duration-200 shadow-xs hover:shadow-md text-left flex items-center space-x-3.5 hover:-translate-y-1"
+            aria-label="Open Image Resizer — Custom KB, pixels, or JPG output"
+            style={{ willChange: 'transform, box-shadow' }}
+            className="group relative p-4 rounded-2xl bg-white border-2 border-slate-300 hover:border-slate-600 transition-all duration-200 shadow-xs hover:shadow-md text-left flex items-center space-x-3.5 hover:-translate-y-1 min-h-[88px]"
           >
             <div className="w-11 h-11 rounded-2xl bg-slate-900 text-white flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform shadow-md shadow-slate-900/20">
-              <SlidersHorizontal className="w-5.5 h-5.5" />
+              <SlidersHorizontal className="w-5 h-5" aria-hidden="true" />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center space-x-1.5 mb-0.5">
-                <h3 className="font-bold text-slate-900 text-sm group-hover:text-slate-700 transition-colors">
+                <h3 className="font-bold text-slate-900 text-sm group-hover:text-slate-700 transition-colors" style={{ fontFamily: "'Lexend', sans-serif" }}>
                   Image Resizer
                 </h3>
-                <span className="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-slate-800 text-white uppercase">
-                  Tool
-                </span>
+                <span className="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-slate-800 text-white uppercase">Tool</span>
               </div>
               <p className="text-xs text-slate-500 line-clamp-1">Custom KB / Pixels / JPG</p>
             </div>
-            <ArrowRight className="w-4 h-4 text-slate-600 group-hover:translate-x-1 transition-transform" />
+            <ArrowRight className="w-4 h-4 text-slate-600 group-hover:translate-x-1 transition-transform flex-shrink-0" aria-hidden="true" />
           </button>
 
         </div>
       </div>
 
       {/* Exam Presets Section Divider */}
-      <div className="max-w-5xl mx-auto px-4 mb-4 flex items-center justify-between">
+      <div className="max-w-5xl mx-auto px-4 mb-4 flex items-center space-x-3">
+        <div className="h-px flex-1 bg-slate-200" aria-hidden="true"></div>
         <div className="flex items-center space-x-2">
-          <Zap className="w-4 h-4 text-blue-600" />
-          <h2 className="text-xs sm:text-sm font-bold text-slate-800 uppercase tracking-wider">
-            Or Select Government Exam Preset:
+          <Zap className="w-4 h-4 text-blue-600" aria-hidden="true" />
+          <h2 className="text-xs sm:text-sm font-bold text-slate-700 uppercase tracking-widest whitespace-nowrap" style={{ fontFamily: "'Lexend', sans-serif" }}>
+            Or Select a Government Exam Preset
           </h2>
         </div>
+        <div className="h-px flex-1 bg-slate-200" aria-hidden="true"></div>
       </div>
 
       {/* Search & Category Filter Controls */}
-      <div className="max-w-5xl mx-auto px-4 mb-6 space-y-4">
+      <div className="max-w-5xl mx-auto px-4 mb-6 space-y-3">
         <div className="relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-slate-400" aria-hidden="true" />
           <input
-            type="text"
+            type="search"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search exam (e.g., SSC CGL, NEET Postcard, UPSC, IBPS Signature)..."
+            aria-label="Search exam presets"
             className="w-full pl-11 pr-4 py-3.5 rounded-xl bg-white border-2 border-slate-200 focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 text-slate-900 placeholder-slate-400 text-sm shadow-xs outline-none transition-all"
           />
         </div>
 
-        {/* Category Pills */}
-        <div className="flex items-center space-x-2 overflow-x-auto pb-2 scrollbar-none">
+        {/* Category Pills — min-h reserved to prevent CLS */}
+        <div className="flex items-center space-x-2 overflow-x-auto pb-1 scrollbar-none min-h-[40px]" role="group" aria-label="Filter by exam category">
           {categories.map((cat) => (
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
+              aria-pressed={activeCategory === cat}
+              aria-label={`Filter presets: ${cat}`}
               className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
                 activeCategory === cat
                   ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
                   : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200'
               }`}
+              style={{ fontFamily: "'Lexend', sans-serif" }}
             >
               {cat}
             </button>
@@ -176,21 +198,26 @@ export const PresetSelector = ({
       </div>
 
       {/* Preset Cards Grid */}
-      <div className="max-w-5xl mx-auto px-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="max-w-5xl mx-auto px-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" role="list" aria-label="Exam presets">
         {filteredPresets.map((preset) => {
           const isSelected = selectedPresetId === preset.id;
           return (
             <div
               key={preset.id}
               onClick={() => onSelectPreset(preset)}
-              className={`group cursor-pointer rounded-2xl p-5 transition-all duration-200 bg-white relative overflow-hidden flex flex-col justify-between border ${
+              role="listitem"
+              className={`group cursor-pointer rounded-2xl p-5 transition-all duration-200 bg-white relative overflow-hidden flex flex-col justify-between border min-h-[165px] ${
                 isSelected
                   ? 'border-blue-600 bg-blue-50/60 ring-2 ring-blue-500/50 shadow-md'
                   : 'border-slate-200 hover:border-blue-500 shadow-xs hover:shadow-md'
               }`}
+              style={{ willChange: 'transform, box-shadow' }}
+              tabIndex={0}
+              aria-label={`Select ${preset.name} preset for ${preset.exam}`}
+              onKeyDown={(e) => e.key === 'Enter' && onSelectPreset(preset)}
             >
               {preset.badge && (
-                <div className="absolute top-3 right-3 px-2 py-0.5 rounded-md bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[10px] font-bold tracking-wider uppercase shadow-sm">
+                <div className="absolute top-3 right-3 px-2 py-0.5 rounded-md bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[10px] font-bold tracking-wider uppercase shadow-sm" aria-label={`Badge: ${preset.badge}`}>
                   {preset.badge}
                 </div>
               )}

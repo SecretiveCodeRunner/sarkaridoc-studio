@@ -2,9 +2,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import { processSarkariImage, normalizeImageForProcessing } from '../utils/imageEngine';
 import confetti from 'canvas-confetti';
 import { 
-  Upload, Download, X, RefreshCw, Sliders, Calendar, User, 
-  CheckCircle, Sparkles, Wand2, ArrowRight, ZoomIn, Palette, ArrowLeft
+  Upload, Download, RefreshCw, Sliders, 
+  CheckCircle, Sparkles, Wand2, ArrowRight, ZoomIn, Palette, ArrowLeft, Crop
 } from 'lucide-react';
+import { ImageCropModal } from './ImageCropModal';
+import { ProcessingStepsGuide } from './ProcessingStepsGuide';
+
+
 
 export const EditorModal = ({ preset, onClose }) => {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -33,7 +37,7 @@ export const EditorModal = ({ preset, onClose }) => {
   const [customHeight, setCustomHeight] = useState(preset.heightPx);
   const [customMinKb, setCustomMinKb] = useState(preset.minKb);
   const [customMaxKb, setCustomMaxKb] = useState(preset.maxKb);
-  const [customTargetKb, setCustomTargetKb] = useState(preset.targetKb);
+  const [customTargetKb, _setCustomTargetKb] = useState(preset.targetKb);
 
   const fileInputRef = useRef(null);
   const cachedSubjectBlobRef = useRef(null);
@@ -46,16 +50,29 @@ export const EditorModal = ({ preset, onClose }) => {
     { label: 'Transparent', value: 'transparent' },
   ];
 
+  // Interactive Cropper Modal state
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [cropSourceUrl, setCropSourceUrl] = useState(null);
+
   const handleFileChange = async (file) => {
     if (!file) return;
     runVersionRef.current++;
     cachedSubjectBlobRef.current = null;
     setResult(null);
 
-    // Normalize raw camera photo to max 1200px first for super-fast canvas & instant processing
-    const normalized = await normalizeImageForProcessing(file, 1200);
+    // Normalize raw camera photo to max 1600px for cropping
+    const normalized = await normalizeImageForProcessing(file, 1600);
+    const objectUrl = URL.createObjectURL(normalized);
+    setCropSourceUrl(objectUrl);
+    setCropModalOpen(true);
+  };
+
+  const handleCropComplete = async (croppedBlob) => {
+    setCropModalOpen(false);
+    const normalized = await normalizeImageForProcessing(croppedBlob, 1200);
     setSelectedFile(normalized);
   };
+
 
   useEffect(() => {
     if (!selectedFile) return;
@@ -163,35 +180,47 @@ export const EditorModal = ({ preset, onClose }) => {
       <main className="flex-1 max-w-6xl mx-auto w-full p-4 sm:p-6 space-y-6">
 
           {!selectedFile ? (
-            <div
-              onClick={() => fileInputRef.current?.click()}
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={(e) => {
-                e.preventDefault();
-                if (e.dataTransfer.files?.[0]) handleFileChange(e.dataTransfer.files[0]);
-              }}
-              className="border-2 border-dashed border-slate-300 hover:border-blue-600 rounded-3xl p-8 text-center bg-slate-50 hover:bg-blue-50/50 cursor-pointer transition-all duration-300 group flex flex-col items-center justify-center min-h-[280px]"
-            >
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                className="hidden"
-                onChange={(e) => e.target.files?.[0] && handleFileChange(e.target.files[0])}
-              />
-              <div className="w-16 h-16 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform mb-4 shadow-sm">
-                <Upload className="w-8 h-8" />
+            <div className="space-y-6">
+              <div
+                onClick={() => fileInputRef.current?.click()}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  if (e.dataTransfer.files?.[0]) handleFileChange(e.dataTransfer.files[0]);
+                }}
+                className="border-2 border-dashed border-slate-300 hover:border-blue-600 rounded-3xl p-8 text-center bg-slate-50 hover:bg-blue-50/50 cursor-pointer transition-all duration-300 group flex flex-col items-center justify-center min-h-[260px]"
+              >
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  className="hidden"
+                  onChange={(e) => e.target.files?.[0] && handleFileChange(e.target.files[0])}
+                />
+                <div className="w-16 h-16 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform mb-4 shadow-sm">
+                  <Upload className="w-8 h-8" />
+                </div>
+                <h3 className="text-lg font-bold text-slate-900 mb-1" style={{ fontFamily: "'Lexend', sans-serif" }}>
+                  {preset.type === 'signature' ? 'Upload Signature Image' : 'Upload Candidate Photo'}
+                </h3>
+                <p className="text-xs text-slate-500 max-w-sm mb-4 font-medium">
+                  {preset.type === 'signature'
+                    ? 'Take a photo of your signature signed with blue/black pen on white paper.'
+                    : 'Supports JPG, PNG, WEBP. Processed 100% locally inside your browser memory.'}
+                </p>
+                <span className="btn-gradient px-5 py-2.5 rounded-xl text-white font-semibold text-xs inline-flex items-center space-x-2">
+                  <span>Browse File</span>
+                  <ArrowRight className="w-4 h-4" />
+                </span>
               </div>
-              <h3 className="text-lg font-bold text-slate-900 mb-1">
-                Drop your photo or signature here
-              </h3>
-              <p className="text-xs text-slate-500 max-w-sm mb-4 font-medium">
-                Supports JPG, PNG, WEBP. Processed 100% locally inside your browser memory.
-              </p>
-              <span className="btn-gradient px-5 py-2.5 rounded-xl text-white font-semibold text-xs inline-flex items-center space-x-2">
-                <span>Browse File</span>
-                <ArrowRight className="w-4 h-4" />
-              </span>
+
+              {/* Step-by-Step Workflow Guide Below Upload Button */}
+              <ProcessingStepsGuide
+                mode={preset.type}
+                presetName={preset.name}
+                targetRatio={`${preset.widthPx} × ${preset.heightPx} px`}
+                targetKb={`${preset.minKb} – ${preset.maxKb} KB`}
+              />
             </div>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -200,13 +229,27 @@ export const EditorModal = ({ preset, onClose }) => {
               <div className="lg:col-span-5 space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Controls & Framing</span>
-                  <button
-                    onClick={() => setSelectedFile(null)}
-                    className="text-xs text-blue-600 hover:underline flex items-center space-x-1 font-semibold"
-                  >
-                    <RefreshCw className="w-3.5 h-3.5" />
-                    <span>Change Image</span>
-                  </button>
+                  <div className="flex items-center space-x-2">
+                    <button
+                      onClick={() => {
+                        if (selectedFile) {
+                          setCropSourceUrl(URL.createObjectURL(selectedFile));
+                          setCropModalOpen(true);
+                        }
+                      }}
+                      className="text-xs text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded-lg hover:bg-blue-100 flex items-center space-x-1 font-semibold shadow-xs"
+                    >
+                      <Crop className="w-3.5 h-3.5 text-blue-600" />
+                      <span>Re-crop</span>
+                    </button>
+                    <button
+                      onClick={() => setSelectedFile(null)}
+                      className="text-xs text-slate-500 hover:text-slate-800 hover:underline flex items-center space-x-1 font-semibold"
+                    >
+                      <RefreshCw className="w-3.5 h-3.5" />
+                      <span>Change</span>
+                    </button>
+                  </div>
                 </div>
 
                 {/* AI Background Removal & Color Controls for Photos & Custom */}
@@ -450,6 +493,8 @@ export const EditorModal = ({ preset, onClose }) => {
                     <img
                       src={result.downloadUrl}
                       alt="Processed Preview"
+                      loading="lazy"
+                      decoding="async"
                       className={`max-h-[280px] max-w-full object-contain rounded shadow-md border border-slate-200 ${bgColor === 'transparent' ? 'bg-checkered' : ''}`}
                     />
                   ) : null}
@@ -470,7 +515,27 @@ export const EditorModal = ({ preset, onClose }) => {
             </div>
           )}
         </main>
+
+      {/* Interactive Crop & Align Modal */}
+      {cropModalOpen && cropSourceUrl && (
+        <ImageCropModal
+          imageSrc={cropSourceUrl}
+          initialAspect={(preset.widthPx && preset.heightPx) ? (preset.widthPx / preset.heightPx) : (3.5 / 4.5)}
+          aspectOptions={[
+            { label: `Preset Ratio (${preset.widthPx}×${preset.heightPx})`, value: (preset.widthPx && preset.heightPx) ? (preset.widthPx / preset.heightPx) : (3.5 / 4.5) },
+            { label: 'Passport (3.5:4.5)', value: 3.5 / 4.5 },
+            { label: 'Square (1:1)', value: 1 / 1 },
+            { label: 'Signature (7:2)', value: 7 / 2 },
+            { label: 'Freeform', value: null }
+          ]}
+          title={`Crop & Frame for ${preset.name}`}
+          subtitle={`Position subject inside the required ${preset.widthPx} × ${preset.heightPx} px area`}
+          onCropComplete={handleCropComplete}
+          onCancel={() => setCropModalOpen(false)}
+        />
+      )}
     </div>
   );
 };
+
 

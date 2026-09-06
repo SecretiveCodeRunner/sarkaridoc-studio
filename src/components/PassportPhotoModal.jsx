@@ -1,8 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { binaryCompressToTargetSize, normalizeImageForProcessing, fastThresholdCutout } from '../utils/imageEngine';
-import { getCloudGpuQuota, incrementCloudGpuQuota } from '../utils/cloudQuota';
+import { getCloudGpuQuota } from '../utils/cloudQuota';
 import confetti from 'canvas-confetti';
-import { Upload, Download, X, RefreshCw, Sparkles, CheckCircle, Camera, Crop, Palette, Printer, Sliders, Sun, Image as ImageIcon, ArrowLeft, Zap, Lock, Wand2 } from 'lucide-react';
+import { Upload, Download, RefreshCw, Sparkles, CheckCircle, Camera, Crop, Palette, Printer, Sun, ArrowLeft, Zap } from 'lucide-react';
+import { ImageCropModal } from './ImageCropModal';
+import { ProcessingStepsGuide } from './ProcessingStepsGuide';
+
 
 const PASSPORT_SIZES = [
   { label: 'India Passport (3.5 x 4.5 cm)', width: 413, height: 531, ratio: '3.5:4.5' },
@@ -40,16 +43,20 @@ export const PassportPhotoModal = ({ onClose }) => {
   const [aiProgressText, setAiProgressText] = useState('');
   const [aiProgressPercent, setAiProgressPercent] = useState(0);
 
-  const [quotaInfo, setQuotaInfo] = useState(() => getCloudGpuQuota());
+  const [quotaInfo] = useState(() => getCloudGpuQuota());
   const [elapsedSeconds, setElapsedSeconds] = useState('0.0');
 
   const [selectedSize, setSelectedSize] = useState(PASSPORT_SIZES[0]);
-  const [selectedBg, setSelectedBg] = useState(BG_COLOR_PALETTE[1]); // Default Light Blue for Passport
+  const [selectedBg, setSelectedBg] = useState(BG_COLOR_PALETTE[0]); // Default Original BG — zero forced AI lag
   const [maxKb, setMaxKb] = useState(MAX_SIZE_OPTIONS[1]); // Default 100KB
   const [brightness, setBrightness] = useState(100);
   const [contrast, setContrast] = useState(100);
   const [finalPreviewUrl, setFinalPreviewUrl] = useState(null);
   const [finalFileSizeBytes, setFinalFileSizeBytes] = useState(0);
+
+  // Interactive Cropper Modal state
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [cropSourceUrl, setCropSourceUrl] = useState(null);
 
   // Version counter ref to prevent race conditions during rapid option clicks
   const runVersionRef = useRef(0);
@@ -72,10 +79,10 @@ export const PassportPhotoModal = ({ onClose }) => {
     }
   };
 
-  const startProgressAnimation = (isCloud = false) => {
+  const startProgressAnimation = (_useCloud) => {
     if (progressTimerRef.current) clearInterval(progressTimerRef.current);
     setAiProgressPercent(15);
-    setAiProgressText(isCloud ? 'Connecting to Cloud Edge GPU...' : 'Running Neural AI Model...');
+    setAiProgressText('Initializing Studio Background AI Model...');
 
     progressTimerRef.current = setInterval(() => {
       setAiProgressPercent((prev) => {
@@ -94,78 +101,55 @@ export const PassportPhotoModal = ({ onClose }) => {
     stopLiveTimer();
   };
 
-  const processAiBackgroundRemoval = async (file, currentVersion) => {
-    if (!file) return;
-    setIsProcessing(true);
-    startLiveTimer();
-    startProgressAnimation(false);
-
-    try {
-      const { removeBackground } = await import('@imgly/background-removal');
-      const blob = await removeBackground(file, {
-        progress: (key, current, total) => {
-          if (runVersionRef.current !== currentVersion) return;
-          if (total > 0) {
-            const pct = Math.min(95, Math.round((current / total) * 100));
-            setAiProgressPercent(pct);
-          }
-          if (key && key.includes('compute')) {
-            setAiProgressText('AI Segmenting Subject from Background...');
-          }
-        }
-      });
-
-      if (runVersionRef.current === currentVersion && blob) {
-        stopProgressAnimation();
-        setAiProgressPercent(100);
-        setAiProgressText('Studio Background AI Cutout Complete!');
-        setRemovedBlob(blob);
-      }
-    } catch (err) {
-      console.warn('AI Background Removal error:', err);
-    } finally {
-      if (runVersionRef.current === currentVersion) {
-        stopProgressAnimation();
-        setIsProcessing(false);
-      }
-    }
-  };
-
+  // When user picks a file, open Interactive Cropper first!
   const handleFileChange = async (file) => {
     if (!file) return;
-    const nextVersion = ++runVersionRef.current;
-    setIsProcessing(true);
+    const normalized = await normalizeImageForProcessing(file, 1600);
+    const objectUrl = URL.createObjectURL(normalized);
+    setCropSourceUrl(objectUrl);
+    setCropModalOpen(true);
+  };
 
-    // 1. Normalize heavy raw camera photo to max 1200px
-    const normalized = await normalizeImageForProcessing(file, 1200);
+  // Called when user clicks "Apply Crop & Continue" in Cropper Modal
+  const handleCropComplete = async (croppedBlob) => {
+    setCropModalOpen(false);
+    const normalized = await normalizeImageForProcessing(croppedBlob, 1200);
     setSelectedFile(normalized);
     setRemovedBlob(null);
     setFinalPreviewUrl(null);
-
-    // 2. If user has a studio background selected (not original), run high-precision AI removal
-    if (selectedBg.value !== 'original') {
-      processAiBackgroundRemoval(normalized, nextVersion);
-    } else {
-      setIsProcessing(false);
-    }
+    setIsProcessing(false);
   };
 
   // Handle color palette click
-  const handleSelectBg = (bgOption) => {
+  const handleSelectBg = async (bgOption) => {
     setSelectedBg(bgOption);
 
-    // If user clicked 'original', stop AI processing immediately
+    // If user clicked 'original', restore original background immediately
     if (bgOption.value === 'original') {
       runVersionRef.current++;
       stopProgressAnimation();
       setIsProcessing(false);
+      setRemovedBlob(null);
       return;
     }
 
-    // If user selected a studio color and AI cutout doesn't exist yet, trigger AI removal
+    // High-speed Neural Portrait Cutout (<1 second) using local MediaPipe AI
     if (selectedFile && !removedBlob && !isProcessing) {
-      const nextVersion = ++runVersionRef.current;
-      processAiBackgroundRemoval(selectedFile, nextVersion);
+      setIsProcessing(true);
+      startLiveTimer();
+      startProgressAnimation();
+      try {
+        const { removePortraitBackground } = await import('../utils/aiSegmentation');
+        const cutBlob = await removePortraitBackground(selectedFile, 'transparent');
+        setRemovedBlob(cutBlob);
+      } catch (err) {
+        console.warn('Neural cutout error, falling back:', err);
+        const fallbackCutout = await fastThresholdCutout(selectedFile, 42);
+        setRemovedBlob(fallbackCutout);
+      } finally {
+        stopProgressAnimation();
+        setIsProcessing(false);
+      }
     }
   };
 
@@ -357,40 +341,49 @@ export const PassportPhotoModal = ({ onClose }) => {
       <main className="flex-1 max-w-6xl mx-auto w-full p-4 sm:p-6 space-y-6">
 
           {!selectedFile ? (
-            <div className="border-2 border-dashed border-slate-300 rounded-3xl p-6 sm:p-8 text-center bg-white space-y-4">
-              <div className="w-16 h-16 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 mx-auto shadow-xs">
-                <Camera className="w-8 h-8" />
-              </div>
-              <div>
-                <h3 className="text-lg font-bold text-slate-900 mb-1">Select Photo for Passport Studio</h3>
-                <p className="text-xs text-slate-500 max-w-sm mx-auto font-medium">Automatically crops aspect ratio & replaces background with official studio colors.</p>
+            <div className="space-y-6">
+              <div className="border-2 border-dashed border-slate-300 rounded-3xl p-6 sm:p-8 text-center bg-white space-y-4">
+                <div className="w-16 h-16 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 mx-auto shadow-xs">
+                  <Camera className="w-8 h-8" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900 mb-1" style={{ fontFamily: "'Lexend', sans-serif" }}>Select Photo for Passport Studio</h3>
+                  <p className="text-xs text-slate-500 max-w-sm mx-auto font-medium">Automatically crops aspect ratio & replaces background with official studio colors.</p>
+                </div>
+
+                {/* Dual Upload Actions: Gallery vs Camera */}
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+                  <label className="w-full sm:w-auto px-5 py-3 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold flex items-center justify-center space-x-2 cursor-pointer shadow-md shadow-blue-600/20 transition-all active:scale-95">
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      className="hidden"
+                      onChange={(e) => e.target.files?.[0] && handleFileChange(e.target.files[0])}
+                    />
+                    <Upload className="w-4 h-4" />
+                    <span>Browse Gallery / Files</span>
+                  </label>
+
+                  <label className="w-full sm:w-auto px-5 py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold flex items-center justify-center space-x-2 cursor-pointer border border-slate-200 transition-all active:scale-95">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      capture="user"
+                      className="hidden"
+                      onChange={(e) => e.target.files?.[0] && handleFileChange(e.target.files[0])}
+                    />
+                    <Camera className="w-4 h-4 text-blue-600" />
+                    <span>Take Photo with Camera</span>
+                  </label>
+                </div>
               </div>
 
-              {/* Dual Upload Actions: Gallery vs Camera */}
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
-                <label className="w-full sm:w-auto px-5 py-3 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold flex items-center justify-center space-x-2 cursor-pointer shadow-md shadow-blue-600/20 transition-all active:scale-95">
-                  <input
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp"
-                    className="hidden"
-                    onChange={(e) => e.target.files?.[0] && handleFileChange(e.target.files[0])}
-                  />
-                  <Upload className="w-4 h-4" />
-                  <span>Browse Gallery / Files</span>
-                </label>
-
-                <label className="w-full sm:w-auto px-5 py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold flex items-center justify-center space-x-2 cursor-pointer border border-slate-200 transition-all active:scale-95">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    capture="user"
-                    className="hidden"
-                    onChange={(e) => e.target.files?.[0] && handleFileChange(e.target.files[0])}
-                  />
-                  <Camera className="w-4 h-4 text-blue-600" />
-                  <span>Take Photo with Camera</span>
-                </label>
-              </div>
+              {/* Step-by-Step Workflow Guide */}
+              <ProcessingStepsGuide
+                mode="passport"
+                targetRatio="3.5 × 4.5 cm / 2 × 2″"
+                targetKb="Under 50 KB / 100 KB"
+              />
             </div>
           ) : (
 
@@ -532,11 +525,26 @@ export const PassportPhotoModal = ({ onClose }) => {
                 
                 <div>
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs font-bold text-slate-900">Studio Passport Preview</span>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-xs font-bold text-slate-900">Studio Passport Preview</span>
+                      <button
+                        onClick={() => {
+                          if (selectedFile) {
+                            setCropSourceUrl(URL.createObjectURL(selectedFile));
+                            setCropModalOpen(true);
+                          }
+                        }}
+                        className="px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-bold flex items-center space-x-1 transition-all shadow-xs"
+                      >
+                        <Crop className="w-3.5 h-3.5 text-blue-600" />
+                        <span>Re-crop / Align</span>
+                      </button>
+                    </div>
+
                     {isProcessing ? (
                       <span className="text-xs font-bold text-blue-600 flex items-center space-x-1 animate-pulse">
                         <RefreshCw className="w-3.5 h-3.5 animate-gpu-spin" />
-                        <span>AI Studio Processing...</span>
+                        <span>Studio Processing...</span>
                       </span>
                     ) : (
                       <span className="text-xs font-bold text-emerald-600 flex items-center space-x-1">
@@ -623,7 +631,27 @@ export const PassportPhotoModal = ({ onClose }) => {
             </div>
           )}
         </main>
+
+      {/* Interactive Crop & Align Modal */}
+      {cropModalOpen && cropSourceUrl && (
+        <ImageCropModal
+          imageSrc={cropSourceUrl}
+          initialAspect={selectedSize.width / selectedSize.height}
+          aspectOptions={[
+            { label: `Preset: ${selectedSize.ratio}`, value: selectedSize.width / selectedSize.height },
+            { label: 'India Passport (3.5:4.5)', value: 3.5 / 4.5 },
+            { label: 'Square (1:1 / 2×2″)', value: 1 / 1 },
+            { label: 'Stamp Size (2.5:3.0)', value: 2.5 / 3.0 },
+            { label: 'Freeform', value: null }
+          ]}
+          title="Align & Crop Passport Photo"
+          subtitle="Position and center your face inside the official frame"
+          onCropComplete={handleCropComplete}
+          onCancel={() => setCropModalOpen(false)}
+        />
+      )}
     </div>
   );
 };
+
 

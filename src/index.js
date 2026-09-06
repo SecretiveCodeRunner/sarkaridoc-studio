@@ -5,7 +5,7 @@
  */
 
 export default {
-  async fetch(request, env, ctx) {
+  async fetch(request, env, _ctx) {
     const url = new URL(request.url);
 
     // 1. Intercept /api/remove-bg POST request

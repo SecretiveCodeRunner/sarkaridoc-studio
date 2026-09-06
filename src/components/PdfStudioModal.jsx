@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { convertImagesToPdf, compressExistingPdf } from '../utils/pdfEngine';
 import confetti from 'canvas-confetti';
-import { Upload, Download, X, FileText, CheckCircle, RefreshCw, FilePlus, Layers, ArrowLeft, Camera, Sliders } from 'lucide-react';
+import { Upload, Download, FileText, CheckCircle, RefreshCw, FilePlus, Layers, ArrowLeft, Camera, Sliders } from 'lucide-react';
 
 export const PdfStudioModal = ({ onClose }) => {
   const [files, setFiles] = useState([]);
@@ -157,7 +157,8 @@ export const PdfStudioModal = ({ onClose }) => {
           </div>
 
           {files.length === 0 ? (
-            <div className="border-2 border-dashed border-slate-300 rounded-3xl p-6 sm:p-8 text-center bg-white space-y-4">
+            <div className="space-y-6">
+              <div className="border-2 border-dashed border-slate-300 rounded-3xl p-6 sm:p-8 text-center bg-white space-y-4">
               <div className="w-14 h-14 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 mx-auto shadow-xs">
                 <FilePlus className="w-7 h-7" />
               </div>
@@ -193,7 +194,40 @@ export const PdfStudioModal = ({ onClose }) => {
                 </label>
               </div>
             </div>
-          ) : (
+
+            {/* PDF Studio Steps Guide */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-2">
+              <div className="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-xs flex items-start space-x-3">
+                <div className="w-6 h-6 rounded-lg bg-emerald-50 text-emerald-700 font-bold text-xs border border-emerald-200 flex items-center justify-center flex-shrink-0">1</div>
+                <div>
+                  <h4 className="text-xs font-bold text-slate-800">Set Max KB</h4>
+                  <p className="text-[11px] text-slate-500 mt-0.5 font-medium">Use slider to set 200 KB, 300 KB, or 500 KB limit required by UPSC/SSC.</p>
+                </div>
+              </div>
+              <div className="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-xs flex items-start space-x-3">
+                <div className="w-6 h-6 rounded-lg bg-emerald-50 text-emerald-700 font-bold text-xs border border-emerald-200 flex items-center justify-center flex-shrink-0">2</div>
+                <div>
+                  <h4 className="text-xs font-bold text-slate-800">Select Files</h4>
+                  <p className="text-[11px] text-slate-500 mt-0.5 font-medium">Upload single or multi-page PDF, or JPG/PNG photos to merge.</p>
+                </div>
+              </div>
+              <div className="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-xs flex items-start space-x-3">
+                <div className="w-6 h-6 rounded-lg bg-emerald-50 text-emerald-700 font-bold text-xs border border-emerald-200 flex items-center justify-center flex-shrink-0">3</div>
+                <div>
+                  <h4 className="text-xs font-bold text-slate-800">Smart Compression</h4>
+                  <p className="text-[11px] text-slate-500 mt-0.5 font-medium">Compresses image DPI &amp; stream buffers 100% inside your device.</p>
+                </div>
+              </div>
+              <div className="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-xs flex items-start space-x-3">
+                <div className="w-6 h-6 rounded-lg bg-emerald-50 text-emerald-700 font-bold text-xs border border-emerald-200 flex items-center justify-center flex-shrink-0">4</div>
+                <div>
+                  <h4 className="text-xs font-bold text-slate-800">Direct Download</h4>
+                  <p className="text-[11px] text-slate-500 mt-0.5 font-medium">Get compressed PDF guaranteed to satisfy official portal limits.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
 
             <div className="space-y-4">
               <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between">

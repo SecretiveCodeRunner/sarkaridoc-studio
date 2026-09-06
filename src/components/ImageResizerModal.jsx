@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { binaryCompressToTargetSize, loadImage } from '../utils/imageEngine';
 import confetti from 'canvas-confetti';
-import { Upload, Download, X, RefreshCw, SlidersHorizontal, CheckCircle, ArrowLeft } from 'lucide-react';
+import { Upload, Download, RefreshCw, SlidersHorizontal, CheckCircle, ArrowLeft, Crop } from 'lucide-react';
+import { ImageCropModal } from './ImageCropModal';
+import { ProcessingStepsGuide } from './ProcessingStepsGuide';
+
 
 export const ImageResizerModal = ({ onClose }) => {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -14,15 +17,27 @@ export const ImageResizerModal = ({ onClose }) => {
   const [targetHeight, setTargetHeight] = useState(600);
   const [format, setFormat] = useState('image/jpeg');
 
+  // Interactive Cropper Modal state
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [cropSourceUrl, setCropSourceUrl] = useState(null);
+
   const handleFileSelect = async (file) => {
     if (!file) return;
-    setSelectedFile(file);
+    const objectUrl = URL.createObjectURL(file);
+    setCropSourceUrl(objectUrl);
+    setCropModalOpen(true);
+  };
 
-    const img = await loadImage(file);
+  const handleCropComplete = async (croppedBlob) => {
+    setCropModalOpen(false);
+    setSelectedFile(croppedBlob);
+
+    const img = await loadImage(croppedBlob);
     setTargetWidth(img.width);
     setTargetHeight(img.height);
     setResult(null);
   };
+
 
   useEffect(() => {
     if (!selectedFile) return;
@@ -120,19 +135,29 @@ export const ImageResizerModal = ({ onClose }) => {
       <main className="flex-1 max-w-5xl mx-auto w-full p-4 sm:p-6 space-y-6">
 
           {!selectedFile ? (
-            <label className="border-2 border-dashed border-slate-300 hover:border-blue-600 rounded-3xl p-8 text-center bg-slate-50 hover:bg-blue-50/50 cursor-pointer transition-all duration-300 flex flex-col items-center justify-center min-h-[260px]">
-              <input
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                className="hidden"
-                onChange={(e) => e.target.files?.[0] && handleFileSelect(e.target.files[0])}
+            <div className="space-y-6">
+              <label className="border-2 border-dashed border-slate-300 hover:border-blue-600 rounded-3xl p-8 text-center bg-white hover:bg-blue-50/40 cursor-pointer transition-all duration-300 flex flex-col items-center justify-center min-h-[260px] shadow-xs">
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  className="hidden"
+                  onChange={(e) => e.target.files?.[0] && handleFileSelect(e.target.files[0])}
+                />
+                <div className="w-16 h-16 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 mb-3 shadow-xs">
+                  <Upload className="w-8 h-8" />
+                </div>
+                <h3 className="text-lg font-bold text-slate-900 mb-1" style={{ fontFamily: "'Lexend', sans-serif" }}>Upload Image to Resize</h3>
+                <p className="text-xs text-slate-500 max-w-sm font-medium">Supports JPG, PNG, WEBP. Instant client-side compression to exact KB.</p>
+              </label>
+
+              {/* Step-by-Step Workflow Guide Below Upload Button */}
+              <ProcessingStepsGuide
+                mode="photo"
+                presetName="Custom Resizer"
+                targetRatio="Custom / Freeform"
+                targetKb="Any exact KB (e.g. 20 KB, 50 KB, 100 KB)"
               />
-              <div className="w-16 h-16 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 mb-3 shadow-xs">
-                <Upload className="w-8 h-8" />
-              </div>
-              <h3 className="text-lg font-bold text-slate-900 mb-1">Upload Image to Resize</h3>
-              <p className="text-xs text-slate-500 max-w-sm font-medium">Supports JPG, PNG, WEBP. Instant client-side compression.</p>
-            </label>
+            </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
               
@@ -243,7 +268,21 @@ export const ImageResizerModal = ({ onClose }) => {
               {/* Preview & Download */}
               <div className="md:col-span-7 flex flex-col items-center justify-between bg-slate-50 border border-slate-200 rounded-2xl p-6">
                 <div className="w-full flex items-center justify-between mb-4">
-                  <span className="text-xs font-bold text-slate-900">Live Preview</span>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-xs font-bold text-slate-900">Live Preview</span>
+                    <button
+                      onClick={() => {
+                        if (selectedFile) {
+                          setCropSourceUrl(URL.createObjectURL(selectedFile));
+                          setCropModalOpen(true);
+                        }
+                      }}
+                      className="px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-bold flex items-center space-x-1 transition-all shadow-xs"
+                    >
+                      <Crop className="w-3.5 h-3.5 text-blue-600" />
+                      <span>Crop / Frame</span>
+                    </button>
+                  </div>
                   {result && (
                     <span className="text-xs font-bold text-emerald-600 flex items-center space-x-1">
                       <CheckCircle className="w-4 h-4" />
@@ -280,6 +319,25 @@ export const ImageResizerModal = ({ onClose }) => {
             </div>
           )}
         </main>
+
+      {/* Interactive Crop & Align Modal */}
+      {cropModalOpen && cropSourceUrl && (
+        <ImageCropModal
+          imageSrc={cropSourceUrl}
+          initialAspect={null}
+          aspectOptions={[
+            { label: 'Freeform', value: null },
+            { label: 'Square (1:1)', value: 1 / 1 },
+            { label: 'Passport (3.5:4.5)', value: 3.5 / 4.5 },
+            { label: 'Landscape (4:3)', value: 4 / 3 },
+            { label: 'Widescreen (16:9)', value: 16 / 9 },
+          ]}
+          title="Crop & Frame Image"
+          subtitle="Drag to select and position the area to resize"
+          onCropComplete={handleCropComplete}
+          onCancel={() => setCropModalOpen(false)}
+        />
+      )}
     </div>
   );
 };

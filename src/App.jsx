@@ -144,7 +144,7 @@ export function App() {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col bg-white text-slate-900 font-['Outfit'] antialiased">
+    <div className="min-h-screen flex flex-col bg-white text-slate-900 antialiased">
       {!activeTool ? (
         // 1. Home Page View (Rendered ONLY when no tool is active)
         <>
