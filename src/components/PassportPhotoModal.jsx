@@ -9,6 +9,7 @@ import { ProcessingStepsGuide } from './ProcessingStepsGuide';
 
 const PASSPORT_SIZES = [
   { label: 'India Passport (3.5 x 4.5 cm)', width: 413, height: 531, ratio: '3.5:4.5' },
+  { label: 'GATE / IIT Exam (3.5 x 4.5 cm)', width: 480, height: 640, ratio: '3.5:4.5' },
   { label: 'US / Intl Visa (2 x 2 in)', width: 600, height: 600, ratio: '1:1' },
   { label: 'UK / Schengen (3.5 x 4.5 cm)', width: 413, height: 531, ratio: '3.5:4.5' },
   { label: 'Stamp Size (2.5 x 3.0 cm)', width: 295, height: 354, ratio: '2.5:3.0' },

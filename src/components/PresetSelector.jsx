@@ -13,7 +13,7 @@ export const PresetSelector = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
 
-  const categories = ['All', 'SSC', 'NTA (NEET/JEE)', 'UPSC', 'Banking (IBPS/SBI)', 'Railways (RRB)', 'Custom Utility'];
+  const categories = ['All', 'GATE / IIT', 'SSC', 'NTA (NEET/JEE)', 'UPSC', 'Banking (IBPS/SBI)', 'Railways (RRB)', 'Custom Utility'];
 
   const filteredPresets = EXAM_PRESETS.filter((preset) => {
     const matchesSearch = 
@@ -31,7 +31,7 @@ export const PresetSelector = ({
       <div className="text-center max-w-5xl mx-auto mb-8 px-4">
         <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-semibold mb-5 trust-badge">
           <Sparkles className="w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />
-          <span>Updated for 2026 Exam &amp; Passport Rules — SSC · NEET · UPSC · Passport</span>
+          <span>Updated for 2026 Exam &amp; Passport Rules — GATE · SSC · NEET · UPSC · Passport</span>
         </div>
         <h1
           className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-slate-900 tracking-tight leading-[1.15]"

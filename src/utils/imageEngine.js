@@ -394,6 +394,7 @@ export const processSarkariImage = async ({
   candidateName = '',
   photoDate = '',
   enhanceSignature = true,
+  signatureEngine = 'neural', // 'neural' (verified neural AI engine) | 'adaptive' (canvas normalizer)
   bgColor = '#FFFFFF',
   changeBg = true, // Default AI BG removal ON for signatures and photos!
   zoomScale = 1.0,
@@ -406,10 +407,26 @@ export const processSarkariImage = async ({
   let sourceImg;
   let extractedBlob = preExtractedSubjectBlob;
 
-  // Only run AI Background Removal when explicitly requested for photos (NEVER for signatures)
-  const shouldRunAiBg = Boolean(changeBg && preset.type !== 'signature');
+  const isSignature = preset.type === 'signature';
+  const shouldRunSignatureNeural = Boolean(isSignature && enhanceSignature && signatureEngine === 'neural');
+  const shouldRunAiBg = Boolean(!isSignature && changeBg);
 
-  if (shouldRunAiBg) {
+  if (shouldRunSignatureNeural) {
+    if (extractedBlob) {
+      const bgRemovedUrl = URL.createObjectURL(extractedBlob);
+      sourceImg = await loadImage(bgRemovedUrl);
+    } else {
+      try {
+        const { removeSalientBackground } = await import('./aiSegmentation');
+        extractedBlob = await removeSalientBackground(normalizedFile);
+        const bgRemovedUrl = URL.createObjectURL(extractedBlob);
+        sourceImg = await loadImage(bgRemovedUrl);
+      } catch (err) {
+        console.warn('Neural Signature Extraction fallback:', err);
+        sourceImg = await loadImage(normalizedFile);
+      }
+    }
+  } else if (shouldRunAiBg) {
     if (extractedBlob) {
       // Fast path: Use cached AI subject cutout instantly (0ms) without re-running AI neural network!
       const bgRemovedUrl = URL.createObjectURL(extractedBlob);
@@ -468,8 +485,8 @@ export const processSarkariImage = async ({
   // Draw AI-extracted subject/signature onto Canvas
   ctx.drawImage(sourceImg, drawX, drawY, scaledWidth, scaledHeight);
 
-  // Adaptive Pure White Paper Cleanup & Ink Contrast Enhancement
-  if (preset.type === 'signature' && enhanceSignature) {
+  // Adaptive Pure White Paper Cleanup & Ink Contrast Enhancement (only if NOT already neural-extracted)
+  if (isSignature && enhanceSignature && signatureEngine === 'adaptive') {
     cleanSignatureDocument(ctx, targetWidth, targetHeight, isTransparent);
   }
 

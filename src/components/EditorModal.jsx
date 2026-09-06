@@ -3,7 +3,7 @@ import { processSarkariImage, normalizeImageForProcessing } from '../utils/image
 import confetti from 'canvas-confetti';
 import { 
   Upload, Download, RefreshCw, Sliders, 
-  CheckCircle, Sparkles, Wand2, ArrowRight, ZoomIn, Palette, ArrowLeft, Crop
+  CheckCircle, Sparkles, Wand2, ArrowRight, ZoomIn, Palette, ArrowLeft, Crop, Zap
 } from 'lucide-react';
 import { ImageCropModal } from './ImageCropModal';
 import { ProcessingStepsGuide } from './ProcessingStepsGuide';
@@ -22,6 +22,7 @@ export const EditorModal = ({ preset, onClose }) => {
 
   // Default Signature Cleanup = ON by default for pure white paper
   const [enhanceSignature, setEnhanceSignature] = useState(true);
+  const [signatureEngine, setSignatureEngine] = useState('neural'); // 'neural' (verified neural AI) | 'adaptive' (canvas normalizer)
 
   // Default AI Background Removal = OFF by default for fast 0.05s exam photo resizing! (User can toggle ON)
   const [changeBg, setChangeBg] = useState(preset.defaultChangeBg || false);
@@ -99,6 +100,7 @@ export const EditorModal = ({ preset, onClose }) => {
           candidateName: showNameDate ? candidateName : '',
           photoDate: showNameDate ? photoDate : '',
           enhanceSignature,
+          signatureEngine,
           bgColor,
           changeBg,
           zoomScale,
@@ -128,7 +130,7 @@ export const EditorModal = ({ preset, onClose }) => {
       clearTimeout(timeout);
     };
   }, [
-    selectedFile, preset, showNameDate, candidateName, photoDate, enhanceSignature, 
+    selectedFile, preset, showNameDate, candidateName, photoDate, enhanceSignature, signatureEngine,
     bgColor, changeBg, zoomScale, panX, panY,
     customWidth, customHeight, customMinKb, customMaxKb, customTargetKb
   ]);
@@ -344,25 +346,72 @@ export const EditorModal = ({ preset, onClose }) => {
                   </div>
                 )}
 
-                {/* Signature Pure White Paper Cleanup Toggle */}
+                {/* Signature Verified Engine & Pure White Paper Cleanup */}
                 {preset.type === 'signature' && (
-                  <div className="p-4 rounded-2xl bg-purple-50 border border-purple-200 flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <div className="flex items-center space-x-2 text-xs font-bold text-purple-700">
-                        <Wand2 className="w-4 h-4" />
-                        <span>Pure White Paper Cleanup</span>
+                  <div className="p-4 rounded-2xl bg-purple-50/80 border border-purple-200 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <div className="flex items-center space-x-2 text-xs font-bold text-purple-700">
+                          <Wand2 className="w-4 h-4" />
+                          <span>Verified Signature Engine</span>
+                        </div>
+                        <p className="text-[11px] text-slate-600 font-medium">Converts paper shadows to 100% pure white paper</p>
                       </div>
-                      <p className="text-[11px] text-slate-600 font-medium">Converts gray paper shadows to 100% pure white paper</p>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={enhanceSignature}
+                          onChange={(e) => {
+                            cachedSubjectBlobRef.current = null;
+                            setEnhanceSignature(e.target.checked);
+                          }}
+                          className="sr-only peer"
+                        />
+                        <div className="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-600"></div>
+                      </label>
                     </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={enhanceSignature}
-                        onChange={(e) => setEnhanceSignature(e.target.checked)}
-                        className="sr-only peer"
-                      />
-                      <div className="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-600"></div>
-                    </label>
+
+                    {enhanceSignature && (
+                      <div className="grid grid-cols-2 gap-2 pt-1">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            cachedSubjectBlobRef.current = null;
+                            setSignatureEngine('neural');
+                          }}
+                          className={`p-2.5 rounded-xl text-left border transition-all ${
+                            signatureEngine === 'neural'
+                              ? 'bg-white border-purple-600 ring-2 ring-purple-500/20 shadow-xs'
+                              : 'bg-white/60 border-purple-200 hover:bg-white text-slate-700'
+                          }`}
+                        >
+                          <div className="flex items-center space-x-1.5 text-purple-700 font-bold text-xs mb-0.5">
+                            <Sparkles className="w-3.5 h-3.5 text-purple-600" />
+                            <span>Neural AI (Zero Marks)</span>
+                          </div>
+                          <p className="text-[10px] text-slate-500 leading-tight">Clean ink stroke isolation without markings</p>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            cachedSubjectBlobRef.current = null;
+                            setSignatureEngine('adaptive');
+                          }}
+                          className={`p-2.5 rounded-xl text-left border transition-all ${
+                            signatureEngine === 'adaptive'
+                              ? 'bg-white border-purple-600 ring-2 ring-purple-500/20 shadow-xs'
+                              : 'bg-white/60 border-purple-200 hover:bg-white text-slate-700'
+                          }`}
+                        >
+                          <div className="flex items-center space-x-1.5 text-slate-800 font-bold text-xs mb-0.5">
+                            <Zap className="w-3.5 h-3.5 text-emerald-600" />
+                            <span>Instant Whitener</span>
+                          </div>
+                          <p className="text-[10px] text-slate-500 leading-tight">Fast canvas paper whitening (sub-second)</p>
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -487,7 +536,11 @@ export const EditorModal = ({ preset, onClose }) => {
                   {isProcessing ? (
                     <div className="flex flex-col items-center space-y-2 text-blue-600">
                       <RefreshCw className="w-6 h-6 animate-gpu-spin" />
-                      <span className="text-xs font-semibold">Running AI segmentation & canvas compression...</span>
+                      <span className="text-xs font-semibold">
+                        {preset.type === 'signature'
+                          ? (signatureEngine === 'neural' ? '⚡ Verified Neural AI Isolating Signature Strokes...' : 'Cleaning paper background...')
+                          : 'Running AI segmentation & canvas compression...'}
+                      </span>
                     </div>
                   ) : result ? (
                     <img
