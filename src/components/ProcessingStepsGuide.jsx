@@ -38,9 +38,9 @@ export const ProcessingStepsGuide = ({
       icon: Wand2,
       color: 'bg-purple-50 text-purple-600 border-purple-200',
       badge: 'Step 3',
-      title: isSignature ? 'Adaptive Paper Whitening' : 'Studio Background Setup',
+      title: isSignature ? 'Neural Ink Isolation & Pure White BG' : 'Studio Background Setup',
       desc: isSignature
-        ? 'Eliminates camera shadows & gray paper, rendering 100% pure white paper with bold ink.'
+        ? 'Deep neural AI isolates crisp ink strokes, eliminating paper shadows and dark markings with 100% pure white paper.'
         : isPassport
         ? 'Click any official studio color (Light Blue, White, Navy) for instant sub-second neural cutout.'
         : 'Apply official studio background or SSC/UPSC Name & Date stamp if required.'
