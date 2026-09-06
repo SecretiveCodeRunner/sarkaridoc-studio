@@ -7,15 +7,52 @@ import {
   Trash2, ArrowUp, ArrowDown, Sparkles
 } from 'lucide-react';
 
+const TOOL_CONFIG = {
+  'image-to-pdf': {
+    id: 'image-to-pdf',
+    title: 'Image to PDF Converter',
+    shortTitle: 'Image to PDF',
+    subtitle: 'Combine photos, marksheets & certificates into an official PDF document',
+    icon: ImageIcon,
+    urlParam: 'image-to-pdf',
+  },
+  'compress-pdf': {
+    id: 'compress-pdf',
+    title: 'PDF Compressor',
+    shortTitle: 'Compress PDF',
+    subtitle: 'Reduce PDF file size to exact KB limits for Indian govt portal uploads',
+    icon: Sliders,
+    urlParam: 'pdf-compressor',
+  },
+  'merge-pdf': {
+    id: 'merge-pdf',
+    title: 'Merge PDF Documents',
+    shortTitle: 'Merge PDF',
+    subtitle: 'Combine multiple PDF files into one clean, seamless document',
+    icon: Merge,
+    urlParam: 'merge-pdf',
+  },
+  'pdf-to-jpg': {
+    id: 'pdf-to-jpg',
+    title: 'PDF to JPG Converter',
+    shortTitle: 'PDF to JPG',
+    subtitle: 'Extract high-resolution JPG images from multi-page PDFs or Admit Cards',
+    icon: FilePlus,
+    urlParam: 'pdf-to-jpg',
+  },
+};
+
+const TOOL_LIST = Object.values(TOOL_CONFIG);
+
 export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
   const [activeTab, setActiveTab] = useState(initialTab); // 'image-to-pdf' | 'compress-pdf' | 'merge-pdf' | 'pdf-to-jpg'
 
   // --- 1. Image to PDF State ---
   const [imageFiles, setImageFiles] = useState([]); // Array of { file, previewUrl, id }
-  const [imgPageSize, setImgPageSize] = useState('a4'); // 'a4' | 'fit'
-  const [imgMargin, setImgMargin] = useState(15); // 0 | 15
+  const [imgPageSize, setImgPageSize] = useState('fit'); // 'fit' (edge-to-edge / official standard) | 'a4'
+  const [imgMargin, setImgMargin] = useState(0); // 0 (edge-to-edge) | 15 (clean margins)
   const [imgOrientation] = useState('auto'); // 'auto' | 'portrait' | 'landscape'
-  const [imgTargetKb, setImgTargetKb] = useState(200);
+  const [imgTargetKb, setImgTargetKb] = useState(null); // null = High Quality (Full Resolution, no limit)
   const [imgPdfResult, setImgPdfResult] = useState(null);
   const [isImgProcessing, setIsImgProcessing] = useState(false);
   const [imgProgress, setImgProgress] = useState(null);
@@ -52,6 +89,17 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
   useEffect(() => {
     if (initialTab) setActiveTab(initialTab);
   }, [initialTab]);
+
+  const switchTool = (id) => {
+    setActiveTab(id);
+    const tool = TOOL_CONFIG[id];
+    if (tool) {
+      window.history.replaceState({ toolType: id }, '', `?tool=${tool.urlParam}`);
+    }
+  };
+
+  const currentTool = TOOL_CONFIG[activeTab] || TOOL_CONFIG['image-to-pdf'];
+  const ActiveIcon = currentTool.icon;
 
   // Clean up object URLs on unmount
   useEffect(() => {
@@ -171,7 +219,6 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
   const runMergePdfs = async () => {
     if (mergeFiles.length < 2) {
       alert('Please add at least 2 PDF files to merge.');
-      return;
     }
     setIsMergeProcessing(true);
     setMergeProgress({ current: 0, total: mergeFiles.length, percent: 5, text: 'Combining PDF documents...' });
@@ -231,63 +278,68 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col text-slate-900 antialiased" style={{ fontFamily: "'Lexend', sans-serif" }}>
       
-      {/* Sticky Workspace Top Header */}
+      {/* Sticky Standalone Workspace Header */}
       <header className="bg-white/95 backdrop-blur-md border-b border-slate-200 sticky top-0 z-30 px-3 sm:px-6 py-3 flex items-center justify-between shadow-xs">
-        <div className="flex items-center space-x-2 sm:space-x-3">
+        <div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
           <button
             onClick={onClose}
-            className="p-1.5 sm:p-2 rounded-xl text-slate-700 hover:bg-slate-100 flex items-center space-x-1.5 font-bold text-xs transition-all border border-slate-200"
+            className="p-1.5 sm:p-2 rounded-xl text-slate-700 hover:bg-slate-100 flex items-center space-x-1.5 font-bold text-xs transition-all border border-slate-200 flex-shrink-0"
             aria-label="Back to All Tools"
           >
             <ArrowLeft className="w-4 h-4 text-emerald-600" />
             <span className="hidden sm:inline">Back to All Tools</span>
             <span className="sm:hidden">Back</span>
           </button>
-          <div className="h-4 w-px bg-slate-200" />
-          <div className="flex items-center space-x-2">
-            <div className="p-1.5 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-200">
-              <FileText className="w-4 h-4" />
+          <div className="h-4 w-px bg-slate-200 flex-shrink-0" />
+          <div className="flex items-center space-x-2 min-w-0">
+            <div className="p-1.5 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-200 flex-shrink-0">
+              <ActiveIcon className="w-4 h-4" />
             </div>
-            <div>
-              <h1 className="font-bold text-slate-900 text-sm sm:text-base leading-tight">Document &amp; PDF Studio</h1>
-              <p className="text-[11px] text-slate-500 font-medium hidden sm:block">100% Client-side privacy · Fast converter for Indian Govt portals</p>
+            <div className="min-w-0">
+              <h1 className="font-bold text-slate-900 text-sm sm:text-base leading-tight truncate">
+                {currentTool.title}
+              </h1>
+              <p className="text-[11px] text-slate-500 font-medium hidden sm:block truncate">
+                {currentTool.subtitle}
+              </p>
             </div>
           </div>
         </div>
 
-        {/* Quick Help Badge */}
-        <div className="hidden md:flex items-center space-x-1.5 text-xs text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full font-semibold">
+        {/* Quick Privacy Badge */}
+        <div className="hidden md:flex items-center space-x-1.5 text-xs text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full font-semibold flex-shrink-0">
           <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-          <span>Zero Server Uploads</span>
+          <span>Zero Server Uploads · 100% Client-Side</span>
         </div>
       </header>
 
-      {/* Segmented Tool Tabs */}
-      <div className="bg-white border-b border-slate-200 px-3 sm:px-6 py-2">
-        <div className="max-w-4xl mx-auto flex items-center space-x-1 sm:space-x-2 overflow-x-auto scrollbar-none py-1">
-          {[
-            { id: 'image-to-pdf', label: 'Image to PDF', icon: ImageIcon, desc: 'Multi-image / Marksheet' },
-            { id: 'compress-pdf', label: 'Compress PDF', icon: Sliders, desc: 'Under 100/200/300 KB' },
-            { id: 'merge-pdf', label: 'Merge PDF', icon: Merge, desc: 'Combine documents' },
-            { id: 'pdf-to-jpg', label: 'PDF to JPG', icon: FilePlus, desc: 'Extract pages as images' },
-          ].map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center space-x-2 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex-shrink-0 ${
-                  isActive
-                    ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/30'
-                    : 'bg-slate-100 hover:bg-slate-200/80 text-slate-700'
-                }`}
-              >
-                <Icon className="w-4 h-4" />
-                <span>{tab.label}</span>
-              </button>
-            );
-          })}
+      {/* Sleek Dedicated Sibling Tool Switcher */}
+      <div className="bg-white border-b border-slate-200/80 px-3 sm:px-6 py-2">
+        <div className="max-w-4xl mx-auto flex items-center justify-between gap-2">
+          <div className="flex items-center space-x-1 sm:space-x-1.5 overflow-x-auto scrollbar-none py-0.5">
+            {TOOL_LIST.map((tool) => {
+              const Icon = tool.icon;
+              const isActive = activeTab === tool.id;
+              return (
+                <button
+                  key={tool.id}
+                  onClick={() => switchTool(tool.id)}
+                  className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+                    isActive
+                      ? 'bg-slate-900 text-white shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                  }`}
+                >
+                  <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-emerald-400' : 'text-slate-400'}`} />
+                  <span>{tool.shortTitle}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          <span className="hidden md:inline-flex items-center text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200 flex-shrink-0">
+            Offline &amp; Safe
+          </span>
         </div>
       </div>
 
@@ -295,79 +347,109 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
       <main className="flex-1 max-w-4xl mx-auto w-full p-4 sm:p-6 space-y-6">
 
         {/* ========================================================= */}
-        {/* TAB 1: IMAGE TO PDF (MOST SEARCHED)                      */}
+        {/* TAB 1: IMAGE TO PDF                                      */}
         {/* ========================================================= */}
         {activeTab === 'image-to-pdf' && (
           <div className="space-y-6">
             
             {/* Top Config Card */}
             <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 space-y-4 shadow-xs">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <div>
                   <h2 className="text-sm font-bold text-slate-900 flex items-center space-x-1.5">
                     <ImageIcon className="w-4 h-4 text-emerald-600" />
-                    <span>Image to PDF Options</span>
+                    <span>Document Layout &amp; Quality Settings</span>
                   </h2>
-                  <p className="text-[11px] text-slate-500 font-medium">Combine Marksheets, Degree Certificates &amp; Aadhaar into one official PDF</p>
+                  <p className="text-[11px] text-slate-500 font-medium">
+                    Combine Marksheets, Degree Certificates &amp; Aadhaar into one official PDF
+                  </p>
                 </div>
 
                 <div className="flex items-center space-x-2">
-                  <span className="text-xs font-bold text-slate-600">Target Size:</span>
-                  <div className="flex items-center space-x-1 bg-emerald-50 px-3 py-1 rounded-xl border border-emerald-200">
-                    <input
-                      type="number"
-                      min="30"
-                      max="5000"
-                      value={imgTargetKb}
-                      onChange={(e) => setImgTargetKb(Number(e.target.value))}
-                      className="w-16 text-center text-xs font-bold text-emerald-700 bg-transparent focus:outline-none"
-                    />
-                    <span className="text-xs text-emerald-800 font-bold">KB</span>
-                  </div>
+                  <span className="text-xs font-bold text-slate-600">Output Quality:</span>
+                  <span className={`text-xs font-bold px-2.5 py-1 rounded-lg ${
+                    !imgTargetKb 
+                      ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' 
+                      : 'bg-amber-50 text-amber-700 border border-amber-200'
+                  }`}>
+                    {!imgTargetKb ? 'Full High-Res (No Limit)' : `Target: Under ${imgTargetKb} KB`}
+                  </span>
                 </div>
               </div>
 
-              {/* Quick Presets */}
-              <div className="flex items-center space-x-2 flex-wrap gap-y-2 pt-1 border-t border-slate-100">
-                <span className="text-xs text-slate-500 font-semibold mr-1">Exam Caps:</span>
-                {[
-                  { kb: 100, label: '100 KB (UPSC / SSC)' },
-                  { kb: 200, label: '200 KB (NTA / NEET)' },
-                  { kb: 300, label: '300 KB (State PSC)' },
-                  { kb: 500, label: '500 KB (GATE)' },
-                  { kb: 1500, label: 'High Res (1.5 MB)' },
-                ].map((preset) => (
+              {/* Govt Portal Compression Options (Optional) */}
+              <div className="pt-2 border-t border-slate-100 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-slate-700 font-bold">Compress for Govt Portal (Optional):</span>
+                  {imgTargetKb && (
+                    <button
+                      type="button"
+                      onClick={() => setImgTargetKb(null)}
+                      className="text-[11px] text-emerald-600 hover:text-emerald-700 font-bold hover:underline"
+                    >
+                      Reset to Full Quality
+                    </button>
+                  )}
+                </div>
+
+                <div className="flex items-center space-x-2 flex-wrap gap-y-2">
                   <button
-                    key={preset.kb}
                     type="button"
-                    onClick={() => setImgTargetKb(preset.kb)}
-                    className={`px-2.5 py-1 rounded-xl text-xs font-bold transition-all ${
-                      Number(imgTargetKb) === preset.kb
+                    onClick={() => setImgTargetKb(null)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                      imgTargetKb === null
                         ? 'bg-emerald-600 text-white shadow-xs'
                         : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
                     }`}
                   >
-                    {preset.label}
+                    High Quality (Default · No Size Limit)
                   </button>
-                ))}
+
+                  {[
+                    { kb: 200, label: 'Under 200 KB' },
+                    { kb: 300, label: 'Under 300 KB' },
+                    { kb: 500, label: 'Under 500 KB' },
+                    { kb: 100, label: 'Under 100 KB' },
+                  ].map((preset) => (
+                    <button
+                      key={preset.kb}
+                      type="button"
+                      onClick={() => setImgTargetKb(preset.kb)}
+                      className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                        imgTargetKb === preset.kb
+                          ? 'bg-emerald-600 text-white shadow-xs'
+                          : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                      }`}
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+
+                  {/* Custom KB Input */}
+                  <div className="flex items-center space-x-1 bg-slate-50 hover:bg-slate-100 px-2 py-1 rounded-xl border border-slate-200 text-xs">
+                    <span className="text-slate-500 font-medium">Custom:</span>
+                    <input
+                      type="number"
+                      min="30"
+                      max="10000"
+                      placeholder="KB"
+                      value={imgTargetKb && ![100, 200, 300, 500].includes(imgTargetKb) ? imgTargetKb : ''}
+                      onChange={(e) => {
+                        const val = e.target.value ? Number(e.target.value) : null;
+                        setImgTargetKb(val);
+                      }}
+                      className="w-14 text-center font-bold text-slate-800 bg-transparent focus:outline-none"
+                    />
+                    <span className="text-slate-500 font-semibold">KB</span>
+                  </div>
+                </div>
               </div>
 
               {/* Layout controls */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 border-t border-slate-100 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-slate-100 text-xs">
                 <div>
                   <label className="block text-slate-700 font-bold mb-1">Page Format</label>
                   <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setImgPageSize('a4')}
-                      className={`flex-1 py-1.5 px-2 rounded-xl font-bold border transition-all ${
-                        imgPageSize === 'a4'
-                          ? 'bg-emerald-50 border-emerald-500 text-emerald-700'
-                          : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
-                      }`}
-                    >
-                      A4 Document (Govt Standard)
-                    </button>
                     <button
                       type="button"
                       onClick={() => setImgPageSize('fit')}
@@ -377,14 +459,36 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
                           : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
                       }`}
                     >
-                      Fit Image Size
+                      Fit Image (Edge-to-Edge · Recommended)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setImgPageSize('a4')}
+                      className={`flex-1 py-1.5 px-2 rounded-xl font-bold border transition-all ${
+                        imgPageSize === 'a4'
+                          ? 'bg-emerald-50 border-emerald-500 text-emerald-700'
+                          : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                      }`}
+                    >
+                      Standard A4 Sheet
                     </button>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-slate-700 font-bold mb-1">Page Margins</label>
+                  <label className="block text-slate-700 font-bold mb-1">Margins</label>
                   <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setImgMargin(0)}
+                      className={`flex-1 py-1.5 px-2 rounded-xl font-bold border transition-all ${
+                        imgMargin === 0
+                          ? 'bg-emerald-50 border-emerald-500 text-emerald-700'
+                          : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                      }`}
+                    >
+                      No Margins (Edge-to-Edge)
+                    </button>
                     <button
                       type="button"
                       onClick={() => setImgMargin(15)}
@@ -395,17 +499,6 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
                       }`}
                     >
                       Clean Margins (15pt)
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setImgMargin(0)}
-                      className={`flex-1 py-1.5 px-2 rounded-xl font-bold border transition-all ${
-                        imgMargin === 0
-                          ? 'bg-emerald-50 border-emerald-500 text-emerald-700'
-                          : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
-                      }`}
-                    >
-                      Edge-to-Edge (0 Margin)
                     </button>
                   </div>
                 </div>
@@ -422,7 +515,9 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
                 <div>
                   <h3 className="text-base font-bold text-slate-900 mb-1">Upload Photos or Marksheet Images</h3>
                   <p className="text-xs text-slate-500 max-w-md mx-auto font-medium">
-                    Upload multiple JPG, PNG, or WebP images (e.g. Aadhaar Front &amp; Back, 10th &amp; 12th Marksheets). They will be stitched into a single PDF under {imgTargetKb} KB.
+                    {imgTargetKb
+                      ? `Upload multiple JPG, PNG, or WebP images (e.g. Aadhaar Front & Back, 10th & 12th Marksheets). They will be stitched into a single PDF under ${imgTargetKb} KB.`
+                      : 'Upload multiple JPG, PNG, or WebP images (e.g. Aadhaar Front & Back, Marksheets & Certificates). They will be stitched into a crystal-clear, high-resolution PDF without quality loss.'}
                   </p>
                 </div>
 
@@ -560,7 +655,11 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
                       ) : (
                         <>
                           <FileText className="w-4 h-4" />
-                          <span>Convert {imageFiles.length} Image(s) to PDF (Under {imgTargetKb} KB)</span>
+                          <span>
+                            {imgTargetKb
+                              ? `Convert ${imageFiles.length} Image(s) to PDF (Under ${imgTargetKb} KB)`
+                              : `Convert ${imageFiles.length} Image(s) to High-Res PDF`}
+                          </span>
                         </>
                       )}
                     </button>
@@ -591,7 +690,11 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
                   <div className="p-6 rounded-2xl bg-emerald-50 border border-emerald-300 flex flex-col items-center justify-center space-y-4 animate-in fade-in zoom-in-95">
                     <div className="flex items-center space-x-2 text-emerald-800 font-bold text-sm">
                       <CheckCircle className="w-5 h-5 text-emerald-600" />
-                      <span>PDF Created Successfully! Exact Size: {imgPdfResult.finalKb} KB (Target: {imgTargetKb} KB)</span>
+                      <span>
+                        {imgTargetKb
+                          ? `PDF Created Successfully! Exact Size: ${imgPdfResult.finalKb} KB (Target: Under ${imgTargetKb} KB)`
+                          : `PDF Created Successfully! Exact Size: ${imgPdfResult.finalKb} KB (Original High Resolution)`}
+                      </span>
                     </div>
 
                     <button
@@ -1071,6 +1174,25 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
 
           </div>
         )}
+
+        {/* Sleek Apple-style sibling discovery footer */}
+        <div className="pt-6 pb-2 border-t border-slate-200/80">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
+            <span className="font-medium">Need another document tool?</span>
+            <div className="flex items-center space-x-2 flex-wrap gap-y-1">
+              {TOOL_LIST.filter((t) => t.id !== activeTab).map((tool) => (
+                <button
+                  key={tool.id}
+                  type="button"
+                  onClick={() => switchTool(tool.id)}
+                  className="text-emerald-700 hover:text-emerald-800 font-bold px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100/70 transition-colors"
+                >
+                  {tool.shortTitle}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
 
       </main>
     </div>

@@ -289,6 +289,19 @@ export const convertImagesToPdf = async (imageFiles, targetMaxKb = 300, onProgre
     onProgress({ current: 1, total: totalFiles, percent: 5, text: `Analyzing images (${totalFiles} file(s))...` });
   }
 
+  // If no target KB limit is specified (Max Quality default), compile directly at full crystal-clear resolution
+  if (!targetMaxKb || targetMaxKb === 'max' || Number(targetMaxKb) <= 0) {
+    const maxResult = await createPdfWithTier({ maxDim: 3200, q: 0.92 }, true);
+    if (onProgress) {
+      onProgress({ current: totalFiles, total: totalFiles, percent: 100, text: `High Quality PDF Ready! (${Math.round(maxResult.kb)} KB)` });
+    }
+    return {
+      blob: maxResult.blob,
+      finalKb: Math.round(maxResult.kb * 100) / 100,
+      downloadUrl: URL.createObjectURL(maxResult.blob)
+    };
+  }
+
   // Binary search over IMAGE_PDF_TIERS to find highest resolution & quality under targetKb
   let low = 0;
   let high = IMAGE_PDF_TIERS.length - 1;

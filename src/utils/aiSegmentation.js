@@ -144,67 +144,110 @@ export async function removePortraitBackground(imageSource, targetBgColor = 'tra
         const maskImageData = maskCtx.getImageData(0, 0, width, height);
         const maskPixels = maskImageData.data;
 
-        // 2. High-speed Precomputed S-Curve LUT (Hermite smoothstep interpolation)
-        // Adjust thresholds based on requested cut precision
-        let lowThresh = 110;
-        let highThresh = 185;
-        let erosionMinWeight = 0.75;
+        // 2. High-speed Precomputed S-Curve LUTs (Hermite smoothstep interpolation)
+        // Studio Clean: Balanced for natural hair strands and clean borders
+        // Crisp Cut: Tight anatomical cut with aggressive chin & neck shadow cleanup
+        const isCrisp = cutPrecision === 'crisp';
+        const chinYThreshold = Math.round(height * 0.35); // Chin, jawline, neck, and shoulders start below head
 
-        if (cutPrecision === 'crisp') {
-          lowThresh = 125;
-          highThresh = 195;
-          erosionMinWeight = 0.85; // Stronger erosion for high-contrast background clutter
-        } else if (cutPrecision === 'natural') {
-          lowThresh = 95;
-          highThresh = 175;
-          erosionMinWeight = 0.65; // Softer boundary for fine flyaway hair
+        // Head/Hair LUT (preserves fine flyaway strands)
+        const headLow = isCrisp ? 115 : 108;
+        const headHigh = isCrisp ? 190 : 182;
+        const headRange = headHigh - headLow;
+        const headLut = new Uint8Array(256);
+        for (let i = 0; i < 256; i++) {
+          if (i <= headLow) headLut[i] = 0;
+          else if (i >= headHigh) headLut[i] = 255;
+          else {
+            const t = (i - headLow) / headRange;
+            headLut[i] = Math.round(t * t * (3 - 2 * t) * 255);
+          }
         }
 
-        const range = highThresh - lowThresh;
-        const lut = new Uint8Array(256);
+        // Chin / Neck / Jawline LUT (Opaque skin has 0 real semi-transparency; aggressively clips wall shadows)
+        const chinLow = isCrisp ? 150 : 125;
+        const chinHigh = isCrisp ? 218 : 195;
+        const chinRange = chinHigh - chinLow;
+        const chinLut = new Uint8Array(256);
         for (let i = 0; i < 256; i++) {
-          if (i <= lowThresh) {
-            lut[i] = 0;
-          } else if (i >= highThresh) {
-            lut[i] = 255;
-          } else {
-            const t = (i - lowThresh) / range;
-            lut[i] = Math.round(t * t * (3 - 2 * t) * 255);
+          if (i <= chinLow) chinLut[i] = 0;
+          else if (i >= chinHigh) chinLut[i] = 255;
+          else {
+            const t = (i - chinLow) / chinRange;
+            chinLut[i] = Math.round(t * t * (3 - 2 * t) * 255);
           }
         }
 
         const totalPixels = width * height;
         const alphaMap = new Uint8Array(totalPixels);
-        for (let i = 0, p = 0; i < maskPixels.length; i += 4, p++) {
-          alphaMap[p] = lut[maskPixels[i + 3]];
+        for (let y = 0; y < height; y++) {
+          const row = y * width;
+          const lut = (y >= chinYThreshold && isCrisp) ? chinLut : headLut;
+          for (let x = 0; x < width; x++) {
+            const p = row + x;
+            alphaMap[p] = lut[maskPixels[p * 4 + 3]];
+          }
         }
 
-        // 3. Sub-pixel Inward Boundary Erosion (Contracts ~1-1.5px away from background)
-        // Removes any remaining background wall/halo fringe while preserving natural hair and collar contours
-        const erosionStayWeight = 1 - erosionMinWeight;
+        // 3. Sub-pixel Inward Boundary Erosion (Contracts away from background)
+        // In Crisp mode: checks full 8-neighbor diagonal neighborhood and aggressively trims chin & neck halos
+        const erosionStayWeight = isCrisp ? 0.12 : 0.25;
+        const erosionMinWeight = 1 - erosionStayWeight;
+
         for (let y = 0; y < height; y++) {
           const row = y * width;
           const prevRow = (y > 0 ? y - 1 : 0) * width;
           const nextRow = (y < height - 1 ? y + 1 : height - 1) * width;
+          const isChinZone = isCrisp && y >= chinYThreshold;
+
           for (let x = 0; x < width; x++) {
             const p = row + x;
+            const v = alphaMap[p];
+
+            if (v === 0) {
+              maskPixels[p * 4 + 3] = 0;
+              continue;
+            }
+
             const left = x > 0 ? p - 1 : p;
             const right = x < width - 1 ? p + 1 : p;
-            const v = alphaMap[p];
-            let outA = 0;
-            if (v === 0) {
-              outA = 0;
-            } else if (v === 255) {
-              if (alphaMap[left] === 255 && alphaMap[right] === 255 && alphaMap[prevRow + x] === 255 && alphaMap[nextRow + x] === 255) {
+            const up = prevRow + x;
+            const down = nextRow + x;
+
+            let minVal;
+            if (isCrisp) {
+              // 8-neighbor kernel catches angled contours like jawline and neck slant
+              const upLeft = prevRow + (x > 0 ? x - 1 : 0);
+              const upRight = prevRow + (x < width - 1 ? x + 1 : width - 1);
+              const downLeft = nextRow + (x > 0 ? x - 1 : 0);
+              const downRight = nextRow + (x < width - 1 ? x + 1 : width - 1);
+              minVal = Math.min(
+                alphaMap[left], alphaMap[right], alphaMap[up], alphaMap[down],
+                alphaMap[upLeft], alphaMap[upRight], alphaMap[downLeft], alphaMap[downRight]
+              );
+            } else {
+              minVal = Math.min(alphaMap[left], alphaMap[right], alphaMap[up], alphaMap[down]);
+            }
+
+            let outA;
+            if (v === 255) {
+              if (minVal === 255) {
                 outA = 255;
               } else {
-                const minVal = Math.min(alphaMap[left], alphaMap[right], alphaMap[prevRow + x], alphaMap[nextRow + x]);
-                outA = Math.round(minVal * erosionMinWeight + v * erosionStayWeight);
+                // Border pixel touching boundary
+                outA = isChinZone && minVal < 120 
+                  ? Math.round(minVal * 0.90) // Sharper inward contraction on jawline
+                  : Math.round(minVal * erosionMinWeight + v * erosionStayWeight);
               }
             } else {
-              const minVal = Math.min(v, alphaMap[left], alphaMap[right], alphaMap[prevRow + x], alphaMap[nextRow + x]);
-              outA = Math.round(minVal * erosionMinWeight + v * erosionStayWeight);
+              // Semi-transparent transition pixel
+              if (isChinZone && (minVal === 0 || v < 180)) {
+                outA = 0; // Cut off soft shadow fringes near chin/neck
+              } else {
+                outA = Math.round(minVal * erosionMinWeight + v * erosionStayWeight);
+              }
             }
+
             maskPixels[p * 4] = 255;
             maskPixels[p * 4 + 1] = 255;
             maskPixels[p * 4 + 2] = 255;
