@@ -271,6 +271,11 @@ export const PassportPhotoModal = ({ onClose }) => {
       blobUrl: finalPreviewUrl,
       filename,
       mimeType: selectedBg.value === 'transparent' ? 'image/png' : 'image/jpeg',
+      historyMeta: {
+        tool: 'passport-photo',
+        toolName: 'Passport Size Photo Maker',
+        presetName: selectedSize.label,
+      },
     });
   };
 
@@ -318,6 +323,11 @@ export const PassportPhotoModal = ({ onClose }) => {
           blob: sheetBlob,
           filename,
           mimeType: 'image/jpeg',
+          historyMeta: {
+            tool: 'passport-photo',
+            toolName: 'Printable 4×6″ Passport Sheet',
+            presetName: `${selectedSize.label} (8 Photos)`,
+          },
         });
       }, 'image/jpeg', 0.95);
     };
@@ -325,26 +335,26 @@ export const PassportPhotoModal = ({ onClose }) => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col font-['Outfit'] text-slate-900 antialiased">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col font-['Outfit'] text-slate-900 dark:text-slate-100 antialiased transition-colors duration-200">
       {/* Sticky Workspace Top Header */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-30 px-4 sm:px-8 py-3.5 flex items-center justify-between shadow-xs safe-area-top">
+      <header className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 sticky top-0 z-30 px-4 sm:px-8 py-3.5 flex items-center justify-between shadow-xs safe-area-top">
         <div className="flex items-center space-x-3">
           <button
             onClick={onClose}
-            className="p-2 rounded-xl text-slate-700 hover:bg-slate-100 flex items-center space-x-1.5 font-bold text-xs transition-all border border-slate-200"
+            className="p-2 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center space-x-1.5 font-bold text-xs transition-all border border-slate-200 dark:border-slate-700"
           >
-            <ArrowLeft className="w-4 h-4 text-blue-600" />
+            <ArrowLeft className="w-4 h-4 text-blue-600 dark:text-blue-400" />
             <span className="hidden sm:inline">Back to All Tools</span>
             <span className="sm:hidden">Back</span>
           </button>
-          <div className="h-4 w-px bg-slate-200" />
+          <div className="h-4 w-px bg-slate-200 dark:bg-slate-700" />
           <div className="flex items-center space-x-2">
-            <div className="p-1.5 rounded-lg bg-blue-50 text-blue-600 border border-blue-200">
+            <div className="p-1.5 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800/60">
               <Camera className="w-4 h-4" />
             </div>
             <div>
-              <h1 className="font-bold text-slate-900 text-sm sm:text-lg">Passport Size Photo Maker</h1>
-              <p className="text-[11px] text-slate-500 font-medium hidden sm:block">Create official passport size &amp; ID photos with studio background colors</p>
+              <h1 className="font-bold text-slate-900 dark:text-white text-sm sm:text-lg">Passport Size Photo Maker</h1>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium hidden sm:block">Create official passport size &amp; ID photos with studio background colors</p>
             </div>
           </div>
         </div>
@@ -355,13 +365,13 @@ export const PassportPhotoModal = ({ onClose }) => {
 
           {!selectedFile ? (
             <div className="space-y-6">
-              <div className="border-2 border-dashed border-slate-300 rounded-3xl p-6 sm:p-8 text-center bg-white space-y-4">
-                <div className="w-16 h-16 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 mx-auto shadow-xs">
+              <div className="border-2 border-dashed border-slate-300 dark:border-slate-800 rounded-3xl p-6 sm:p-8 text-center bg-white dark:bg-slate-900 space-y-4 shadow-xs">
+                <div className="w-16 h-16 rounded-2xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800/60 flex items-center justify-center text-blue-600 dark:text-blue-400 mx-auto shadow-xs">
                   <Camera className="w-8 h-8" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-slate-900 mb-1" style={{ fontFamily: "'Lexend', sans-serif" }}>Select Photo for Passport Size Photo Maker</h3>
-                  <p className="text-xs text-slate-500 max-w-sm mx-auto font-medium">Automatically crops aspect ratio &amp; replaces background with official studio colors.</p>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1" style={{ fontFamily: "'Lexend', sans-serif" }}>Select Photo for Passport Size Photo Maker</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto font-medium">Automatically crops aspect ratio &amp; replaces background with official studio colors.</p>
                 </div>
 
                 {/* Dual Upload Actions: Gallery vs Camera */}
@@ -377,7 +387,7 @@ export const PassportPhotoModal = ({ onClose }) => {
                     <span>Browse Gallery / Files</span>
                   </label>
 
-                  <label className="w-full sm:w-auto px-5 py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold flex items-center justify-center space-x-2 cursor-pointer border border-slate-200 transition-all active:scale-95">
+                  <label className="w-full sm:w-auto px-5 py-3 rounded-2xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold flex items-center justify-center space-x-2 cursor-pointer border border-slate-200 dark:border-slate-700 transition-all active:scale-95">
                     <input
                       type="file"
                       accept="image/*"
@@ -385,7 +395,7 @@ export const PassportPhotoModal = ({ onClose }) => {
                       className="hidden"
                       onChange={(e) => e.target.files?.[0] && handleFileChange(e.target.files[0])}
                     />
-                    <Camera className="w-4 h-4 text-blue-600" />
+                    <Camera className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                     <span>Take Photo with Camera</span>
                   </label>
                 </div>
@@ -417,9 +427,9 @@ export const PassportPhotoModal = ({ onClose }) => {
 
                 {/* 1. Size Preset */}
                 <div>
-                  <label className="text-xs font-bold text-slate-700 block mb-2 flex items-center gap-1.5">
-                    <Crop className="w-3.5 h-3.5 text-blue-600" />
-                    <span>Passport & ID Size Preset</span>
+                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-2 flex items-center gap-1.5">
+                    <Crop className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                    <span>Passport &amp; ID Size Preset</span>
                   </label>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {PASSPORT_SIZES.map((size) => (
@@ -429,7 +439,7 @@ export const PassportPhotoModal = ({ onClose }) => {
                         className={`p-2.5 rounded-xl text-xs font-semibold border text-left transition-all ${
                           selectedSize.label === size.label
                             ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
-                            : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                            : 'bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800'
                         }`}
                       >
                         <div>{size.label}</div>
@@ -441,11 +451,11 @@ export const PassportPhotoModal = ({ onClose }) => {
                 {/* 2. Studio Background Colors */}
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
-                      <Palette className="w-3.5 h-3.5 text-blue-600" />
+                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                      <Palette className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
                       <span>Studio Background Color</span>
                     </label>
-                    <span className="text-[10px] text-slate-400 font-medium">Select 'Original Background' for instant 0s wait</span>
+                    <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">Select 'Original Background' for instant 0s wait</span>
                   </div>
 
                   <div className="grid grid-cols-5 gap-2">
@@ -455,7 +465,7 @@ export const PassportPhotoModal = ({ onClose }) => {
                         onClick={() => handleSelectBg(bg)}
                         title={bg.label}
                         className={`h-10 rounded-xl border flex items-center justify-center transition-all relative ${bg.border} ${
-                          selectedBg.label === bg.label ? 'ring-2 ring-blue-600 ring-offset-2 scale-105 shadow-md' : 'hover:scale-95'
+                          selectedBg.label === bg.label ? 'ring-2 ring-blue-600 ring-offset-2 dark:ring-offset-slate-900 scale-105 shadow-md' : 'hover:scale-95'
                         }`}
                         style={{ backgroundColor: (bg.value === 'transparent' || bg.value === 'original') ? '#FFFFFF' : bg.value }}
                       >
@@ -474,17 +484,17 @@ export const PassportPhotoModal = ({ onClose }) => {
 
                   {/* Edge Cut Cleanliness Control (when a background color is chosen) */}
                   {selectedBg.value !== 'original' && (
-                    <div className="mt-3 p-3 bg-blue-50/70 rounded-xl border border-blue-200/80 space-y-1.5">
-                      <div className="flex items-center justify-between text-xs font-semibold text-slate-800">
+                    <div className="mt-3 p-3 bg-blue-50/70 dark:bg-blue-950/40 rounded-xl border border-blue-200/80 dark:border-blue-900/50 space-y-1.5">
+                      <div className="flex items-center justify-between text-xs font-semibold text-slate-800 dark:text-slate-200">
                         <span className="flex items-center gap-1.5">
-                          <Sparkles className="w-3.5 h-3.5 text-blue-600" />
-                          <span>Edge Cleanliness & Defringe</span>
+                          <Sparkles className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                          <span>Edge Cleanliness &amp; Defringe</span>
                         </span>
-                        <span className="text-[10px] uppercase font-bold text-blue-700 bg-blue-100 px-1.5 py-0.5 rounded">
+                        <span className="text-[10px] uppercase font-bold text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/60 px-1.5 py-0.5 rounded">
                           {cutPrecision}
                         </span>
                       </div>
-                      <p className="text-[11px] text-slate-500">
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400">
                         Fine-tune boundary transition if ambient wall light reflects on hair or shoulders.
                       </p>
                       <div className="grid grid-cols-2 gap-2 pt-1">
@@ -499,11 +509,11 @@ export const PassportPhotoModal = ({ onClose }) => {
                             className={`px-3 py-2 rounded-xl text-xs font-semibold border transition-all text-center ${
                               cutPrecision === p.id
                                 ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
-                                : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
+                                : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800'
                             }`}
                           >
                             <div className="leading-tight font-bold">{p.label}</div>
-                            <div className={`text-[10px] mt-0.5 ${cutPrecision === p.id ? 'text-blue-100' : 'text-slate-500'}`}>
+                            <div className={`text-[10px] mt-0.5 ${cutPrecision === p.id ? 'text-blue-100' : 'text-slate-500 dark:text-slate-400'}`}>
                               {p.desc}
                             </div>
                           </button>
@@ -514,12 +524,12 @@ export const PassportPhotoModal = ({ onClose }) => {
                 </div>
 
                 {/* 3. Image Touchup Sliders */}
-                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
-                  <div className="flex items-center justify-between text-xs font-bold text-slate-700">
-                    <span className="flex items-center gap-1.5"><Sun className="w-3.5 h-3.5 text-amber-500" /> Brightness & Contrast</span>
+                <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3">
+                  <div className="flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-300">
+                    <span className="flex items-center gap-1.5"><Sun className="w-3.5 h-3.5 text-amber-500" /> Brightness &amp; Contrast</span>
                     <button
                       onClick={() => { setBrightness(100); setContrast(100); }}
-                      className="text-[11px] text-slate-500 hover:text-slate-900 font-normal"
+                      className="text-[11px] text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-normal"
                     >
                       Reset
                     </button>
@@ -527,7 +537,7 @@ export const PassportPhotoModal = ({ onClose }) => {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <span className="text-[11px] font-semibold text-slate-500 block mb-1">Brightness: {brightness}%</span>
+                      <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 block mb-1">Brightness: {brightness}%</span>
                       <input
                         type="range"
                         min="70"
@@ -538,7 +548,7 @@ export const PassportPhotoModal = ({ onClose }) => {
                       />
                     </div>
                     <div>
-                      <span className="text-[11px] font-semibold text-slate-500 block mb-1">Contrast: {contrast}%</span>
+                      <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 block mb-1">Contrast: {contrast}%</span>
                       <input
                         type="range"
                         min="70"
@@ -553,7 +563,7 @@ export const PassportPhotoModal = ({ onClose }) => {
 
                 {/* 4. Target File Size Limit */}
                 <div>
-                  <label className="text-xs font-bold text-slate-700 block mb-2">Max Output File Size</label>
+                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-2">Max Output File Size</label>
                   <div className="grid grid-cols-4 gap-2">
                     {MAX_SIZE_OPTIONS.map((opt) => (
                       <button
@@ -561,8 +571,8 @@ export const PassportPhotoModal = ({ onClose }) => {
                         onClick={() => setMaxKb(opt)}
                         className={`py-2 rounded-xl text-xs font-bold border text-center transition-all ${
                           maxKb.label === opt.label
-                            ? 'bg-slate-900 text-white border-slate-900 shadow-sm'
-                            : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
+                            ? 'bg-slate-900 dark:bg-blue-600 text-white border-slate-900 dark:border-blue-600 shadow-sm'
+                            : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800'
                         }`}
                       >
                         {opt.label}
@@ -574,12 +584,12 @@ export const PassportPhotoModal = ({ onClose }) => {
               </div>
 
               {/* Preview & Downloads Column */}
-              <div className="md:col-span-6 flex flex-col justify-between bg-slate-50 border border-slate-200 rounded-3xl p-6">
+              <div className="md:col-span-6 flex flex-col justify-between bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xs">
                 
                 <div>
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center space-x-2">
-                      <span className="text-xs font-bold text-slate-900">Studio Passport Preview</span>
+                      <span className="text-xs font-bold text-slate-900 dark:text-white">Studio Passport Preview</span>
                       <button
                         onClick={() => {
                           if (selectedFile) {
@@ -587,20 +597,20 @@ export const PassportPhotoModal = ({ onClose }) => {
                             setCropModalOpen(true);
                           }
                         }}
-                        className="px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-bold flex items-center space-x-1 transition-all shadow-xs"
+                        className="px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/60 text-xs font-bold flex items-center space-x-1 transition-all shadow-xs"
                       >
-                        <Crop className="w-3.5 h-3.5 text-blue-600" />
+                        <Crop className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
                         <span>Re-crop / Align</span>
                       </button>
                     </div>
 
                     {isProcessing ? (
-                      <span className="text-xs font-bold text-blue-600 flex items-center space-x-1 animate-pulse">
+                      <span className="text-xs font-bold text-blue-600 dark:text-blue-400 flex items-center space-x-1 animate-pulse">
                         <RefreshCw className="w-3.5 h-3.5 animate-gpu-spin" />
                         <span>Studio Processing...</span>
                       </span>
                     ) : (
-                      <span className="text-xs font-bold text-emerald-600 flex items-center space-x-1">
+                      <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center space-x-1">
                         <CheckCircle className="w-3.5 h-3.5" />
                         <span>{formatFileSize(finalFileSizeBytes)}</span>
                       </span>
@@ -609,24 +619,24 @@ export const PassportPhotoModal = ({ onClose }) => {
 
                   {/* AI Live Progress Bar Overlay Card with Live Timer & Daily Quota */}
                   {isProcessing && (
-                    <div className="p-4 mb-4 rounded-2xl bg-blue-50 border border-blue-200 space-y-2.5 shadow-xs">
-                      <div className="flex items-center justify-between text-xs font-bold text-blue-900">
+                    <div className="p-4 mb-4 rounded-2xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800/60 space-y-2.5 shadow-xs">
+                      <div className="flex items-center justify-between text-xs font-bold text-blue-900 dark:text-blue-100">
                         <span className="flex items-center space-x-1.5">
-                          <Sparkles className="w-4 h-4 text-blue-600 animate-gpu-spin" />
+                          <Sparkles className="w-4 h-4 text-blue-600 dark:text-blue-400 animate-gpu-spin" />
                           <span>{aiProgressText || 'Processing AI Portrait...'}</span>
                         </span>
                         <span className="px-2 py-0.5 rounded-full bg-blue-600 text-white text-[11px] font-mono font-bold">
                           {elapsedSeconds}s
                         </span>
                       </div>
-                      <div className="w-full h-2 bg-blue-200 rounded-full overflow-hidden shadow-inner">
+                      <div className="w-full h-2 bg-blue-200 dark:bg-blue-900/80 rounded-full overflow-hidden shadow-inner">
                         <div
                           className="h-full bg-blue-600 rounded-full transition-all duration-300 ease-out"
                           style={{ width: `${aiProgressPercent}%` }}
                         />
                       </div>
-                      <div className="flex items-center justify-between text-[11px] font-medium text-slate-500 pt-0.5">
-                        <span className="flex items-center space-x-1 text-blue-700 font-semibold">
+                      <div className="flex items-center justify-between text-[11px] font-medium text-slate-500 dark:text-slate-400 pt-0.5">
+                        <span className="flex items-center space-x-1 text-blue-700 dark:text-blue-300 font-semibold">
                           <Zap className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
                           <span>Daily Fast Cloud AI Uses: {quotaInfo.usesLeft} of {quotaInfo.maxDaily} left</span>
                         </span>
@@ -637,22 +647,22 @@ export const PassportPhotoModal = ({ onClose }) => {
 
 
                   {/* Preview Container */}
-                  <div className={`relative flex items-center justify-center min-h-[260px] max-h-[320px] w-full p-4 rounded-2xl border border-slate-200 shadow-inner overflow-hidden ${selectedBg.value === 'transparent' ? 'bg-checkered' : 'bg-white'}`}>
+                  <div className={`relative flex items-center justify-center min-h-[260px] max-h-[320px] w-full p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-inner overflow-hidden ${selectedBg.value === 'transparent' ? 'bg-checkered' : 'bg-white dark:bg-slate-950'}`}>
                     {finalPreviewUrl ? (
                       <div className="flex flex-col items-center">
                         <img
                           src={finalPreviewUrl}
                           alt="Passport Photo Preview"
-                          className={`max-h-[240px] shadow-lg rounded-sm border border-slate-300 transition-all duration-300 ${selectedBg.value === 'transparent' ? 'bg-checkered' : ''}`}
+                          className={`max-h-[240px] shadow-lg rounded-sm border border-slate-300 dark:border-slate-700 transition-all duration-300 ${selectedBg.value === 'transparent' ? 'bg-checkered' : ''}`}
                         />
-                        <span className="text-[11px] font-semibold text-slate-400 mt-2">
+                        <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 mt-2">
                           {selectedSize.width} x {selectedSize.height} px ({selectedSize.ratio}) — {selectedBg.label}
                         </span>
                       </div>
                     ) : (
-                      <div className="flex flex-col items-center justify-center space-y-3 text-blue-600 p-6">
+                      <div className="flex flex-col items-center justify-center space-y-3 text-blue-600 dark:text-blue-400 p-6">
                         <RefreshCw className="w-8 h-8 animate-gpu-spin" />
-                        <span className="text-xs font-bold text-slate-900">Loading Studio Preview...</span>
+                        <span className="text-xs font-bold text-slate-900 dark:text-white">Loading Studio Preview...</span>
                       </div>
                     )}
                   </div>

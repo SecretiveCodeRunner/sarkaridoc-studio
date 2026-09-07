@@ -1,11 +1,12 @@
 import React from 'react';
-import { LayoutGrid, FileText, SlidersHorizontal, Settings } from 'lucide-react';
+import { LayoutGrid, FileText, SlidersHorizontal, History, Settings } from 'lucide-react';
 
 export const AndroidBottomNav = ({ activeTab, onSelectTab }) => {
   const navItems = [
     { id: 'studio', label: 'Studio', icon: LayoutGrid },
     { id: 'pdf', label: 'PDF Suite', icon: FileText },
     { id: 'presets', label: 'Presets', icon: SlidersHorizontal },
+    { id: 'history', label: 'History', icon: History },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
 
@@ -14,7 +15,7 @@ export const AndroidBottomNav = ({ activeTab, onSelectTab }) => {
       aria-label="Android Bottom Navigation"
       className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200/90 dark:border-slate-800/90 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] dark:shadow-[0_-4px_20px_rgba(0,0,0,0.4)] safe-area-bottom select-none transition-colors duration-200"
     >
-      <div className="max-w-md mx-auto grid grid-cols-4 py-1.5 px-2">
+      <div className="max-w-md mx-auto grid grid-cols-5 py-1.5 px-1">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;

@@ -268,39 +268,45 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
     });
   };
 
-  const downloadBlob = async (blobUrl, filename) => {
+  const downloadBlob = async (blobUrl, filename, meta = {}) => {
     await downloadFile({
       blobUrl,
       filename,
       mimeType: filename.endsWith('.jpg') || filename.endsWith('.jpeg') ? 'image/jpeg' : 'application/pdf',
+      historyMeta: {
+        tool: activeTab === 'pdf-to-jpg' ? 'photo' : 'pdf',
+        toolName: currentTool.shortTitle || currentTool.title,
+        presetName: filename,
+        ...meta
+      }
     });
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col text-slate-900 antialiased" style={{ fontFamily: "'Lexend', sans-serif" }}>
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col text-slate-900 dark:text-slate-100 antialiased" style={{ fontFamily: "'Lexend', sans-serif" }}>
       
       {/* Sticky Standalone Workspace Header */}
-      <header className="bg-white/95 backdrop-blur-md border-b border-slate-200 sticky top-0 z-30 px-3 sm:px-6 py-3 flex items-center justify-between shadow-xs safe-area-top">
+      <header className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 sticky top-0 z-30 px-3 sm:px-6 py-3 flex items-center justify-between shadow-xs safe-area-top">
         <div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
           <button
             onClick={onClose}
-            className="p-1.5 sm:p-2 rounded-xl text-slate-700 hover:bg-slate-100 flex items-center space-x-1.5 font-bold text-xs transition-all border border-slate-200 flex-shrink-0"
+            className="p-1.5 sm:p-2 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center space-x-1.5 font-bold text-xs transition-all border border-slate-200 dark:border-slate-700 flex-shrink-0"
             aria-label="Back to All Tools"
           >
-            <ArrowLeft className="w-4 h-4 text-emerald-600" />
+            <ArrowLeft className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
             <span className="hidden sm:inline">Back to All Tools</span>
             <span className="sm:hidden">Back</span>
           </button>
-          <div className="h-4 w-px bg-slate-200 flex-shrink-0" />
+          <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 flex-shrink-0" />
           <div className="flex items-center space-x-2 min-w-0">
-            <div className="p-1.5 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-200 flex-shrink-0">
+            <div className="p-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60 flex-shrink-0">
               <ActiveIcon className="w-4 h-4" />
             </div>
             <div className="min-w-0">
-              <h1 className="font-bold text-slate-900 text-sm sm:text-base leading-tight truncate">
+              <h1 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base leading-tight truncate">
                 {currentTool.title}
               </h1>
-              <p className="text-[11px] text-slate-500 font-medium hidden sm:block truncate">
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium hidden sm:block truncate">
                 {currentTool.subtitle}
               </p>
             </div>
@@ -308,14 +314,14 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
         </div>
 
         {/* Quick Privacy Badge */}
-        <div className="hidden md:flex items-center space-x-1.5 text-xs text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full font-semibold flex-shrink-0">
-          <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+        <div className="hidden md:flex items-center space-x-1.5 text-xs text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800/60 px-3 py-1 rounded-full font-semibold flex-shrink-0">
+          <Sparkles className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
           <span>Zero Server Uploads · 100% Client-Side</span>
         </div>
       </header>
 
       {/* Sleek Dedicated Sibling Tool Switcher */}
-      <div className="bg-white border-b border-slate-200/80 px-3 sm:px-6 py-2">
+      <div className="bg-white dark:bg-slate-900 border-b border-slate-200/80 dark:border-slate-800 px-3 sm:px-6 py-2">
         <div className="max-w-4xl mx-auto flex items-center justify-between gap-2">
           <div className="flex items-center space-x-1 sm:space-x-1.5 overflow-x-auto scrollbar-none py-0.5">
             {TOOL_LIST.map((tool) => {
@@ -327,18 +333,18 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
                   onClick={() => switchTool(tool.id)}
                   className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
                     isActive
-                      ? 'bg-slate-900 text-white shadow-xs'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                      ? 'bg-slate-900 dark:bg-emerald-600 text-white shadow-xs'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800'
                   }`}
                 >
-                  <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-emerald-400' : 'text-slate-400'}`} />
+                  <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-emerald-400 dark:text-white' : 'text-slate-400'}`} />
                   <span>{tool.shortTitle}</span>
                 </button>
               );
             })}
           </div>
 
-          <span className="hidden md:inline-flex items-center text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200 flex-shrink-0">
+          <span className="hidden md:inline-flex items-center text-[11px] font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800/60 flex-shrink-0">
             Offline &amp; Safe
           </span>
         </div>
@@ -354,24 +360,24 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
           <div className="space-y-6">
             
             {/* Top Config Card */}
-            <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 space-y-4 shadow-xs">
+            <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-4 shadow-xs">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <div>
-                  <h2 className="text-sm font-bold text-slate-900 flex items-center space-x-1.5">
-                    <ImageIcon className="w-4 h-4 text-emerald-600" />
+                  <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center space-x-1.5">
+                    <ImageIcon className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                     <span>Document Layout &amp; Quality Settings</span>
                   </h2>
-                  <p className="text-[11px] text-slate-500 font-medium">
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
                     Combine photos, certificates &amp; scanned documents into one official PDF
                   </p>
                 </div>
 
                 <div className="flex items-center space-x-2">
-                  <span className="text-xs font-bold text-slate-600">Output Quality:</span>
+                  <span className="text-xs font-bold text-slate-600 dark:text-slate-400">Output Quality:</span>
                   <span className={`text-xs font-bold px-2.5 py-1 rounded-lg ${
                     !imgTargetKb 
-                      ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' 
-                      : 'bg-amber-50 text-amber-700 border border-amber-200'
+                      ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60' 
+                      : 'bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60'
                   }`}>
                     {!imgTargetKb ? 'Full High-Res (No Limit)' : `Target: Under ${imgTargetKb} KB`}
                   </span>
@@ -379,14 +385,14 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
               </div>
 
               {/* Document Size Compression Options (Optional) */}
-              <div className="pt-2 border-t border-slate-100 space-y-2">
+              <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-slate-700 font-bold">Compress to Target Size (Optional):</span>
+                  <span className="text-xs text-slate-700 dark:text-slate-300 font-bold">Compress to Target Size (Optional):</span>
                   {imgTargetKb && (
                     <button
                       type="button"
                       onClick={() => setImgTargetKb(null)}
-                      className="text-[11px] text-emerald-600 hover:text-emerald-700 font-bold hover:underline"
+                      className="text-[11px] text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 font-bold hover:underline"
                     >
                       Reset to Full Quality
                     </button>
@@ -400,7 +406,7 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
                     className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                       imgTargetKb === null
                         ? 'bg-emerald-600 text-white shadow-xs'
-                        : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                        : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300'
                     }`}
                   >
                     High Quality (Default · No Size Limit)
@@ -419,7 +425,7 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
                       className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
                         imgTargetKb === preset.kb
                           ? 'bg-emerald-600 text-white shadow-xs'
-                          : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                          : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300'
                       }`}
                     >
                       {preset.label}
@@ -427,8 +433,8 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
                   ))}
 
                   {/* Custom KB Input */}
-                  <div className="flex items-center space-x-1 bg-slate-50 hover:bg-slate-100 px-2 py-1 rounded-xl border border-slate-200 text-xs">
-                    <span className="text-slate-500 font-medium">Custom:</span>
+                  <div className="flex items-center space-x-1 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 px-2 py-1 rounded-xl border border-slate-200 dark:border-slate-700 text-xs">
+                    <span className="text-slate-500 dark:text-slate-400 font-medium">Custom:</span>
                     <input
                       type="number"
                       min="30"
@@ -439,25 +445,25 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
                         const val = e.target.value ? Number(e.target.value) : null;
                         setImgTargetKb(val);
                       }}
-                      className="w-14 text-center font-bold text-slate-800 bg-transparent focus:outline-none"
+                      className="w-14 text-center font-bold text-slate-800 dark:text-white bg-transparent focus:outline-none"
                     />
-                    <span className="text-slate-500 font-semibold">KB</span>
+                    <span className="text-slate-500 dark:text-slate-400 font-semibold">KB</span>
                   </div>
                 </div>
               </div>
 
               {/* Layout controls */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-slate-100 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-slate-100 dark:border-slate-800 text-xs">
                 <div>
-                  <label className="block text-slate-700 font-bold mb-1">Page Format</label>
+                  <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">Page Format</label>
                   <div className="flex gap-2">
                     <button
                       type="button"
                       onClick={() => setImgPageSize('fit')}
                       className={`flex-1 py-1.5 px-2 rounded-xl font-bold border transition-all ${
                         imgPageSize === 'fit'
-                          ? 'bg-emerald-50 border-emerald-500 text-emerald-700'
-                          : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                          ? 'bg-emerald-50 dark:bg-emerald-950/60 border-emerald-500 dark:border-emerald-600 text-emerald-700 dark:text-emerald-300'
+                          : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
                       }`}
                     >
                       Fit Image (Edge-to-Edge · Recommended)
@@ -467,8 +473,8 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
                       onClick={() => setImgPageSize('a4')}
                       className={`flex-1 py-1.5 px-2 rounded-xl font-bold border transition-all ${
                         imgPageSize === 'a4'
-                          ? 'bg-emerald-50 border-emerald-500 text-emerald-700'
-                          : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                          ? 'bg-emerald-50 dark:bg-emerald-950/60 border-emerald-500 dark:border-emerald-600 text-emerald-700 dark:text-emerald-300'
+                          : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
                       }`}
                     >
                       Standard A4 Sheet
@@ -477,15 +483,15 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
                 </div>
 
                 <div>
-                  <label className="block text-slate-700 font-bold mb-1">Margins</label>
+                  <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">Margins</label>
                   <div className="flex gap-2">
                     <button
                       type="button"
                       onClick={() => setImgMargin(0)}
                       className={`flex-1 py-1.5 px-2 rounded-xl font-bold border transition-all ${
                         imgMargin === 0
-                          ? 'bg-emerald-50 border-emerald-500 text-emerald-700'
-                          : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                          ? 'bg-emerald-50 dark:bg-emerald-950/60 border-emerald-500 dark:border-emerald-600 text-emerald-700 dark:text-emerald-300'
+                          : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
                       }`}
                     >
                       No Margins (Edge-to-Edge)
@@ -495,8 +501,8 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
                       onClick={() => setImgMargin(15)}
                       className={`flex-1 py-1.5 px-2 rounded-xl font-bold border transition-all ${
                         imgMargin === 15
-                          ? 'bg-emerald-50 border-emerald-500 text-emerald-700'
-                          : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                          ? 'bg-emerald-50 dark:bg-emerald-950/60 border-emerald-500 dark:border-emerald-600 text-emerald-700 dark:text-emerald-300'
+                          : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
                       }`}
                     >
                       Clean Margins (15pt)
@@ -509,13 +515,13 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
 
             {/* Upload Box / Image List */}
             {imageFiles.length === 0 ? (
-              <div className="border-2 border-dashed border-slate-300 rounded-3xl p-6 sm:p-10 text-center bg-white space-y-4">
-                <div className="w-16 h-16 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 mx-auto shadow-xs">
+              <div className="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-3xl p-6 sm:p-10 text-center bg-white dark:bg-slate-900 space-y-4">
+                <div className="w-16 h-16 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800/60 flex items-center justify-center text-emerald-600 dark:text-emerald-400 mx-auto shadow-xs">
                   <ImageIcon className="w-8 h-8" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-slate-900 mb-1">Upload Photos or Marksheet Images</h3>
-                  <p className="text-xs text-slate-500 max-w-md mx-auto font-medium">
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white mb-1">Upload Photos or Marksheet Images</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto font-medium">
                     {imgTargetKb
                       ? `Upload multiple JPG, PNG, or WebP images (e.g. Aadhaar Front & Back, 10th & 12th Marksheets). They will be stitched into a single PDF under ${imgTargetKb} KB.`
                       : 'Upload multiple JPG, PNG, or WebP images (e.g. Aadhaar Front & Back, Marksheets & Certificates). They will be stitched into a crystal-clear, high-resolution PDF without quality loss.'}
@@ -535,7 +541,7 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
                     <span>Select Images from Device</span>
                   </label>
 
-                  <label className="w-full sm:w-auto px-5 py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold flex items-center justify-center space-x-2 cursor-pointer border border-slate-200 transition-all active:scale-95">
+                  <label className="w-full sm:w-auto px-5 py-3 rounded-2xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold flex items-center justify-center space-x-2 cursor-pointer border border-slate-200 dark:border-slate-700 transition-all active:scale-95">
                     <input
                       type="file"
                       accept="image/*"
@@ -543,7 +549,7 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
                       className="hidden"
                       onChange={(e) => handleImageFilesSelected(e.target.files)}
                     />
-                    <Camera className="w-4 h-4 text-slate-600" />
+                    <Camera className="w-4 h-4 text-slate-600 dark:text-slate-400" />
                     <span>Scan with Camera</span>
                   </label>
                 </div>
@@ -552,15 +558,15 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
               <div className="space-y-4">
                 
                 {/* Images Reorder List */}
-                <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-3">
+                <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-900 flex items-center space-x-1.5">
-                      <Layers className="w-4 h-4 text-emerald-600" />
+                    <span className="text-xs font-bold text-slate-900 dark:text-white flex items-center space-x-1.5">
+                      <Layers className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                       <span>{imageFiles.length} Image(s) in PDF Sequence</span>
                     </span>
 
                     <div className="flex items-center space-x-2">
-                      <label className="text-xs text-emerald-700 hover:text-emerald-800 font-bold cursor-pointer flex items-center space-x-1 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
+                      <label className="text-xs text-emerald-700 dark:text-emerald-300 hover:text-emerald-800 dark:hover:text-emerald-200 font-bold cursor-pointer flex items-center space-x-1 bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-1 rounded-lg border border-emerald-200 dark:border-emerald-800/60">
                         <input
                           type="file"
                           multiple
@@ -578,7 +584,7 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
                           setImageFiles([]);
                           setImgPdfResult(null);
                         }}
-                        className="text-xs text-red-600 hover:text-red-700 font-semibold px-2 py-1 rounded-lg hover:bg-red-50"
+                        className="text-xs text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 font-semibold px-2 py-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/40"
                       >
                         Clear All
                       </button>
@@ -590,20 +596,20 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
                     {imageFiles.map((item, idx) => (
                       <div
                         key={item.id}
-                        className="flex items-center justify-between p-2.5 bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100/60 transition-colors"
+                        className="flex items-center justify-between p-2.5 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 rounded-xl hover:bg-slate-100/60 dark:hover:bg-slate-800 transition-colors"
                       >
                         <div className="flex items-center space-x-3 min-w-0">
-                          <span className="w-6 h-6 rounded-lg bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center flex-shrink-0">
+                          <span className="w-6 h-6 rounded-lg bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs flex items-center justify-center flex-shrink-0">
                             {idx + 1}
                           </span>
                           <img
                             src={item.previewUrl}
                             alt={`Page ${idx + 1}`}
-                            className="w-12 h-12 object-cover rounded-lg border border-slate-300 flex-shrink-0 bg-white"
+                            className="w-12 h-12 object-cover rounded-lg border border-slate-300 dark:border-slate-600 flex-shrink-0 bg-white dark:bg-slate-800"
                           />
                           <div className="min-w-0">
-                            <p className="text-xs font-bold text-slate-800 truncate">{item.file.name}</p>
-                            <p className="text-[11px] text-slate-500">{formatFileSize(item.file.size)}</p>
+                            <p className="text-xs font-bold text-slate-800 dark:text-white truncate">{item.file.name}</p>
+                            <p className="text-[11px] text-slate-500 dark:text-slate-400">{formatFileSize(item.file.size)}</p>
                           </div>
                         </div>
 
@@ -613,7 +619,7 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
                             type="button"
                             disabled={idx === 0}
                             onClick={() => moveImage(idx, -1)}
-                            className="p-1.5 rounded-lg text-slate-600 hover:bg-white disabled:opacity-30 disabled:hover:bg-transparent"
+                            className="p-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-700 disabled:opacity-30 disabled:hover:bg-transparent"
                             title="Move Page Up"
                           >
                             <ArrowUp className="w-4 h-4" />
@@ -622,7 +628,7 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
                             type="button"
                             disabled={idx === imageFiles.length - 1}
                             onClick={() => moveImage(idx, 1)}
-                            className="p-1.5 rounded-lg text-slate-600 hover:bg-white disabled:opacity-30 disabled:hover:bg-transparent"
+                            className="p-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-700 disabled:opacity-30 disabled:hover:bg-transparent"
                             title="Move Page Down"
                           >
                             <ArrowDown className="w-4 h-4" />
@@ -630,7 +636,7 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
                           <button
                             type="button"
                             onClick={() => removeImage(idx)}
-                            className="p-1.5 rounded-lg text-red-600 hover:bg-red-50"
+                            className="p-1.5 rounded-lg text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40"
                             title="Remove Image"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -669,15 +675,15 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
 
                 {/* Progress bar */}
                 {isImgProcessing && imgProgress && (
-                  <div className="p-5 rounded-2xl bg-emerald-50/80 border border-emerald-200 space-y-3">
-                    <div className="flex items-center justify-between text-xs font-bold text-emerald-900">
+                  <div className="p-5 rounded-2xl bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 space-y-3">
+                    <div className="flex items-center justify-between text-xs font-bold text-emerald-900 dark:text-emerald-200">
                       <span className="flex items-center space-x-2">
-                        <RefreshCw className="w-3.5 h-3.5 animate-spin text-emerald-600" />
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin text-emerald-600 dark:text-emerald-400" />
                         <span>{imgProgress.text}</span>
                       </span>
                       <span>{imgProgress.percent}%</span>
                     </div>
-                    <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+                    <div className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                       <div
                         className="h-full bg-emerald-600 transition-all duration-200"
                         style={{ width: `${imgProgress.percent}%` }}
@@ -688,9 +694,9 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
 
                 {/* PDF Result Box */}
                 {imgPdfResult && !isImgProcessing && (
-                  <div className="p-6 rounded-2xl bg-emerald-50 border border-emerald-300 flex flex-col items-center justify-center space-y-4 animate-in fade-in zoom-in-95">
-                    <div className="flex items-center space-x-2 text-emerald-800 font-bold text-sm">
-                      <CheckCircle className="w-5 h-5 text-emerald-600" />
+                  <div className="p-6 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 flex flex-col items-center justify-center space-y-4 animate-in fade-in zoom-in-95">
+                    <div className="flex items-center space-x-2 text-emerald-800 dark:text-emerald-200 font-bold text-sm">
+                      <CheckCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                       <span>
                         {imgTargetKb
                           ? `PDF Created Successfully! Exact Size: ${formatFileSize(imgPdfResult.finalKb, 'kb')} (Target: Under ${formatFileSize(imgTargetKb, 'kb')})`
@@ -700,7 +706,10 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
 
                     <button
                       type="button"
-                      onClick={() => downloadBlob(imgPdfResult.downloadUrl, `SarkariDoc_Document_${Date.now()}.pdf`)}
+                      onClick={() => downloadBlob(imgPdfResult.downloadUrl, `SarkariDoc_Document_${Date.now()}.pdf`, {
+                        presetName: `${imageFiles.length} images to PDF`,
+                        blob: imgPdfResult.blob
+                      })}
                       className="py-3.5 px-8 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm flex items-center space-x-2 shadow-lg shadow-emerald-600/25 transition-all active:scale-95"
                     >
                       <Download className="w-5 h-5" />
@@ -722,17 +731,17 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
           <div className="space-y-6">
             
             {/* Target KB Slider Card */}
-            <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 space-y-4 shadow-xs">
+            <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-4 shadow-xs">
               <div className="flex items-center justify-between">
                 <div>
-                  <label className="text-xs font-bold text-slate-900 flex items-center space-x-1.5">
-                    <Sliders className="w-4 h-4 text-emerald-600" />
+                  <label className="text-xs font-bold text-slate-900 dark:text-white flex items-center space-x-1.5">
+                    <Sliders className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                     <span>Target Maximum PDF Size</span>
                   </label>
-                  <p className="text-[11px] text-slate-500 font-medium">Select target maximum file size in KB for your documents</p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Select target maximum file size in KB for your documents</p>
                 </div>
 
-                <div className="flex items-center space-x-1 bg-emerald-50 px-3 py-1 rounded-xl border border-emerald-200">
+                <div className="flex items-center space-x-1 bg-emerald-50 dark:bg-emerald-950/60 px-3 py-1 rounded-xl border border-emerald-200 dark:border-emerald-800/60">
                   <input
                     type="number"
                     min="20"
@@ -746,9 +755,9 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
                         debounceTimerRef.current = setTimeout(() => runPdfCompression(compressFile, val), 300);
                       }
                     }}
-                    className="w-16 text-center text-xs font-bold text-emerald-700 bg-transparent focus:outline-none"
+                    className="w-16 text-center text-xs font-bold text-emerald-700 dark:text-emerald-300 bg-transparent focus:outline-none"
                   />
-                  <span className="text-xs text-emerald-800 font-bold">KB</span>
+                  <span className="text-xs text-emerald-800 dark:text-emerald-300 font-bold">KB</span>
                 </div>
               </div>
 
@@ -767,7 +776,7 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
                     debounceTimerRef.current = setTimeout(() => runPdfCompression(compressFile, val), 300);
                   }
                 }}
-                className="w-full accent-emerald-600 cursor-pointer h-2 bg-slate-100 rounded-lg"
+                className="w-full accent-emerald-600 cursor-pointer h-2 bg-slate-100 dark:bg-slate-800 rounded-lg"
               />
 
               {/* Quick Caps */}
@@ -783,7 +792,7 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
                     className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                       Number(compressTargetKb) === kb
                         ? 'bg-emerald-600 text-white shadow-xs'
-                        : 'bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200'
+                        : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700'
                     }`}
                   >
                     {kb === 1000 ? '1 MB (1000 KB)' : `${kb} KB`}
@@ -794,13 +803,13 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
 
             {/* Upload Box */}
             {!compressFile ? (
-              <div className="border-2 border-dashed border-slate-300 rounded-3xl p-6 sm:p-10 text-center bg-white space-y-4">
-                <div className="w-16 h-16 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 mx-auto shadow-xs">
+              <div className="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-3xl p-6 sm:p-10 text-center bg-white dark:bg-slate-900 space-y-4">
+                <div className="w-16 h-16 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800/60 flex items-center justify-center text-emerald-600 dark:text-emerald-400 mx-auto shadow-xs">
                   <FileText className="w-8 h-8" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-slate-900 mb-1">Select Existing PDF Document</h3>
-                  <p className="text-xs text-slate-500 max-w-md mx-auto font-medium">
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white mb-1">Select Existing PDF Document</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto font-medium">
                     Upload any PDF file. Our binary quality engine will compress and optimize pages to stay strictly under {compressTargetKb} KB.
                   </p>
                 </div>
@@ -818,36 +827,36 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
               </div>
             ) : (
               <div className="space-y-4">
-                <div className="p-4 rounded-2xl bg-white border border-slate-200 flex items-center justify-between shadow-xs">
+                <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-between shadow-xs">
                   <div className="flex items-center space-x-3">
-                    <FileText className="w-5 h-5 text-emerald-600" />
+                    <FileText className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                     <div>
-                      <h4 className="text-xs sm:text-sm font-bold text-slate-900">{compressFile.name}</h4>
-                      <p className="text-[11px] text-slate-500 font-medium">Original: {formatFileSize(compressFile.size)}</p>
+                      <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">{compressFile.name}</h4>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Original: {formatFileSize(compressFile.size)}</p>
                     </div>
                   </div>
 
                   <button
                     onClick={() => { setCompressFile(null); setCompressResult(null); }}
-                    className="text-xs text-slate-500 hover:text-slate-900 underline font-medium"
+                    className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white underline font-medium"
                   >
                     Change File
                   </button>
                 </div>
 
                 {isCompressProcessing && compressProgress && (
-                  <div className="p-6 rounded-2xl bg-emerald-50/70 border border-emerald-200 flex flex-col items-center justify-center space-y-4">
-                    <div className="flex items-center space-x-3 text-emerald-700">
-                      <RefreshCw className="w-5 h-5 animate-spin text-emerald-600" />
+                  <div className="p-6 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 flex flex-col items-center justify-center space-y-4">
+                    <div className="flex items-center space-x-3 text-emerald-700 dark:text-emerald-300">
+                      <RefreshCw className="w-5 h-5 animate-spin text-emerald-600 dark:text-emerald-400" />
                       <span className="text-sm font-bold">{compressProgress.text}</span>
                     </div>
 
                     <div className="w-full max-w-md space-y-1.5">
-                      <div className="flex justify-between items-center text-xs font-bold text-slate-700">
+                      <div className="flex justify-between items-center text-xs font-bold text-slate-700 dark:text-slate-300">
                         <span>Page {compressProgress.current} of {compressProgress.total}</span>
-                        <span className="text-emerald-700">{compressProgress.percent}%</span>
+                        <span className="text-emerald-700 dark:text-emerald-300">{compressProgress.percent}%</span>
                       </div>
-                      <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+                      <div className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                         <div
                           className="h-full bg-emerald-600 transition-all duration-300"
                           style={{ width: `${compressProgress.percent}%` }}
@@ -858,14 +867,17 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
                 )}
 
                 {compressResult && !isCompressProcessing && (
-                  <div className="p-6 rounded-2xl bg-emerald-50 border border-emerald-200 flex flex-col items-center justify-center space-y-4">
-                    <div className="flex items-center space-x-2 text-emerald-700 font-bold text-sm">
+                  <div className="p-6 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 flex flex-col items-center justify-center space-y-4">
+                    <div className="flex items-center space-x-2 text-emerald-700 dark:text-emerald-300 font-bold text-sm">
                       <CheckCircle className="w-5 h-5" />
                       <span>Compressed: {formatFileSize(compressResult.finalKb, 'kb')} (Target: {formatFileSize(compressTargetKb, 'kb')})</span>
                     </div>
 
                     <button
-                      onClick={() => downloadBlob(compressResult.downloadUrl, `SarkariDoc_Compressed_${compressFile.name}`)}
+                      onClick={() => downloadBlob(compressResult.downloadUrl, `SarkariDoc_Compressed_${compressFile.name}`, {
+                        presetName: `Compressed under ${compressTargetKb} KB`,
+                        blob: compressResult.blob
+                      })}
                       className="py-3 px-8 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm flex items-center space-x-2 shadow-lg shadow-emerald-600/25 transition-all active:scale-95"
                     >
                       <Download className="w-5 h-5" />
@@ -886,13 +898,13 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
           <div className="space-y-6">
             
             {mergeFiles.length === 0 ? (
-              <div className="border-2 border-dashed border-slate-300 rounded-3xl p-6 sm:p-10 text-center bg-white space-y-4">
-                <div className="w-16 h-16 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 mx-auto shadow-xs">
+              <div className="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-3xl p-6 sm:p-10 text-center bg-white dark:bg-slate-900 space-y-4">
+                <div className="w-16 h-16 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800/60 flex items-center justify-center text-emerald-600 dark:text-emerald-400 mx-auto shadow-xs">
                   <Merge className="w-8 h-8" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-slate-900 mb-1">Merge Multiple PDF Files</h3>
-                  <p className="text-xs text-slate-500 max-w-md mx-auto font-medium">
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white mb-1">Merge Multiple PDF Files</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto font-medium">
                     Combine two or more PDF documents into a single consolidated file with zero quality loss.
                   </p>
                 </div>
@@ -911,15 +923,15 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
               </div>
             ) : (
               <div className="space-y-4">
-                <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-3">
+                <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-900 flex items-center space-x-1.5">
-                      <Merge className="w-4 h-4 text-emerald-600" />
+                    <span className="text-xs font-bold text-slate-900 dark:text-white flex items-center space-x-1.5">
+                      <Merge className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                       <span>{mergeFiles.length} PDF Documents to Merge</span>
                     </span>
 
                     <div className="flex items-center space-x-2">
-                      <label className="text-xs text-emerald-700 hover:text-emerald-800 font-bold cursor-pointer flex items-center space-x-1 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
+                      <label className="text-xs text-emerald-700 dark:text-emerald-300 hover:text-emerald-800 dark:hover:text-emerald-200 font-bold cursor-pointer flex items-center space-x-1 bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-1 rounded-lg border border-emerald-200 dark:border-emerald-800/60">
                         <input
                           type="file"
                           multiple
@@ -932,7 +944,7 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
                       </label>
                       <button
                         onClick={() => { setMergeFiles([]); setMergeResult(null); }}
-                        className="text-xs text-red-600 hover:text-red-700 font-semibold px-2 py-1 rounded-lg hover:bg-red-50"
+                        className="text-xs text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 font-semibold px-2 py-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/40"
                       >
                         Clear
                       </button>
@@ -944,15 +956,15 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
                     {mergeFiles.map((file, idx) => (
                       <div
                         key={`${file.name}-${idx}`}
-                        className="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-xl"
+                        className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 rounded-xl"
                       >
                         <div className="flex items-center space-x-3 min-w-0">
-                          <span className="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-800 font-bold text-xs flex items-center justify-center flex-shrink-0">
+                          <span className="w-6 h-6 rounded-lg bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200 font-bold text-xs flex items-center justify-center flex-shrink-0">
                             {idx + 1}
                           </span>
                           <div className="min-w-0">
-                            <p className="text-xs font-bold text-slate-800 truncate">{file.name}</p>
-                            <p className="text-[11px] text-slate-500">{formatFileSize(file.size)}</p>
+                            <p className="text-xs font-bold text-slate-800 dark:text-white truncate">{file.name}</p>
+                            <p className="text-[11px] text-slate-500 dark:text-slate-400">{formatFileSize(file.size)}</p>
                           </div>
                         </div>
 
@@ -961,7 +973,7 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
                             type="button"
                             disabled={idx === 0}
                             onClick={() => moveMergeFile(idx, -1)}
-                            className="p-1.5 rounded-lg text-slate-600 hover:bg-white disabled:opacity-30"
+                            className="p-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-700 disabled:opacity-30"
                           >
                             <ArrowUp className="w-4 h-4" />
                           </button>
@@ -969,14 +981,14 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
                             type="button"
                             disabled={idx === mergeFiles.length - 1}
                             onClick={() => moveMergeFile(idx, 1)}
-                            className="p-1.5 rounded-lg text-slate-600 hover:bg-white disabled:opacity-30"
+                            className="p-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-700 disabled:opacity-30"
                           >
                             <ArrowDown className="w-4 h-4" />
                           </button>
                           <button
                             type="button"
                             onClick={() => removeMergeFile(idx)}
-                            className="p-1.5 rounded-lg text-red-600 hover:bg-red-50"
+                            className="p-1.5 rounded-lg text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -1008,15 +1020,15 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
                 </div>
 
                 {isMergeProcessing && mergeProgress && (
-                  <div className="p-5 rounded-2xl bg-emerald-50/80 border border-emerald-200 space-y-3">
-                    <div className="flex items-center justify-between text-xs font-bold text-emerald-900">
+                  <div className="p-5 rounded-2xl bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 space-y-3">
+                    <div className="flex items-center justify-between text-xs font-bold text-emerald-900 dark:text-emerald-200">
                       <span className="flex items-center space-x-2">
-                        <RefreshCw className="w-3.5 h-3.5 animate-spin text-emerald-600" />
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin text-emerald-600 dark:text-emerald-400" />
                         <span>{mergeProgress.text}</span>
                       </span>
                       <span>{mergeProgress.percent}%</span>
                     </div>
-                    <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+                    <div className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                       <div
                         className="h-full bg-emerald-600 transition-all duration-200"
                         style={{ width: `${mergeProgress.percent}%` }}
@@ -1026,15 +1038,18 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
                 )}
 
                 {mergeResult && !isMergeProcessing && (
-                  <div className="p-6 rounded-2xl bg-emerald-50 border border-emerald-300 flex flex-col items-center justify-center space-y-4">
-                    <div className="flex items-center space-x-2 text-emerald-800 font-bold text-sm">
-                      <CheckCircle className="w-5 h-5 text-emerald-600" />
+                  <div className="p-6 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 flex flex-col items-center justify-center space-y-4">
+                    <div className="flex items-center space-x-2 text-emerald-800 dark:text-emerald-200 font-bold text-sm">
+                      <CheckCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                       <span>Merged PDF Ready! Total Pages: {mergeResult.pageCount} ({formatFileSize(mergeResult.finalKb, 'kb')})</span>
                     </div>
 
                     <button
                       type="button"
-                      onClick={() => downloadBlob(mergeResult.downloadUrl, `SarkariDoc_Merged_${Date.now()}.pdf`)}
+                      onClick={() => downloadBlob(mergeResult.downloadUrl, `SarkariDoc_Merged_${Date.now()}.pdf`, {
+                        presetName: `Merged ${mergeFiles.length} PDFs`,
+                        blob: mergeResult.blob
+                      })}
                       className="py-3 px-8 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm flex items-center space-x-2 shadow-lg shadow-emerald-600/25 transition-all active:scale-95"
                     >
                       <Download className="w-5 h-5" />
@@ -1054,23 +1069,23 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
         {activeTab === 'pdf-to-jpg' && (
           <div className="space-y-6">
             
-            <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 space-y-3 shadow-xs">
+            <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-3 shadow-xs">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <div>
-                  <h3 className="text-xs font-bold text-slate-900 flex items-center space-x-1.5">
-                    <FilePlus className="w-4 h-4 text-emerald-600" />
+                  <h3 className="text-xs font-bold text-slate-900 dark:text-white flex items-center space-x-1.5">
+                    <FilePlus className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                     <span>PDF to JPG Converter</span>
                   </h3>
-                  <p className="text-[11px] text-slate-500 font-medium">Extract high-resolution JPG images from multi-page PDF documents</p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Extract high-resolution JPG images from multi-page PDF documents</p>
                 </div>
 
                 <div className="flex items-center space-x-1 text-xs">
-                  <span className="font-bold text-slate-600 mr-1">Quality:</span>
+                  <span className="font-bold text-slate-600 dark:text-slate-400 mr-1">Quality:</span>
                   <button
                     type="button"
                     onClick={() => setPdfDpiScale(1.5)}
                     className={`px-2.5 py-1 rounded-xl font-bold transition-all ${
-                      pdfDpiScale === 1.5 ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-700'
+                      pdfDpiScale === 1.5 ? 'bg-emerald-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
                     }`}
                   >
                     110 DPI
@@ -1079,7 +1094,7 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
                     type="button"
                     onClick={() => setPdfDpiScale(2.0)}
                     className={`px-2.5 py-1 rounded-xl font-bold transition-all ${
-                      pdfDpiScale === 2.0 ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-700'
+                      pdfDpiScale === 2.0 ? 'bg-emerald-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
                     }`}
                   >
                     150 DPI (Sharp)
@@ -1089,13 +1104,13 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
             </div>
 
             {!pdfToJpgFile ? (
-              <div className="border-2 border-dashed border-slate-300 rounded-3xl p-6 sm:p-10 text-center bg-white space-y-4">
-                <div className="w-16 h-16 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 mx-auto shadow-xs">
+              <div className="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-3xl p-6 sm:p-10 text-center bg-white dark:bg-slate-900 space-y-4">
+                <div className="w-16 h-16 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800/60 flex items-center justify-center text-emerald-600 dark:text-emerald-400 mx-auto shadow-xs">
                   <FilePlus className="w-8 h-8" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-slate-900 mb-1">Upload PDF to Extract Images</h3>
-                  <p className="text-xs text-slate-500 max-w-md mx-auto font-medium">
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white mb-1">Upload PDF to Extract Images</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto font-medium">
                     Converts each page of your PDF into an individual clean JPG image ready for portal upload.
                   </p>
                 </div>
@@ -1113,30 +1128,30 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
               </div>
             ) : (
               <div className="space-y-4">
-                <div className="p-4 rounded-2xl bg-white border border-slate-200 flex items-center justify-between shadow-xs">
+                <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-between shadow-xs">
                   <div className="flex items-center space-x-3">
-                    <FileText className="w-5 h-5 text-emerald-600" />
+                    <FileText className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                     <div>
-                      <h4 className="text-xs sm:text-sm font-bold text-slate-900">{pdfToJpgFile.name}</h4>
-                      <p className="text-[11px] text-slate-500 font-medium">Extracted {extractedImages.length} image page(s)</p>
+                      <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">{pdfToJpgFile.name}</h4>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Extracted {extractedImages.length} image page(s)</p>
                     </div>
                   </div>
 
                   <button
                     onClick={() => { setPdfToJpgFile(null); setExtractedImages([]); }}
-                    className="text-xs text-slate-500 hover:text-slate-900 underline font-medium"
+                    className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white underline font-medium"
                   >
                     Change PDF
                   </button>
                 </div>
 
                 {isPdfToJpgProcessing && pdfToJpgProgress && (
-                  <div className="p-6 rounded-2xl bg-emerald-50/70 border border-emerald-200 flex flex-col items-center justify-center space-y-3">
-                    <div className="flex items-center space-x-3 text-emerald-700">
-                      <RefreshCw className="w-5 h-5 animate-spin text-emerald-600" />
+                  <div className="p-6 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 flex flex-col items-center justify-center space-y-3">
+                    <div className="flex items-center space-x-3 text-emerald-700 dark:text-emerald-300">
+                      <RefreshCw className="w-5 h-5 animate-spin text-emerald-600 dark:text-emerald-400" />
                       <span className="text-sm font-bold">{pdfToJpgProgress.text}</span>
                     </div>
-                    <div className="w-full max-w-md h-2 bg-slate-200 rounded-full overflow-hidden">
+                    <div className="w-full max-w-md h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                       <div className="h-full bg-emerald-600" style={{ width: `${pdfToJpgProgress.percent}%` }} />
                     </div>
                   </div>
@@ -1146,20 +1161,22 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
                   <div className="space-y-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                       {extractedImages.map((img) => (
-                        <div key={img.pageNumber} className="p-3 bg-white border border-slate-200 rounded-2xl shadow-xs space-y-2">
+                        <div key={img.pageNumber} className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xs space-y-2">
                           <img
                             src={img.url}
                             alt={`Page ${img.pageNumber}`}
-                            className="w-full h-44 object-contain bg-slate-50 rounded-xl border border-slate-100"
+                            className="w-full h-44 object-contain bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-100 dark:border-slate-800"
                           />
                           <div className="flex items-center justify-between text-xs">
-                            <span className="font-bold text-slate-800">Page {img.pageNumber}</span>
-                            <span className="text-slate-500 font-semibold">{img.kb} KB</span>
+                            <span className="font-bold text-slate-800 dark:text-white">Page {img.pageNumber}</span>
+                            <span className="text-slate-500 dark:text-slate-400 font-semibold">{img.kb} KB</span>
                           </div>
                           <button
                             type="button"
-                            onClick={() => downloadBlob(img.url, `Page_${img.pageNumber}_${pdfToJpgFile.name.replace('.pdf', '')}.jpg`)}
-                            className="w-full py-2 rounded-xl bg-slate-100 hover:bg-emerald-600 hover:text-white text-slate-700 text-xs font-bold flex items-center justify-center space-x-1.5 transition-colors"
+                            onClick={() => downloadBlob(img.url, `Page_${img.pageNumber}_${pdfToJpgFile.name.replace('.pdf', '')}.jpg`, {
+                              presetName: `Page ${img.pageNumber} JPG`
+                            })}
+                            className="w-full py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-emerald-600 hover:text-white text-slate-700 dark:text-slate-300 text-xs font-bold flex items-center justify-center space-x-1.5 transition-colors"
                           >
                             <Download className="w-3.5 h-3.5" />
                             <span>Download JPG</span>
@@ -1177,8 +1194,8 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
         )}
 
         {/* Sleek Apple-style sibling discovery footer */}
-        <div className="pt-6 pb-2 border-t border-slate-200/80">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
+        <div className="pt-6 pb-2 border-t border-slate-200/80 dark:border-slate-800">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500 dark:text-slate-400">
             <span className="font-medium">Need another document tool?</span>
             <div className="flex items-center space-x-2 flex-wrap gap-y-1">
               {TOOL_LIST.filter((t) => t.id !== activeTab).map((tool) => (
@@ -1186,7 +1203,7 @@ export const PdfStudioModal = ({ onClose, initialTab = 'image-to-pdf' }) => {
                   key={tool.id}
                   type="button"
                   onClick={() => switchTool(tool.id)}
-                  className="text-emerald-700 hover:text-emerald-800 font-bold px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100/70 transition-colors"
+                  className="text-emerald-700 dark:text-emerald-300 hover:text-emerald-800 dark:hover:text-emerald-200 font-bold px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100/70 dark:hover:bg-emerald-900/60 transition-colors"
                 >
                   {tool.shortTitle}
                 </button>

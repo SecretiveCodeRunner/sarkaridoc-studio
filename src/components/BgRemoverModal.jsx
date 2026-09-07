@@ -214,30 +214,35 @@ export const BgRemoverModal = ({ onClose }) => {
       blobUrl: previewUrl,
       filename,
       mimeType: bgColor === 'transparent' ? 'image/png' : 'image/jpeg',
+      historyMeta: {
+        tool: 'bg-remover',
+        toolName: 'Background Remover',
+        presetName: `${cutoutMode.toUpperCase()} Cutout`,
+      }
     });
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col text-slate-900 antialiased">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col text-slate-900 dark:text-slate-100 antialiased">
       {/* Sticky Top Header */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-30 px-4 sm:px-8 py-3.5 flex items-center justify-between shadow-xs safe-area-top">
+      <header className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-30 px-4 sm:px-8 py-3.5 flex items-center justify-between shadow-xs safe-area-top">
         <div className="flex items-center space-x-3">
           <button
             onClick={onClose}
-            className="p-2 rounded-xl text-slate-700 hover:bg-slate-100 flex items-center space-x-1.5 font-bold text-xs transition-all border border-slate-200"
+            className="p-2 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center space-x-1.5 font-bold text-xs transition-all border border-slate-200 dark:border-slate-700"
           >
-            <ArrowLeft className="w-4 h-4 text-purple-600" />
+            <ArrowLeft className="w-4 h-4 text-purple-600 dark:text-purple-400" />
             <span className="hidden sm:inline">Back to All Tools</span>
             <span className="sm:hidden">Back</span>
           </button>
-          <div className="h-4 w-px bg-slate-200" />
+          <div className="h-4 w-px bg-slate-200 dark:bg-slate-700" />
           <div className="flex items-center space-x-2">
-            <div className="p-1.5 rounded-lg bg-purple-50 text-purple-600 border border-purple-200">
+            <div className="p-1.5 rounded-lg bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-800/60">
               <Wand2 className="w-4 h-4" />
             </div>
             <div>
-              <h1 className="font-bold text-slate-900 text-sm sm:text-lg" style={{ fontFamily: "'Lexend', sans-serif" }}>AI Background Remover</h1>
-              <p className="text-[11px] text-slate-500 font-medium hidden sm:block">Instant neural portrait, signature paper whitening &amp; object cutout</p>
+              <h1 className="font-bold text-slate-900 dark:text-white text-sm sm:text-lg" style={{ fontFamily: "'Lexend', sans-serif" }}>AI Background Remover</h1>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium hidden sm:block">Instant neural portrait, signature paper whitening &amp; object cutout</p>
             </div>
           </div>
         </div>
@@ -247,45 +252,45 @@ export const BgRemoverModal = ({ onClose }) => {
       <main className="flex-1 max-w-5xl mx-auto w-full p-4 sm:p-6 space-y-6">
         {!selectedFile ? (
           <div className="space-y-6">
-            <div className="border-2 border-dashed border-slate-300 rounded-3xl p-8 text-center bg-white space-y-4">
-              <div className="w-16 h-16 rounded-2xl bg-purple-50 border border-purple-200 flex items-center justify-center text-purple-600 mx-auto shadow-xs">
+            <div className="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-3xl p-8 text-center bg-white dark:bg-slate-900 space-y-4">
+              <div className="w-16 h-16 rounded-2xl bg-purple-50 dark:bg-purple-950/60 border border-purple-200 dark:border-purple-800/60 flex items-center justify-center text-purple-600 dark:text-purple-400 mx-auto shadow-xs">
                 <Wand2 className="w-8 h-8" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-slate-900 mb-1" style={{ fontFamily: "'Lexend', sans-serif" }}>Select Image to Remove Background</h3>
-                <p className="text-xs text-slate-500 max-w-sm mx-auto font-medium">Includes interactive cropping, instant portrait cutout (sub-second), and signature paper whitening.</p>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1" style={{ fontFamily: "'Lexend', sans-serif" }}>Select Image to Remove Background</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto font-medium">Includes interactive cropping, instant portrait cutout (sub-second), and signature paper whitening.</p>
               </div>
 
               {/* Pre-Upload Mode Selection */}
-              <div className="inline-flex p-1 bg-slate-100 rounded-2xl border border-slate-200 gap-1 flex-wrap justify-center">
+              <div className="inline-flex p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 gap-1 flex-wrap justify-center">
                 <button
                   type="button"
                   onClick={() => setCutoutMode('portrait')}
                   className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 ${
-                    cutoutMode === 'portrait' ? 'bg-white text-purple-700 shadow-xs border border-purple-200' : 'text-slate-600 hover:text-slate-900'
+                    cutoutMode === 'portrait' ? 'bg-white dark:bg-slate-700 text-purple-700 dark:text-purple-300 shadow-xs border border-purple-200 dark:border-purple-600' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
                   }`}
                 >
-                  <User className="w-3.5 h-3.5 text-purple-600" />
+                  <User className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
                   <span>Portrait Photo</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setCutoutMode('signature')}
                   className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 ${
-                    cutoutMode === 'signature' ? 'bg-white text-purple-700 shadow-xs border border-purple-200' : 'text-slate-600 hover:text-slate-900'
+                    cutoutMode === 'signature' ? 'bg-white dark:bg-slate-700 text-purple-700 dark:text-purple-300 shadow-xs border border-purple-200 dark:border-purple-600' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
                   }`}
                 >
-                  <FileText className="w-3.5 h-3.5 text-purple-600" />
+                  <FileText className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
                   <span>Signature / Document</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setCutoutMode('object')}
                   className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 ${
-                    cutoutMode === 'object' ? 'bg-white text-purple-700 shadow-xs border border-purple-200' : 'text-slate-600 hover:text-slate-900'
+                    cutoutMode === 'object' ? 'bg-white dark:bg-slate-700 text-purple-700 dark:text-purple-300 shadow-xs border border-purple-200 dark:border-purple-600' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
                   }`}
                 >
-                  <Sparkles className="w-3.5 h-3.5 text-purple-600" />
+                  <Sparkles className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
                   <span>General Object</span>
                 </button>
               </div>
@@ -315,18 +320,18 @@ export const BgRemoverModal = ({ onClose }) => {
             {/* Controls Column */}
             <div className="md:col-span-5 space-y-5">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Settings</span>
+                <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Settings</span>
                 <button
                   onClick={() => { setSelectedFile(null); setRemovedBlob(null); setPreviewUrl(null); }}
-                  className="text-xs text-purple-600 hover:underline font-semibold"
+                  className="text-xs text-purple-600 dark:text-purple-400 hover:underline font-semibold"
                 >
                   Upload New Photo
                 </button>
               </div>
 
               {/* Mode Switcher: Portrait vs Signature vs Deep AI */}
-              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
-                <label className="text-xs font-bold text-slate-700 block">Content Type / Engine</label>
+              <div className="p-4 bg-slate-50 dark:bg-slate-900/80 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3">
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block">Content Type / Engine</label>
                 <div className="grid grid-cols-3 gap-2">
                   <button
                     onClick={() => {
@@ -335,15 +340,15 @@ export const BgRemoverModal = ({ onClose }) => {
                     }}
                     className={`p-2.5 rounded-xl text-left border transition-all ${
                       cutoutMode === 'portrait'
-                        ? 'bg-purple-50 border-purple-500 ring-2 ring-purple-500/20'
-                        : 'bg-white border-slate-200 hover:bg-slate-100'
+                        ? 'bg-purple-50 dark:bg-purple-950/60 border-purple-500 dark:border-purple-600 ring-2 ring-purple-500/20 text-purple-700 dark:text-purple-300'
+                        : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300'
                     }`}
                   >
-                    <div className="flex items-center space-x-1 text-purple-700 font-bold text-xs mb-0.5">
-                      <User className="w-3.5 h-3.5 text-purple-600" />
+                    <div className="flex items-center space-x-1 text-purple-700 dark:text-purple-300 font-bold text-xs mb-0.5">
+                      <User className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
                       <span>Portrait</span>
                     </div>
-                    <p className="text-[10px] text-slate-500 leading-tight">Neural AI (0.8s)</p>
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight">Neural AI (0.8s)</p>
                   </button>
 
                   <button
@@ -355,15 +360,15 @@ export const BgRemoverModal = ({ onClose }) => {
                     }}
                     className={`p-2.5 rounded-xl text-left border transition-all ${
                       cutoutMode === 'signature'
-                        ? 'bg-purple-50 border-purple-500 ring-2 ring-purple-500/20'
-                        : 'bg-white border-slate-200 hover:bg-slate-100'
+                        ? 'bg-purple-50 dark:bg-purple-950/60 border-purple-500 dark:border-purple-600 ring-2 ring-purple-500/20 text-purple-700 dark:text-purple-300'
+                        : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300'
                     }`}
                   >
-                    <div className="flex items-center space-x-1 text-purple-700 font-bold text-xs mb-0.5">
-                      <FileText className="w-3.5 h-3.5 text-purple-600" />
+                    <div className="flex items-center space-x-1 text-purple-700 dark:text-purple-300 font-bold text-xs mb-0.5">
+                      <FileText className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
                       <span>Signature</span>
                     </div>
-                    <p className="text-[10px] text-slate-500 leading-tight">Neural Ink Cutout</p>
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight">Neural Ink Cutout</p>
                   </button>
 
                   <button
@@ -373,22 +378,22 @@ export const BgRemoverModal = ({ onClose }) => {
                     }}
                     className={`p-2.5 rounded-xl text-left border transition-all ${
                       cutoutMode === 'object'
-                        ? 'bg-purple-50 border-purple-500 ring-2 ring-purple-500/20'
-                        : 'bg-white border-slate-200 hover:bg-slate-100'
+                        ? 'bg-purple-50 dark:bg-purple-950/60 border-purple-500 dark:border-purple-600 ring-2 ring-purple-500/20 text-purple-700 dark:text-purple-300'
+                        : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300'
                     }`}
                   >
-                    <div className="flex items-center space-x-1 text-purple-700 font-bold text-xs mb-0.5">
-                      <Sparkles className="w-3.5 h-3.5" />
+                    <div className="flex items-center space-x-1 text-purple-700 dark:text-purple-300 font-bold text-xs mb-0.5">
+                      <Sparkles className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
                       <span>Object</span>
                     </div>
-                    <p className="text-[10px] text-slate-500 leading-tight">Deep Model</p>
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight">Deep Model</p>
                   </button>
                 </div>
               </div>
 
               {/* Output Background Palette */}
               <div>
-                <label className="text-xs font-bold text-slate-700 block mb-2">New Background</label>
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-2">New Background</label>
                 <div className="grid grid-cols-2 gap-2">
                   {bgOptions.map((opt) => (
                     <button
@@ -396,18 +401,18 @@ export const BgRemoverModal = ({ onClose }) => {
                       onClick={() => handleColorSelect(opt.value)}
                       className={`p-3 rounded-xl border text-xs font-bold flex items-center justify-between transition-all ${
                         bgColor === opt.value
-                          ? 'border-purple-600 bg-purple-50/50 text-purple-700 ring-1 ring-purple-600'
-                          : 'border-slate-200 hover:bg-slate-50 text-slate-700 bg-white'
+                          ? 'border-purple-600 bg-purple-50/50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 ring-1 ring-purple-600'
+                          : 'border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800'
                       }`}
                     >
                       <div className="flex items-center space-x-2">
                         <span
-                          className={`w-4 h-4 rounded-full border border-slate-300 ${opt.value === 'transparent' ? 'bg-checkered' : ''}`}
+                          className={`w-4 h-4 rounded-full border border-slate-300 dark:border-slate-600 ${opt.value === 'transparent' ? 'bg-checkered' : ''}`}
                           style={{ backgroundColor: opt.value !== 'transparent' ? opt.value : undefined }}
                         />
                         <span>{opt.label}</span>
                       </div>
-                      {bgColor === opt.value && <CheckCircle className="w-4 h-4 text-purple-600" />}
+                      {bgColor === opt.value && <CheckCircle className="w-4 h-4 text-purple-600 dark:text-purple-400" />}
                     </button>
                   ))}
                 </div>
@@ -416,12 +421,12 @@ export const BgRemoverModal = ({ onClose }) => {
             </div>
 
             {/* Preview Column */}
-            <div className="md:col-span-7 flex flex-col justify-between bg-slate-50 border border-slate-200 rounded-3xl p-6">
+            <div className="md:col-span-7 flex flex-col justify-between bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-3xl p-6">
               
               <div>
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center space-x-2">
-                    <span className="text-xs font-bold text-slate-900">Cutout Preview</span>
+                    <span className="text-xs font-bold text-slate-900 dark:text-white">Cutout Preview</span>
                     <button
                       onClick={() => {
                         if (selectedFile) {
@@ -429,9 +434,9 @@ export const BgRemoverModal = ({ onClose }) => {
                           setCropModalOpen(true);
                         }
                       }}
-                      className="px-2.5 py-1 rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 text-xs font-bold flex items-center space-x-1 transition-all shadow-xs"
+                      className="px-2.5 py-1 rounded-lg bg-purple-50 dark:bg-purple-950/50 hover:bg-purple-100 dark:hover:bg-purple-900/50 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800/60 text-xs font-bold flex items-center space-x-1 transition-all shadow-xs"
                     >
-                      <Crop className="w-3.5 h-3.5 text-purple-600" />
+                      <Crop className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
                       <span>Crop / Frame</span>
                     </button>
                   </div>
@@ -439,7 +444,7 @@ export const BgRemoverModal = ({ onClose }) => {
                   {isProcessing && (
                     <button
                       onClick={handleCancelAi}
-                      className="px-2.5 py-1 rounded-lg bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 text-xs font-bold transition-all"
+                      className="px-2.5 py-1 rounded-lg bg-red-50 dark:bg-red-950/50 hover:bg-red-100 dark:hover:bg-red-900/50 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800 text-xs font-bold transition-all"
                     >
                       Cancel
                     </button>
@@ -447,12 +452,12 @@ export const BgRemoverModal = ({ onClose }) => {
                 </div>
 
                 {/* Preview Container */}
-                <div className={`relative flex-1 flex items-center justify-center min-h-[240px] max-h-[340px] w-full p-4 rounded-2xl border border-slate-200 shadow-inner overflow-hidden ${bgColor === 'transparent' ? 'bg-checkered' : 'bg-white'}`}>
+                <div className={`relative flex-1 flex items-center justify-center min-h-[240px] max-h-[340px] w-full p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-inner overflow-hidden ${bgColor === 'transparent' ? 'bg-checkered' : 'bg-white dark:bg-slate-950'}`}>
                   {isProcessing ? (
-                    <div className="flex flex-col items-center justify-center space-y-3 text-purple-600 p-6 text-center">
+                    <div className="flex flex-col items-center justify-center space-y-3 text-purple-600 dark:text-purple-400 p-6 text-center">
                       <RefreshCw className="w-8 h-8 animate-gpu-spin" />
                       <div className="space-y-1">
-                        <span className="text-xs font-bold text-slate-900 block">{statusMessage || 'Processing Cutout...'}</span>
+                        <span className="text-xs font-bold text-slate-900 dark:text-white block">{statusMessage || 'Processing Cutout...'}</span>
                         <span className="px-2 py-0.5 rounded-full bg-purple-600 text-white text-[10px] font-mono font-bold inline-block">
                           {elapsedSeconds}s
                         </span>
@@ -464,7 +469,7 @@ export const BgRemoverModal = ({ onClose }) => {
                       alt="Clean Background Removed Preview"
                       loading="lazy"
                       decoding="async"
-                      className="max-h-[280px] max-w-full object-contain rounded shadow-md border border-slate-200"
+                      className="max-h-[280px] max-w-full object-contain rounded shadow-md border border-slate-200 dark:border-slate-800"
                     />
                   ) : null}
                 </div>

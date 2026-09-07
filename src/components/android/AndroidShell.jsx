@@ -5,6 +5,7 @@ import { AndroidStudioDashboard } from './AndroidStudioDashboard';
 import { AndroidPresetsScreen } from './AndroidPresetsScreen';
 import { AndroidPdfSuiteScreen } from './AndroidPdfSuiteScreen';
 import { AndroidSettingsScreen } from './AndroidSettingsScreen';
+import { AndroidHistoryScreen } from './AndroidHistoryScreen';
 import { shareAppLink } from '../../utils/downloadHelper';
 
 export const AndroidShell = ({
@@ -17,7 +18,7 @@ export const AndroidShell = ({
   onOpenImageResizer,
   onSelectPreset,
 }) => {
-  const [activeTab, setActiveTab] = useState('studio'); // 'studio' | 'pdf' | 'presets' | 'settings'
+  const [activeTab, setActiveTab] = useState('studio'); // 'studio' | 'pdf' | 'presets' | 'history' | 'settings'
 
   const handleTabSelect = (tabId) => {
     setActiveTab(tabId);
@@ -60,6 +61,15 @@ export const AndroidShell = ({
         {activeTab === 'presets' && (
           <AndroidPresetsScreen
             onSelectPreset={onSelectPreset}
+          />
+        )}
+
+        {activeTab === 'history' && (
+          <AndroidHistoryScreen
+            onOpenPassportPhoto={onOpenPassportPhoto}
+            onOpenImageToPdf={onOpenImageToPdf}
+            onOpenBgRemover={onOpenBgRemover}
+            onOpenImageResizer={onOpenImageResizer}
           />
         )}
 

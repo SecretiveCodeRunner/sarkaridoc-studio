@@ -144,31 +144,36 @@ export const EditorModal = ({ preset, onClose }) => {
       blobUrl: result.downloadUrl,
       filename,
       mimeType: result.format === 'png' ? 'image/png' : 'image/jpeg',
+      historyMeta: {
+        tool: 'preset',
+        toolName: preset.name,
+        presetName: preset.exam,
+      },
     });
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col font-['Outfit'] text-slate-900 antialiased">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col font-['Outfit'] text-slate-900 dark:text-slate-100 antialiased transition-colors duration-200">
       {/* Sticky Workspace Top Header */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-30 px-4 sm:px-8 py-3.5 flex items-center justify-between shadow-xs safe-area-top">
+      <header className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 sticky top-0 z-30 px-4 sm:px-8 py-3.5 flex items-center justify-between shadow-xs safe-area-top">
         <div className="flex items-center space-x-3">
           <button
             onClick={onClose}
-            className="p-2 rounded-xl text-slate-700 hover:bg-slate-100 flex items-center space-x-1.5 font-bold text-xs transition-all border border-slate-200"
+            className="p-2 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center space-x-1.5 font-bold text-xs transition-all border border-slate-200 dark:border-slate-700"
           >
-            <ArrowLeft className="w-4 h-4 text-blue-600" />
+            <ArrowLeft className="w-4 h-4 text-blue-600 dark:text-blue-400" />
             <span className="hidden sm:inline">Back to All Tools</span>
             <span className="sm:hidden">Back</span>
           </button>
-          <div className="h-4 w-px bg-slate-200" />
+          <div className="h-4 w-px bg-slate-200 dark:bg-slate-700" />
           <div>
             <div className="flex items-center space-x-2">
-              <h1 className="font-bold text-slate-900 text-sm sm:text-lg">{preset.name}</h1>
-              <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+              <h1 className="font-bold text-slate-900 dark:text-white text-sm sm:text-lg">{preset.name}</h1>
+              <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/60">
                 {preset.exam}
               </span>
             </div>
-            <p className="text-[11px] text-slate-500 font-medium hidden sm:block">Target Range: {customMinKb || preset.minKb}KB – {customMaxKb || preset.maxKb}KB • {customWidth || preset.widthPx} × {customHeight || preset.heightPx} px</p>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium hidden sm:block">Target Range: {customMinKb || preset.minKb}KB – {customMaxKb || preset.maxKb}KB • {customWidth || preset.widthPx} × {customHeight || preset.heightPx} px</p>
           </div>
         </div>
       </header>
@@ -185,7 +190,7 @@ export const EditorModal = ({ preset, onClose }) => {
                   e.preventDefault();
                   if (e.dataTransfer.files?.[0]) handleFileChange(e.dataTransfer.files[0]);
                 }}
-                className="border-2 border-dashed border-slate-300 hover:border-blue-600 rounded-3xl p-8 text-center bg-slate-50 hover:bg-blue-50/50 cursor-pointer transition-all duration-300 group flex flex-col items-center justify-center min-h-[260px]"
+                className="border-2 border-dashed border-slate-300 dark:border-slate-800 hover:border-blue-600 dark:hover:border-blue-500 rounded-3xl p-8 text-center bg-white dark:bg-slate-900 hover:bg-blue-50/50 dark:hover:bg-blue-950/30 cursor-pointer transition-all duration-300 group flex flex-col items-center justify-center min-h-[260px] shadow-xs"
               >
                 <input
                   ref={fileInputRef}
@@ -194,13 +199,13 @@ export const EditorModal = ({ preset, onClose }) => {
                   className="hidden"
                   onChange={(e) => e.target.files?.[0] && handleFileChange(e.target.files[0])}
                 />
-                <div className="w-16 h-16 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform mb-4 shadow-sm">
+                <div className="w-16 h-16 rounded-2xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800/60 flex items-center justify-center text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform mb-4 shadow-sm">
                   <Upload className="w-8 h-8" />
                 </div>
-                <h3 className="text-lg font-bold text-slate-900 mb-1" style={{ fontFamily: "'Lexend', sans-serif" }}>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1" style={{ fontFamily: "'Lexend', sans-serif" }}>
                   {preset.type === 'signature' ? 'Upload Signature Image' : 'Upload Candidate Photo'}
                 </h3>
-                <p className="text-xs text-slate-500 max-w-sm mb-4 font-medium">
+                <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mb-4 font-medium">
                   {preset.type === 'signature'
                     ? 'Take a photo of your signature signed with blue/black pen on white paper.'
                     : 'Supports JPG, PNG, WEBP. Processed 100% locally inside your browser memory.'}
@@ -225,7 +230,7 @@ export const EditorModal = ({ preset, onClose }) => {
               {/* Controls */}
               <div className="lg:col-span-5 space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Controls & Framing</span>
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Controls & Framing</span>
                   <div className="flex items-center space-x-2">
                     <button
                       onClick={() => {
@@ -234,14 +239,14 @@ export const EditorModal = ({ preset, onClose }) => {
                           setCropModalOpen(true);
                         }
                       }}
-                      className="text-xs text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded-lg hover:bg-blue-100 flex items-center space-x-1 font-semibold shadow-xs"
+                      className="text-xs text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800/60 px-2.5 py-1 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50 flex items-center space-x-1 font-semibold shadow-xs"
                     >
-                      <Crop className="w-3.5 h-3.5 text-blue-600" />
+                      <Crop className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
                       <span>Re-crop</span>
                     </button>
                     <button
                       onClick={() => setSelectedFile(null)}
-                      className="text-xs text-slate-500 hover:text-slate-800 hover:underline flex items-center space-x-1 font-semibold"
+                      className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:underline flex items-center space-x-1 font-semibold"
                     >
                       <RefreshCw className="w-3.5 h-3.5" />
                       <span>Change</span>
@@ -251,9 +256,9 @@ export const EditorModal = ({ preset, onClose }) => {
 
                 {/* AI Background Removal & Color Controls for Photos & Custom */}
                 {(preset.type === 'photo' || preset.id === 'custom-resizer') && (
-                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
+                  <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 space-y-3">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2 text-xs font-bold text-blue-600">
+                      <div className="flex items-center space-x-2 text-xs font-bold text-blue-600 dark:text-blue-400">
                         <Palette className="w-4 h-4" />
                         <span>AI Background Removal</span>
                       </div>
@@ -264,7 +269,7 @@ export const EditorModal = ({ preset, onClose }) => {
                           onChange={(e) => setChangeBg(e.target.checked)}
                           className="sr-only peer"
                         />
-                        <div className="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+                        <div className="w-9 h-5 bg-slate-300 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
                       </label>
                     </div>
 
@@ -276,11 +281,11 @@ export const EditorModal = ({ preset, onClose }) => {
                             onClick={() => setBgColor(c.value)}
                             className={`py-1.5 rounded-lg text-[10px] font-bold border transition-all flex items-center justify-center space-x-1 ${
                               bgColor === c.value
-                                ? 'ring-2 ring-blue-600 border-blue-500 text-slate-900 bg-white shadow-xs'
-                                : 'border-slate-200 text-slate-600 hover:text-slate-900 bg-white'
+                                ? 'ring-2 ring-blue-600 border-blue-500 text-slate-900 dark:text-white bg-white dark:bg-slate-800 shadow-xs'
+                                : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white bg-white dark:bg-slate-800/80'
                             }`}
                           >
-                            <span className="w-2.5 h-2.5 rounded-full border border-slate-300" style={{ backgroundColor: c.value }} />
+                            <span className="w-2.5 h-2.5 rounded-full border border-slate-300 dark:border-slate-600" style={{ backgroundColor: c.value }} />
                             <span>{c.label}</span>
                           </button>
                         ))}
@@ -291,50 +296,50 @@ export const EditorModal = ({ preset, onClose }) => {
 
                 {/* Custom Dimensions Controls (if Custom Preset) */}
                 {preset.id === 'custom-resizer' && (
-                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
-                    <div className="flex items-center space-x-2 text-xs font-bold text-emerald-600">
+                  <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 space-y-3">
+                    <div className="flex items-center space-x-2 text-xs font-bold text-emerald-600 dark:text-emerald-400">
                       <Sliders className="w-4 h-4" />
                       <span>Custom Dimensions & Target KB</span>
                     </div>
 
                     <div className="grid grid-cols-2 gap-2">
                       <div>
-                        <label className="block text-[10px] font-medium text-slate-500 mb-1">Width (px)</label>
+                        <label className="block text-[10px] font-medium text-slate-500 dark:text-slate-400 mb-1">Width (px)</label>
                         <input
                           type="number"
                           value={customWidth}
                           onChange={(e) => setCustomWidth(e.target.value)}
-                          className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-xs text-slate-900 font-semibold"
+                          className="w-full px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white font-semibold focus:border-emerald-500 focus:outline-none"
                         />
                       </div>
                       <div>
-                        <label className="block text-[10px] font-medium text-slate-500 mb-1">Height (px)</label>
+                        <label className="block text-[10px] font-medium text-slate-500 dark:text-slate-400 mb-1">Height (px)</label>
                         <input
                           type="number"
                           value={customHeight}
                           onChange={(e) => setCustomHeight(e.target.value)}
-                          className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-xs text-slate-900 font-semibold"
+                          className="w-full px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white font-semibold focus:border-emerald-500 focus:outline-none"
                         />
                       </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-2">
                       <div>
-                        <label className="block text-[10px] font-medium text-slate-500 mb-1">Min KB</label>
+                        <label className="block text-[10px] font-medium text-slate-500 dark:text-slate-400 mb-1">Min KB</label>
                         <input
                           type="number"
                           value={customMinKb}
                           onChange={(e) => setCustomMinKb(e.target.value)}
-                          className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-xs text-slate-900 font-semibold"
+                          className="w-full px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white font-semibold focus:border-emerald-500 focus:outline-none"
                         />
                       </div>
                       <div>
-                        <label className="block text-[10px] font-medium text-slate-500 mb-1">Max KB</label>
+                        <label className="block text-[10px] font-medium text-slate-500 dark:text-slate-400 mb-1">Max KB</label>
                         <input
                           type="number"
                           value={customMaxKb}
                           onChange={(e) => setCustomMaxKb(e.target.value)}
-                          className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-xs text-slate-900 font-semibold"
+                          className="w-full px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white font-semibold focus:border-emerald-500 focus:outline-none"
                         />
                       </div>
                     </div>
@@ -343,14 +348,14 @@ export const EditorModal = ({ preset, onClose }) => {
 
                 {/* Signature Verified Engine & Pure White Paper Cleanup */}
                 {preset.type === 'signature' && (
-                  <div className="p-4 rounded-2xl bg-purple-50/80 border border-purple-200 space-y-3">
+                  <div className="p-4 rounded-2xl bg-purple-50/80 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800/60 space-y-3">
                     <div className="flex items-center justify-between">
                       <div className="space-y-0.5">
-                        <div className="flex items-center space-x-2 text-xs font-bold text-purple-700">
+                        <div className="flex items-center space-x-2 text-xs font-bold text-purple-700 dark:text-purple-300">
                           <Wand2 className="w-4 h-4" />
                           <span>Verified Signature Engine</span>
                         </div>
-                        <p className="text-[11px] text-slate-600 font-medium">Converts paper shadows to 100% pure white paper</p>
+                        <p className="text-[11px] text-slate-600 dark:text-slate-400 font-medium">Converts paper shadows to 100% pure white paper</p>
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer">
                         <input
@@ -362,7 +367,7 @@ export const EditorModal = ({ preset, onClose }) => {
                           }}
                           className="sr-only peer"
                         />
-                        <div className="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-600"></div>
+                        <div className="w-9 h-5 bg-slate-300 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-600"></div>
                       </label>
                     </div>
 
@@ -376,15 +381,15 @@ export const EditorModal = ({ preset, onClose }) => {
                           }}
                           className={`p-2.5 rounded-xl text-left border transition-all ${
                             signatureEngine === 'neural'
-                              ? 'bg-white border-purple-600 ring-2 ring-purple-500/20 shadow-xs'
-                              : 'bg-white/60 border-purple-200 hover:bg-white text-slate-700'
+                              ? 'bg-white dark:bg-slate-800 border-purple-600 ring-2 ring-purple-500/20 shadow-xs'
+                              : 'bg-white/60 dark:bg-slate-800/60 border-purple-200 dark:border-purple-800/60 hover:bg-white dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
                           }`}
                         >
-                          <div className="flex items-center space-x-1.5 text-purple-700 font-bold text-xs mb-0.5">
-                            <Sparkles className="w-3.5 h-3.5 text-purple-600" />
+                          <div className="flex items-center space-x-1.5 text-purple-700 dark:text-purple-300 font-bold text-xs mb-0.5">
+                            <Sparkles className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
                             <span>Neural AI (Zero Marks)</span>
                           </div>
-                          <p className="text-[10px] text-slate-500 leading-tight">Clean ink stroke isolation without markings</p>
+                          <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight">Clean ink stroke isolation without markings</p>
                         </button>
 
                         <button
@@ -395,15 +400,15 @@ export const EditorModal = ({ preset, onClose }) => {
                           }}
                           className={`p-2.5 rounded-xl text-left border transition-all ${
                             signatureEngine === 'adaptive'
-                              ? 'bg-white border-purple-600 ring-2 ring-purple-500/20 shadow-xs'
-                              : 'bg-white/60 border-purple-200 hover:bg-white text-slate-700'
+                              ? 'bg-white dark:bg-slate-800 border-purple-600 ring-2 ring-purple-500/20 shadow-xs'
+                              : 'bg-white/60 dark:bg-slate-800/60 border-purple-200 dark:border-purple-800/60 hover:bg-white dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
                           }`}
                         >
-                          <div className="flex items-center space-x-1.5 text-slate-800 font-bold text-xs mb-0.5">
-                            <Zap className="w-3.5 h-3.5 text-emerald-600" />
+                          <div className="flex items-center space-x-1.5 text-slate-800 dark:text-white font-bold text-xs mb-0.5">
+                            <Zap className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                             <span>Instant Whitener</span>
                           </div>
-                          <p className="text-[10px] text-slate-500 leading-tight">Fast canvas paper whitening (sub-second)</p>
+                          <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight">Fast canvas paper whitening (sub-second)</p>
                         </button>
                       </div>
                     )}
@@ -411,14 +416,14 @@ export const EditorModal = ({ preset, onClose }) => {
                 )}
 
                 {/* Zoom & Pan Controls */}
-                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
-                  <div className="flex items-center space-x-2 text-xs font-bold text-emerald-600">
+                <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 space-y-3">
+                  <div className="flex items-center space-x-2 text-xs font-bold text-emerald-600 dark:text-emerald-400">
                     <ZoomIn className="w-4 h-4" />
                     <span>Framing & Zoom</span>
                   </div>
 
                   <div>
-                    <div className="flex justify-between text-[10px] text-slate-500 font-medium mb-1">
+                    <div className="flex justify-between text-[10px] text-slate-500 dark:text-slate-400 font-medium mb-1">
                       <span>Zoom Scale</span>
                       <span>{Math.round(zoomScale * 100)}%</span>
                     </div>
@@ -429,13 +434,13 @@ export const EditorModal = ({ preset, onClose }) => {
                       step="0.05"
                       value={zoomScale}
                       onChange={(e) => setZoomScale(Number(e.target.value))}
-                      className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-600"
+                      className="w-full h-1 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-emerald-600"
                     />
                   </div>
 
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <div className="flex justify-between text-[10px] text-slate-500 font-medium mb-1">
+                      <div className="flex justify-between text-[10px] text-slate-500 dark:text-slate-400 font-medium mb-1">
                         <span>Horizontal Pan</span>
                         <span>{panX}%</span>
                       </div>
@@ -445,11 +450,11 @@ export const EditorModal = ({ preset, onClose }) => {
                         max="50"
                         value={panX}
                         onChange={(e) => setPanX(Number(e.target.value))}
-                        className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-600"
+                        className="w-full h-1 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-emerald-600"
                       />
                     </div>
                     <div>
-                      <div className="flex justify-between text-[10px] text-slate-500 font-medium mb-1">
+                      <div className="flex justify-between text-[10px] text-slate-500 dark:text-slate-400 font-medium mb-1">
                         <span>Vertical Pan</span>
                         <span>{panY}%</span>
                       </div>
@@ -459,7 +464,7 @@ export const EditorModal = ({ preset, onClose }) => {
                         max="50"
                         value={panY}
                         onChange={(e) => setPanY(Number(e.target.value))}
-                        className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-600"
+                        className="w-full h-1 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-emerald-600"
                       />
                     </div>
                   </div>
@@ -467,9 +472,9 @@ export const EditorModal = ({ preset, onClose }) => {
 
                 {/* Optional Name & Date Stamp Toggle */}
                 {(preset.requiresNameDate || preset.type === 'photo') && (
-                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
+                  <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 space-y-3">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2 text-xs font-bold text-blue-600">
+                      <div className="flex items-center space-x-2 text-xs font-bold text-blue-600 dark:text-blue-400">
                         <Sparkles className="w-4 h-4" />
                         <span>Name & Date Stamp Overlay</span>
                       </div>
@@ -480,29 +485,29 @@ export const EditorModal = ({ preset, onClose }) => {
                           onChange={(e) => setShowNameDate(e.target.checked)}
                           className="sr-only peer"
                         />
-                        <div className="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+                        <div className="w-9 h-5 bg-slate-300 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
                       </label>
                     </div>
 
                     {showNameDate && (
                       <div className="space-y-2 pt-1">
                         <div>
-                          <label className="block text-[10px] font-medium text-slate-500 mb-1">Candidate Name</label>
+                          <label className="block text-[10px] font-medium text-slate-500 dark:text-slate-400 mb-1">Candidate Name</label>
                           <input
                             type="text"
                             value={candidateName}
                             onChange={(e) => setCandidateName(e.target.value)}
                             placeholder="e.g., APURBA KUMAR"
-                            className="w-full px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs text-slate-900 font-semibold placeholder-slate-400 focus:border-blue-600 focus:outline-none"
+                            className="w-full px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white font-semibold placeholder-slate-400 dark:placeholder-slate-500 focus:border-blue-600 focus:outline-none"
                           />
                         </div>
                         <div>
-                          <label className="block text-[10px] font-medium text-slate-500 mb-1">Photo Date (D.O.P)</label>
+                          <label className="block text-[10px] font-medium text-slate-500 dark:text-slate-400 mb-1">Photo Date (D.O.P)</label>
                           <input
                             type="date"
                             value={photoDate}
                             onChange={(e) => setPhotoDate(e.target.value)}
-                            className="w-full px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs text-slate-900 font-semibold focus:border-blue-600 focus:outline-none"
+                            className="w-full px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white font-semibold focus:border-blue-600 focus:outline-none"
                           />
                         </div>
                       </div>
@@ -512,14 +517,14 @@ export const EditorModal = ({ preset, onClose }) => {
               </div>
 
               {/* Live Preview */}
-              <div className="lg:col-span-7 flex flex-col items-center justify-between bg-slate-50 border border-slate-200 rounded-2xl p-6">
+              <div className="lg:col-span-7 flex flex-col items-center justify-between bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
                 <div className="w-full flex items-center justify-between mb-4">
-                  <span className="text-xs font-bold text-slate-900">Live Preview</span>
+                  <span className="text-xs font-bold text-slate-900 dark:text-white">Live Preview</span>
                   {result && (
                     <div className={`px-2.5 py-1 rounded-full text-xs font-bold border flex items-center space-x-1.5 ${
                       result.finalKb >= (customMinKb || preset.minKb) && result.finalKb <= (customMaxKb || preset.maxKb)
-                        ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
-                        : 'bg-amber-50 text-amber-700 border-amber-300'
+                        ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800'
+                        : 'bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-800'
                     }`}>
                       <CheckCircle className="w-4 h-4" />
                       <span>{formatFileSize(result.finalKb, 'kb')} (Target: {customMinKb || preset.minKb}-{customMaxKb || preset.maxKb} KB)</span>
@@ -527,9 +532,9 @@ export const EditorModal = ({ preset, onClose }) => {
                   )}
                 </div>
 
-                <div className={`relative flex-1 flex items-center justify-center min-h-[260px] max-h-[340px] w-full p-4 rounded-xl border border-slate-200 shadow-inner ${bgColor === 'transparent' ? 'bg-checkered' : 'bg-white'}`}>
+                <div className={`relative flex-1 flex items-center justify-center min-h-[260px] max-h-[340px] w-full p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-inner ${bgColor === 'transparent' ? 'bg-checkered' : 'bg-white dark:bg-slate-950'}`}>
                   {isProcessing ? (
-                    <div className="flex flex-col items-center space-y-2 text-blue-600">
+                    <div className="flex flex-col items-center space-y-2 text-blue-600 dark:text-blue-400">
                       <RefreshCw className="w-6 h-6 animate-gpu-spin" />
                       <span className="text-xs font-semibold">
                         {preset.type === 'signature'
@@ -543,7 +548,7 @@ export const EditorModal = ({ preset, onClose }) => {
                       alt="Processed Preview"
                       loading="lazy"
                       decoding="async"
-                      className={`max-h-[280px] max-w-full object-contain rounded shadow-md border border-slate-200 ${bgColor === 'transparent' ? 'bg-checkered' : ''}`}
+                      className={`max-h-[280px] max-w-full object-contain rounded shadow-md border border-slate-200 dark:border-slate-800 ${bgColor === 'transparent' ? 'bg-checkered' : ''}`}
                     />
                   ) : null}
                 </div>

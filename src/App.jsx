@@ -29,18 +29,12 @@ export function App() {
   const [isAboutOpen, setIsAboutOpen] = useState(false);
 
   const isNative = typeof window !== 'undefined' && Capacitor.isNativePlatform();
-  const [isMobileView, setIsMobileView] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    return window.innerWidth < 768;
-  });
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobileView(window.innerWidth < 768);
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  const isStandalone = typeof window !== 'undefined' && (
+    window.matchMedia('(display-mode: standalone)').matches ||
+    window.navigator.standalone === true
+  );
+  // Dedicated Android Shell is ONLY for the native Android APK or installed standalone PWA
+  const isAppMode = isNative || isStandalone;
 
   const activeTool = selectedPreset 
     ? `preset:${selectedPreset.id}` 
@@ -225,10 +219,10 @@ export function App() {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col bg-white text-slate-900 antialiased">
+    <div className="min-h-screen flex flex-col bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 antialiased">
       {!activeTool ? (
         // 1. Home / Shell View (Rendered ONLY when no tool is active)
-        isNative || isMobileView ? (
+        isAppMode ? (
           <AndroidShell
             onOpenPassportPhoto={() => openTool('passport-photo')}
             onOpenImageToPdf={() => openTool('image-to-pdf')}
@@ -240,7 +234,7 @@ export function App() {
             onSelectPreset={(preset) => openTool('preset', preset)}
           />
         ) : (
-          // Desktop Browser View
+          // Website View (Responsive for both Desktop and Mobile Web Browsers)
           <>
             <Navbar
               onOpenPassportPhoto={() => openTool('passport-photo')}

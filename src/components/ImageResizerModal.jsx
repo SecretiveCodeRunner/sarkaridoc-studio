@@ -97,30 +97,35 @@ export const ImageResizerModal = ({ onClose }) => {
       blobUrl: result.downloadUrl,
       filename,
       mimeType: result.ext === 'png' ? 'image/png' : result.ext === 'webp' ? 'image/webp' : 'image/jpeg',
+      historyMeta: {
+        tool: 'resizer',
+        toolName: 'Custom Image Resizer',
+        presetName: `${targetWidth}×${targetHeight} (${targetKb} KB)`,
+      }
     });
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col font-['Outfit'] text-slate-900 antialiased">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col font-['Outfit'] text-slate-900 dark:text-slate-100 antialiased">
       {/* Sticky Workspace Top Header */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-30 px-4 sm:px-8 py-3.5 flex items-center justify-between shadow-xs safe-area-top">
+      <header className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-30 px-4 sm:px-8 py-3.5 flex items-center justify-between shadow-xs safe-area-top">
         <div className="flex items-center space-x-3">
           <button
             onClick={onClose}
-            className="p-2 rounded-xl text-slate-700 hover:bg-slate-100 flex items-center space-x-1.5 font-bold text-xs transition-all border border-slate-200"
+            className="p-2 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center space-x-1.5 font-bold text-xs transition-all border border-slate-200 dark:border-slate-700"
           >
-            <ArrowLeft className="w-4 h-4 text-blue-600" />
+            <ArrowLeft className="w-4 h-4 text-blue-600 dark:text-blue-400" />
             <span className="hidden sm:inline">Back to All Tools</span>
             <span className="sm:hidden">Back</span>
           </button>
-          <div className="h-4 w-px bg-slate-200" />
+          <div className="h-4 w-px bg-slate-200 dark:bg-slate-700" />
           <div className="flex items-center space-x-2">
-            <div className="p-1.5 rounded-lg bg-blue-50 text-blue-600 border border-blue-200">
+            <div className="p-1.5 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800/60">
               <SlidersHorizontal className="w-4 h-4" />
             </div>
             <div>
-              <h1 className="font-bold text-slate-900 text-sm sm:text-lg">Custom Image KB & Pixel Resizer</h1>
-              <p className="text-[11px] text-slate-500 font-medium hidden sm:block">Resize photo file size (KB/MB) and custom pixel dimensions for any document</p>
+              <h1 className="font-bold text-slate-900 dark:text-white text-sm sm:text-lg">Custom Image KB & Pixel Resizer</h1>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium hidden sm:block">Resize photo file size (KB/MB) and custom pixel dimensions for any document</p>
             </div>
           </div>
         </div>
@@ -131,18 +136,18 @@ export const ImageResizerModal = ({ onClose }) => {
 
           {!selectedFile ? (
             <div className="space-y-6">
-              <label className="border-2 border-dashed border-slate-300 hover:border-blue-600 rounded-3xl p-8 text-center bg-white hover:bg-blue-50/40 cursor-pointer transition-all duration-300 flex flex-col items-center justify-center min-h-[260px] shadow-xs">
+              <label className="border-2 border-dashed border-slate-300 dark:border-slate-700 hover:border-blue-600 dark:hover:border-blue-500 rounded-3xl p-8 text-center bg-white dark:bg-slate-900 hover:bg-blue-50/40 dark:hover:bg-blue-950/20 cursor-pointer transition-all duration-300 flex flex-col items-center justify-center min-h-[260px] shadow-xs">
                 <input
                   type="file"
                   accept="image/jpeg,image/png,image/webp"
                   className="hidden"
                   onChange={(e) => e.target.files?.[0] && handleFileSelect(e.target.files[0])}
                 />
-                <div className="w-16 h-16 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 mb-3 shadow-xs">
+                <div className="w-16 h-16 rounded-2xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800/60 flex items-center justify-center text-blue-600 dark:text-blue-400 mb-3 shadow-xs">
                   <Upload className="w-8 h-8" />
                 </div>
-                <h3 className="text-lg font-bold text-slate-900 mb-1" style={{ fontFamily: "'Lexend', sans-serif" }}>Upload Image to Resize</h3>
-                <p className="text-xs text-slate-500 max-w-sm font-medium">Supports JPG, PNG, WEBP. Instant client-side compression to exact KB.</p>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1" style={{ fontFamily: "'Lexend', sans-serif" }}>Upload Image to Resize</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm font-medium">Supports JPG, PNG, WEBP. Instant client-side compression to exact KB.</p>
               </label>
 
               {/* Step-by-Step Workflow Guide Below Upload Button */}
@@ -159,27 +164,27 @@ export const ImageResizerModal = ({ onClose }) => {
               {/* Resizer Form Controls */}
               <div className="md:col-span-5 space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-500 uppercase">Target Dimensions & KB</span>
+                  <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase">Target Dimensions & KB</span>
                   <button
                     onClick={() => setSelectedFile(null)}
-                    className="text-xs text-blue-600 hover:underline font-semibold"
+                    className="text-xs text-blue-600 dark:text-blue-400 hover:underline font-semibold"
                   >
                     Change Image
                   </button>
                 </div>
 
                 {/* KB Slider & Input */}
-                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
-                  <div className="flex justify-between items-center text-xs font-bold text-slate-900">
+                <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 space-y-3">
+                  <div className="flex justify-between items-center text-xs font-bold text-slate-900 dark:text-white">
                     <span>Target File Size</span>
                     <div className="flex items-center space-x-1">
                       <input
                         type="number"
                         value={targetKb}
                         onChange={(e) => setTargetKb(Number(e.target.value))}
-                        className="w-20 px-2 py-1 rounded bg-white border border-slate-200 text-xs font-bold text-blue-600 text-center shadow-xs focus:border-blue-600 outline-none"
+                        className="w-20 px-2 py-1 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-blue-600 dark:text-blue-400 text-center shadow-xs focus:border-blue-600 outline-none"
                       />
-                      <span className="text-slate-500">KB</span>
+                      <span className="text-slate-500 dark:text-slate-400">KB</span>
                     </div>
                   </div>
 
@@ -190,7 +195,7 @@ export const ImageResizerModal = ({ onClose }) => {
                     step="10"
                     value={targetKb}
                     onChange={(e) => setTargetKb(Number(e.target.value))}
-                    className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                    className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-600"
                   />
 
                   <div className="flex items-center space-x-1.5 pt-1">
@@ -201,7 +206,7 @@ export const ImageResizerModal = ({ onClose }) => {
                         className={`flex-1 py-1 rounded-lg text-[11px] font-bold border transition-all ${
                           targetKb === kbVal
                             ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
-                            : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
+                            : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700'
                         }`}
                       >
                         {kbVal}KB
@@ -211,33 +216,33 @@ export const ImageResizerModal = ({ onClose }) => {
                 </div>
 
                 {/* Pixel Dimensions */}
-                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
-                  <span className="text-xs font-bold text-slate-900">Pixel Dimensions</span>
+                <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 space-y-3">
+                  <span className="text-xs font-bold text-slate-900 dark:text-white">Pixel Dimensions</span>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="block text-[10px] font-medium text-slate-500 mb-1">Width (px)</label>
+                      <label className="block text-[10px] font-medium text-slate-500 dark:text-slate-400 mb-1">Width (px)</label>
                       <input
                         type="number"
                         value={targetWidth}
                         onChange={(e) => setTargetWidth(Number(e.target.value))}
-                        className="w-full px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs text-slate-900 font-semibold"
+                        className="w-full px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white font-semibold focus:border-blue-600 focus:outline-none"
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-medium text-slate-500 mb-1">Height (px)</label>
+                      <label className="block text-[10px] font-medium text-slate-500 dark:text-slate-400 mb-1">Height (px)</label>
                       <input
                         type="number"
                         value={targetHeight}
                         onChange={(e) => setTargetHeight(Number(e.target.value))}
-                        className="w-full px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs text-slate-900 font-semibold"
+                        className="w-full px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white font-semibold focus:border-blue-600 focus:outline-none"
                       />
                     </div>
                   </div>
                 </div>
 
                 {/* Format Output Selector */}
-                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
-                  <span className="text-xs font-bold text-slate-900">Export Format</span>
+                <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 space-y-2">
+                  <span className="text-xs font-bold text-slate-900 dark:text-white">Export Format</span>
                   <div className="flex space-x-2">
                     {[
                       { label: 'JPG', val: 'image/jpeg' },
@@ -250,7 +255,7 @@ export const ImageResizerModal = ({ onClose }) => {
                         className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${
                           format === fmt.val
                             ? 'bg-blue-600 text-white shadow-md'
-                            : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
+                            : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700'
                         }`}
                       >
                         {fmt.label}
@@ -261,10 +266,10 @@ export const ImageResizerModal = ({ onClose }) => {
               </div>
 
               {/* Preview & Download */}
-              <div className="md:col-span-7 flex flex-col items-center justify-between bg-slate-50 border border-slate-200 rounded-2xl p-6">
+              <div className="md:col-span-7 flex flex-col items-center justify-between bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
                 <div className="w-full flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-2">
-                    <span className="text-xs font-bold text-slate-900">Live Preview</span>
+                    <span className="text-xs font-bold text-slate-900 dark:text-white">Live Preview</span>
                     <button
                       onClick={() => {
                         if (selectedFile) {
@@ -272,23 +277,23 @@ export const ImageResizerModal = ({ onClose }) => {
                           setCropModalOpen(true);
                         }
                       }}
-                      className="px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-bold flex items-center space-x-1 transition-all shadow-xs"
+                      className="px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/60 text-xs font-bold flex items-center space-x-1 transition-all shadow-xs"
                     >
-                      <Crop className="w-3.5 h-3.5 text-blue-600" />
+                      <Crop className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
                       <span>Crop / Frame</span>
                     </button>
                   </div>
                   {result && (
-                    <span className="text-xs font-bold text-emerald-600 flex items-center space-x-1">
+                    <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center space-x-1">
                       <CheckCircle className="w-4 h-4" />
                       <span>{formatFileSize(result.finalKb, 'kb')}</span>
                     </span>
                   )}
                 </div>
 
-                <div className="relative flex-1 flex items-center justify-center min-h-[220px] max-h-[300px] w-full p-4 bg-white rounded-xl border border-slate-200 shadow-inner">
+                <div className="relative flex-1 flex items-center justify-center min-h-[220px] max-h-[300px] w-full p-4 bg-white dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 shadow-inner">
                   {isProcessing ? (
-                    <div className="flex flex-col items-center space-y-2 text-blue-600">
+                    <div className="flex flex-col items-center space-y-2 text-blue-600 dark:text-blue-400">
                       <RefreshCw className="w-6 h-6 animate-spin" />
                       <span className="text-xs font-semibold">Resizing image...</span>
                     </div>
@@ -296,7 +301,7 @@ export const ImageResizerModal = ({ onClose }) => {
                     <img
                       src={result.downloadUrl}
                       alt="Resized Result"
-                      className="max-h-[260px] max-w-full object-contain rounded shadow-md border border-slate-200"
+                      className="max-h-[260px] max-w-full object-contain rounded shadow-md border border-slate-200 dark:border-slate-800"
                     />
                   ) : null}
                 </div>

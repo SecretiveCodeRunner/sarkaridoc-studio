@@ -34,20 +34,42 @@ async function ensureBlob(blob, blobUrl) {
   throw new Error('No blob or blobUrl provided for download');
 }
 
+import { saveHistoryItem } from './historyStore';
+
 /**
  * Universal file download handler.
  * On native Android: Saves directly into the device's public Downloads/SarkariDoc or Pictures/SarkariDoc folder
  * and triggers a native toast notification.
  * On web browser: Triggers clean anchor download.
+ * Automatically saves the completed deliverable into the on-device History store.
  */
-export async function downloadFile({ blob, blobUrl, filename, mimeType }) {
+export async function downloadFile({ blob, blobUrl, filename, mimeType, historyMeta }) {
   const isNative = typeof window !== 'undefined' && Capacitor.isNativePlatform();
+  let finalBlob = null;
+  try {
+    finalBlob = await ensureBlob(blob, blobUrl);
+  } catch (err) {
+    console.warn('Could not resolve final blob for download:', err);
+  }
 
-  if (isNative) {
+  const detectedMime = mimeType || finalBlob?.type || (filename.endsWith('.pdf') ? 'application/pdf' : 'image/jpeg');
+
+  // Automatically record in on-device history store (non-blocking)
+  if (finalBlob) {
+    saveHistoryItem({
+      tool: historyMeta?.tool || (filename.endsWith('.pdf') ? 'pdf' : 'photo'),
+      toolName: historyMeta?.toolName || (filename.endsWith('.pdf') ? 'PDF Document' : 'Photo / Signature'),
+      fileName: filename,
+      fileSize: finalBlob.size,
+      mimeType: detectedMime,
+      blob: finalBlob,
+      presetName: historyMeta?.presetName || '',
+    }).catch((e) => console.debug('History save notice:', e));
+  }
+
+  if (isNative && finalBlob) {
     try {
-      const finalBlob = await ensureBlob(blob, blobUrl);
       const base64 = await blobToBase64(finalBlob);
-      const detectedMime = mimeType || finalBlob.type || (filename.endsWith('.pdf') ? 'application/pdf' : 'image/jpeg');
 
       await NativeDownloader.saveToDownloads({
         base64,
@@ -71,8 +93,8 @@ export async function downloadFile({ blob, blobUrl, filename, mimeType }) {
   // Web fallback
   let localUrl = blobUrl;
   let shouldRevoke = false;
-  if (!localUrl && blob instanceof Blob) {
-    localUrl = URL.createObjectURL(blob);
+  if (!localUrl && finalBlob instanceof Blob) {
+    localUrl = URL.createObjectURL(finalBlob);
     shouldRevoke = true;
   }
 
